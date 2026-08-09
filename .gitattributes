@@ -1,0 +1,6 @@
+# Đánh dấu thư viện bên thứ ba để GitHub nhận diện đúng ngôn ngữ chính (PHP/Twig)
+public/vendor/** linguist-vendored
+public/js/** linguist-vendored
+public/css/** linguist-vendored
+*.min.js linguist-vendored
+*.min.css linguist-vendored
