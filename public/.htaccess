@@ -1,0 +1,22 @@
+# Route all requests to the Symfony front controller (index.php).
+# Minimal rewrite rules for Apache + mod_rewrite (Laragon).
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect to URI without front controller to prevent duplicate content
+    RewriteCond %{ENV:REDIRECT_STATUS} =""
+    RewriteRule ^index\.php(?:/(.*)|$) %{ENV:BASE}/$1 [R=301,L]
+
+    # If the requested filename exists, serve it directly (assets: css, js, images).
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Otherwise, rewrite everything to the front controller.
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        RedirectMatch 307 ^/$ /index.php/
+    </IfModule>
+</IfModule>
