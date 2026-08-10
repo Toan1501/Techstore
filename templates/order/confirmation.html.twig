@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Đặt hàng thành công — TECHSTORE{% endblock %}
+
+{% block body %}
+<div class="container my-5" style="max-width:860px">
+    <div class="text-center mb-4">
+        <i class="bi bi-check-circle-fill text-success" style="font-size:3rem"></i>
+        <h2 class="mt-2 h3">Cảm ơn bạn, đơn hàng đã được đặt thành công!</h2>
+        <p class="text-muted">Đơn hàng <strong>#{{ order.id }}</strong> &middot; {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="gv-section">
+                <div class="gv-section__head"><h2 style="font-size:1rem">Sản phẩm</h2></div>
+                <table class="table mb-0 align-middle">
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td>{{ item.product ? item.product.name : '(sản phẩm đã xóa)' }}</td>
+                            <td class="text-muted">&times; {{ item.quantity }}</td>
+                            <td class="text-end">{{ item.total|vnd }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr><td colspan="2">Tạm tính</td><td class="text-end">{{ order.subtotal|vnd }}</td></tr>
+                        {% if order.discount > 0 %}<tr class="text-success"><td colspan="2">Giảm giá{{ order.couponCode ? ' (' ~ order.couponCode ~ ')' : '' }}</td><td class="text-end">-{{ order.discount|vnd }}</td></tr>{% endif %}
+                        <tr><td colspan="2">Phí vận chuyển</td><td class="text-end">{{ order.shippingFee == 0 ? 'Miễn phí' : order.shippingFee|vnd }}</td></tr>
+                        <tr class="fw-bold"><td colspan="2">Tổng cộng</td><td class="text-end text-danger">{{ order.totalPrice|vnd }}</td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="gv-section">
+                <div class="gv-section__head"><h2 style="font-size:1rem">Giao hàng</h2></div>
+                <p class="mb-1"><strong>{{ order.customerName }}</strong> — {{ order.customerPhone }}</p>
+                <p class="mb-1">{{ order.customerEmail }}</p>
+                <p class="mb-0">{{ order.fullAddress }}</p>
+                {% if order.note %}<hr><p class="mb-0 text-muted"><em>{{ order.note }}</em></p>{% endif %}
+            </div>
+
+            <div class="gv-section">
+                <div class="gv-section__head"><h2 style="font-size:1rem">Thanh toán</h2></div>
+                <p class="mb-2">{{ order.paymentMethodLabel }} — <span class="badge bg-{{ order.statusColor }}">{{ order.statusLabel }}</span></p>
+                {% if order.paymentMethod == 'bank_transfer' %}
+                    <div class="alert alert-info small mb-0">
+                        Vui lòng chuyển khoản <strong>{{ order.totalPrice|vnd }}</strong> tới:<br>
+                        Ngân hàng: <strong>Vietcombank</strong><br>
+                        Số tài khoản: <strong>0123456789</strong> — TECHSTORE<br>
+                        Nội dung: <strong>DH{{ order.id }}</strong>
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">Bạn thanh toán bằng tiền mặt khi nhận hàng.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ path('homepage') }}" class="btn btn-outline-secondary">Tiếp tục mua sắm</a>
+        {% if app.user %}<a href="{{ path('app_my_orders') }}" class="btn btn-danger">Xem đơn hàng của tôi</a>{% endif %}
+    </div>
+</div>
+{% endblock %}

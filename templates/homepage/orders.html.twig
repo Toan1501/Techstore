@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Đơn hàng của tôi — TECHSTORE{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Đơn hàng của tôi</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <div class="gv-section__head"><h2>Đơn hàng của tôi</h2></div>
+
+        {% if orders is empty %}
+            <div class="alert alert-info mb-0">Bạn chưa có đơn hàng nào. <a href="{{ path('homepage') }}">Mua sắm ngay</a>.</div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Sản phẩm</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                            <td>
+                                <ul class="mb-0 ps-3 small">
+                                    {% for item in order.items %}
+                                        <li>{{ item.product ? item.product.name : '(đã xóa)' }} &times; {{ item.quantity }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="text-danger fw-semibold">{{ order.totalPrice|vnd }}</td>
+                            <td><span class="badge bg-{{ order.statusColor }}">{{ order.statusLabel }}</span></td>
+                            <td><a href="{{ path('app_order_detail_customer', {'id': order.id}) }}" class="btn btn-sm btn-outline-danger">Chi tiết</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

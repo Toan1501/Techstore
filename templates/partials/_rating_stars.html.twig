@@ -1,0 +1,6 @@
+{% set avg = avg|default(0) %}
+{% set count = count|default(0) %}
+<span class="rating-stars text-warning" title="{{ count > 0 ? avg ~ '/5 (' ~ count ~ ')' : 'No reviews' }}">
+    {% for i in 1..5 %}<i class="bi {{ i <= avg ? 'bi-star-fill' : (i - 0.5 <= avg ? 'bi-star-half' : 'bi-star') }}"></i>{% endfor %}
+    <small class="text-muted ms-1">({{ count }})</small>
+</span>

@@ -1,93 +1,33 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Products{% endblock %}
-
-{% block stylesheets %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-    crossorigin="anonymous"></script>
-<link rel="stylesheet" href="{{asset('css/style.css')}}" />
-{% endblock %}
+{% block title %}{{ heading|default('Sản phẩm') }} — TECHSTORE{% endblock %}
 
 {% block body %}
-<!-- Best Seller Banner Start -->
-<div class="container-fluid mt-5">
-    <div class="row px-xl-5">
-        <div class="col-lg-8">
-            <div id="header-carousel" class="carousel slide carousel-fade mb-30 mb-lg-0" data-ride="carousel">
-                <ol class="carousel-indicators">
-                    <li data-target="#header-carousel" data-slide-to="0" class="active"></li>
-                </ol>
-                <div class="carousel-inner">
-                    <div class="carousel-item position-relative active" style="height: 430px;">
-                        <img class="position-absolute w-100 h-100" src="/images/best1.webp"
-                            style="object-fit: cover;">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="product-offer mb-30" style="height: 200px;">
-                <img class="img-fluid" src="/images/best2.webp" alt="">
-            </div>
-            <div class="product-offer mb-30" style="height: 200px;">
-                <img class="img-fluid" src="/images/best3.webp" alt="">
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Best Seller Banner End -->
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ heading|default('Sản phẩm') }}</li>
+        </ol>
+    </nav>
 
-<!-- Products Start -->
-<div class="container-fluid pt-5 pb-3">
-    <h2 class="section-title position-relative mx-xl-5 mb-4">
-        <span class="bg-secondary pr-3">Special! Sales off all products, today</span>
-    </h2>
-    <div class="row px-xl-5">
-        {% for sp in data %}
-        <div class="col-lg-3 col-md-4 col-sm-6 pb-1" title="{{ sp.getName() }}">
-            <div class="product-item bg-light mb-4">
-                <div class="product-img position-relative overflow-hidden">
-                    <img class="img-fluid w-100" src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" alt="">
+    <div class="gv-section">
+        <div class="gv-section__head"><h2>{{ heading|default('Sản phẩm') }}</h2></div>
+        <div class="row g-3">
+            {% for sp in data %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: ratings|default({})} %}
                 </div>
-                <div class="text-center py-4">
-                    <a class="h6 text-decoration-none text-truncate" href="">{{ sp.getName() }}</a>
-                    <div class="d-flex align-items-center justify-content-center mt-2">
-                        <h5>{{ sp.getPrice() }} $</h5>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-center mb-2">
-                        <small class="fa fa-star text-primary mr-1"></small>
-                        <small class="fa fa-star text-primary mr-1"></small>
-                        <small class="fa fa-star text-primary mr-1"></small>
-                        <small class="fa fa-star text-primary mr-1"></small>
-                        <small class="fa fa-star text-primary mr-1"></small>
-                        <small>(99)</small>
-                    </div>
-                    <div class="btn" title="Add to cart">
-                        <form method="post" action="{{ path('app_cart_add', {'product_id': sp.getId()}) }}">
-                            <button class="btn btn-outline-danger btn-light rounded-2 pl-3 pr-3" type="submit">
-                                <i class="bi bi-bag-plus-fill"></i>
-                            </button>
-                        </form>
-                    </div>
-                    <div class="btn">
-                        <a class="btn btn-outline-danger btn-light rounded-2 pl-3 pr-3"
-                            href="{{ path('app_detailsp', {'id': sp.id}) }}" title="View detail"><i
-                                class="bi bi-eye-fill"></i></a>
-                    </div>
+            {% else %}
+                <div class="col-12 text-center text-muted py-5">
+                    <i class="bi bi-search" style="font-size:2rem"></i>
+                    <p class="mt-2 mb-0">Không tìm thấy sản phẩm nào.</p>
                 </div>
-            </div>
+            {% endfor %}
         </div>
-        {% endfor %}
+        {% if data.haveToPaginate is defined and data.haveToPaginate %}
+            <div class="d-flex justify-content-center mt-4">{{ knp_pagination_render(data) }}</div>
+        {% endif %}
     </div>
 </div>
-{% endblock %}
-{% block javascripts %}
-<script>
-    var bestSellerCarousel = new bootstrap.Carousel(document.getElementById('best-seller-carousel'), {
-        interval: 5000
-    });
-</script>
 {% endblock %}

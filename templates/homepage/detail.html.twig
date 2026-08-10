@@ -1,42 +1,203 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Product detail page{% endblock %}
-
-{% block stylesheets %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-    crossorigin="anonymous"></script>
-<link rel="stylesheet" href="{{asset('css/style.css')}}" />
-{% endblock %}
+{% block title %}{{ data.getName() }} — TECHSTORE{% endblock %}
+{% block meta_description %}{{ data.getName() }}{% if data.brand %} chính hãng {{ data.brand }}{% endif %} — giá {{ data.getPrice()|vnd }}, bảo hành {{ data.warranty ?? '12 tháng' }}. Mua ngay tại TECHSTORE.{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-    <div class="row px-xl-5">
-        <div class="col-md-6">
-            <img src="{{ asset('uploads/sanpham/' ~ data.getPhoto()) }}" alt="" class="img-fluid">
-        </div>
-        <div class="col-md-6">
-            <h2>{{ data.getName() }}</h2>
-            <hr>
-            <h5 class="mb-3">Price: {{ data.getPrice() }}$</h5>
-            <h5>Detailed description of {{ data.getName()}}:</h5>
-            <p class="mb-3">{{ data.getDescription() }}</p>
-            <hr>
-            <div class="text-primary rating mt-2 mb-4">
-                <span class="star-icon"><i class="fa fa-star"></i></span>
-                <span class="star-icon"><i class="fa fa-star"></i></span>
-                <span class="star-icon"><i class="fa fa-star"></i></span>
-                <span class="star-icon"><i class="fa fa-star"></i></span>
-                <span class="star-icon"><i class="fa fa-star"></i></span>
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            {% if data.getCate() %}<li class="breadcrumb-item"><a href="{{ path('app_productofcate', {'id': data.getCate().id}) }}">{{ data.getCate().name }}</a></li>{% endif %}
+            <li class="breadcrumb-item active line-clamp-1" aria-current="page">{{ data.getName() }}</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <div class="row g-4">
+            {# Gallery #}
+            <div class="col-md-5">
+                <div class="bg-white border rounded-3 p-3 text-center">
+                    <img id="mainImg" src="{{ asset('uploads/sanpham/' ~ data.getPhoto()) }}" alt="{{ data.getName() }}" class="img-fluid" style="max-height:400px;object-fit:contain">
+                </div>
+                {% set photos = data.getAllPhotos() %}
+                {% if photos|length > 1 %}
+                <div class="d-flex gap-2 mt-2 flex-wrap">
+                    {% for p in photos %}
+                        <img src="{{ asset('uploads/sanpham/' ~ p) }}" alt="thumbnail" class="thumb-img border rounded {{ loop.first ? 'active' : '' }}" data-full="{{ asset('uploads/sanpham/' ~ p) }}" style="width:64px;height:64px;object-fit:contain;cursor:pointer">
+                    {% endfor %}
+                </div>
+                {% endif %}
             </div>
-            <form method="post" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
-                <button class="btn btn-danger rounded-2 pl-3 pr-3" type="submit" id="add-to-cart">
-                    Add to Cart
-                </button>
-            </form>  
+
+            {# Info + buy #}
+            <div class="col-md-7">
+                <h1 class="h4 mb-2">{{ data.getName() }}</h1>
+                <div class="d-flex align-items-center gap-3 mb-2 small">
+                    <span>{% include 'partials/_rating_stars.html.twig' with {avg: rating.average ?? 0, count: rating.count} %}</span>
+                    {% if data.brand %}<span class="text-muted">Thương hiệu: <strong>{{ data.brand }}</strong></span>{% endif %}
+                    {% if data.sku %}<span class="text-muted">SKU: {{ data.sku }}</span>{% endif %}
+                </div>
+
+                <div class="bg-light rounded p-3 mb-3">
+                    <div class="d-flex align-items-baseline gap-2 flex-wrap">
+                        <span class="fs-3 fw-bold text-danger">{{ data.getPrice()|vnd }}</span>
+                        {% if data.hasDiscount() %}
+                            <span class="text-muted text-decoration-line-through">{{ data.getPriceOld()|vnd }}</span>
+                            <span class="badge bg-danger">-{{ data.getDiscountPercent() }}%</span>
+                        {% endif %}
+                    </div>
+                    <div class="mt-1">
+                        {% if data.isInStock() %}
+                            <span class="badge bg-success">Còn hàng ({{ data.stock }})</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Tạm hết hàng</span>
+                        {% endif %}
+                        {% if data.warranty %}<span class="text-muted small ms-2">Bảo hành: {{ data.warranty }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <div class="border rounded p-3 mb-3">
+                    <div class="fw-semibold text-danger mb-2"><i class="bi bi-gift"></i> Khuyến mãi</div>
+                    <ul class="small mb-0 ps-3">
+                        <li>Tặng phiếu mua hàng 200.000₫ cho đơn từ 10 triệu.</li>
+                        <li>Hỗ trợ trả góp 0% qua thẻ tín dụng.</li>
+                        <li>Giao hàng miễn phí cho đơn từ 5 triệu.</li>
+                    </ul>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="input-group" style="width:130px">
+                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=Math.max(1,parseInt(q.value||1)-1)">−</button>
+                        <input type="number" id="qty" value="1" min="1" class="form-control text-center" aria-label="Số lượng">
+                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=parseInt(q.value||1)+1">+</button>
+                    </div>
+
+                    <form method="post" class="buynow-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
+                        <input type="hidden" name="qty" class="qty-mirror" value="1">
+                        <input type="hidden" name="buynow" value="1">
+                        <button class="btn btn-danger px-4" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><strong>MUA NGAY</strong></button>
+                    </form>
+
+                    <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
+                        <input type="hidden" name="qty" class="qty-mirror" value="1">
+                        <button class="btn btn-outline-danger" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><i class="bi bi-cart-plus"></i> Thêm vào giỏ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Description + Specs #}
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="gv-section">
+                {% if data.getDescription() %}
+                    <div class="gv-section__head"><h2>Mô tả sản phẩm</h2></div>
+                    <p>{{ data.getDescription() }}</p>
+                {% endif %}
+                {% if data.getSpecList() is not empty %}
+                    <div class="gv-section__head mt-3"><h2>Thông số kỹ thuật</h2></div>
+                    <table class="table table-sm table-bordered mb-0">
+                        <tbody>
+                            {% for spec in data.getSpecList() %}
+                                <tr><th class="w-50 bg-light">{{ spec.0 }}</th><td>{{ spec.1 }}</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+
+            {# Reviews #}
+            <div class="gv-section">
+                <div class="gv-section__head"><h2>Đánh giá sản phẩm</h2></div>
+                {% if app.user %}
+                    <form method="post" action="{{ path('app_review_add', {'id': data.getId()}) }}" class="border rounded p-3 mb-3">
+                        <input type="hidden" name="_token" value="{{ csrf_token('review_' ~ data.getId()) }}">
+                        <div class="mb-2" style="max-width:220px">
+                            <label for="rating" class="form-label mb-1">Chấm điểm</label>
+                            <select name="rating" id="rating" class="form-select" required>
+                                <option value="5">★★★★★ (5)</option>
+                                <option value="4">★★★★ (4)</option>
+                                <option value="3">★★★ (3)</option>
+                                <option value="2">★★ (2)</option>
+                                <option value="1">★ (1)</option>
+                            </select>
+                        </div>
+                        <div class="mb-2">
+                            <label for="comment" class="form-label mb-1">Nhận xét</label>
+                            <textarea name="comment" id="comment" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger">Gửi đánh giá</button>
+                    </form>
+                {% else %}
+                    <p class="text-muted"><a href="{{ path('app_login') }}">Đăng nhập</a> để viết đánh giá.</p>
+                {% endif %}
+
+                {% for review in reviews %}
+                    <div class="border-bottom py-3">
+                        <div class="text-warning">
+                            {% for i in 1..5 %}<i class="bi {{ i <= review.rating ? 'bi-star-fill' : 'bi-star' }}"></i>{% endfor %}
+                            <strong class="text-dark ms-2">{{ review.user ? review.user.firstName : 'Khách' }}</strong>
+                            <small class="text-muted ms-2">{{ review.createdAt|date('d/m/Y') }}</small>
+                        </div>
+                        {% if review.comment %}<p class="mb-0 mt-1">{{ review.comment }}</p>{% endif %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Related #}
+        <div class="col-lg-4">
+            {% if related is not empty %}
+            <div class="gv-section">
+                <div class="gv-section__head"><h2 style="font-size:1rem">Sản phẩm liên quan</h2></div>
+                {% for sp in related %}
+                    <a href="{{ path('app_detailsp', {'id': sp.id}) }}" class="d-flex gap-2 align-items-center py-2 border-bottom text-body">
+                        <img src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" alt="{{ sp.getName() }}" style="width:56px;height:56px;object-fit:contain;border:1px solid var(--ts-border);border-radius:6px">
+                        <div class="min-w-0">
+                            <div class="line-clamp-2 small">{{ sp.getName() }}</div>
+                            <div class="text-danger fw-bold small">{{ sp.getPrice()|vnd }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+{# spacer + sticky add-to-cart bar (mobile) #}
+<div class="d-lg-none" style="height:64px"></div>
+<div class="detail-sticky-bar d-lg-none">
+    <div class="d-flex align-items-center gap-2">
+        <div class="flex-grow-1 min-w-0">
+            <div class="line-clamp-1 small">{{ data.getName() }}</div>
+            <div class="fw-bold text-danger">{{ data.getPrice()|vnd }}</div>
+        </div>
+        <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
+            <button class="btn btn-danger" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><i class="bi bi-cart-plus"></i> Thêm</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+document.querySelectorAll('.thumb-img').forEach(function (t) {
+    t.addEventListener('click', function () {
+        var main = document.getElementById('mainImg');
+        if (main) main.src = this.dataset.full;
+        document.querySelectorAll('.thumb-img').forEach(function (x) { x.classList.remove('active'); });
+        this.classList.add('active');
+    });
+});
+// keep hidden qty inputs in sync with the quantity selector
+var qty = document.getElementById('qty');
+if (qty) qty.addEventListener('change', function () {
+    document.querySelectorAll('.qty-mirror').forEach(function (m) { m.value = qty.value; });
+});
+</script>
 {% endblock %}

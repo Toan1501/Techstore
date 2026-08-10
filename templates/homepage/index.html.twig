@@ -1,170 +1,186 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Homepage{% endblock %}
+{% block title %}TECHSTORE — Máy tính, Laptop & Linh kiện chính hãng{% endblock %}
 
 {% block body %}
-<!-- Carousel Start -->
-<div class="container-fluid mb-3 mt-5">
-    <div class="row px-xl-5">
-        <div class="col-lg-8">
-            <div id="header-carousel" class="carousel slide carousel-fade mb-30 mb-lg-0" data-ride="carousel">
-                <ol class="carousel-indicators">
-                    <li data-target="#header-carousel" data-slide-to="0" class="active"></li>
-                    <li data-target="#header-carousel" data-slide-to="1"></li>
-                    <li data-target="#header-carousel" data-slide-to="2"></li>
-                    <li data-target="#header-carousel" data-slide-to="3"></li>
-                </ol>
-                <div class="carousel-inner">
-                    <div class="carousel-item position-relative active" style="height: 430px;">
-                        <img class="position-absolute w-100 h-100" src="images/carousel-1.webp"
-                            style="object-fit: cover;">
-                    </div>
-                    <div class="carousel-item position-relative" style="height: 430px;">
-                        <img class="position-absolute w-100 h-100" src="images/carousel-2.webp"
-                            style="object-fit: cover;">
-                    </div>
-                    <div class="carousel-item position-relative" style="height: 430px;">
-                        <img class="position-absolute w-100 h-100" src="images/carousel-4.webp"
-                            style="object-fit: cover;">
-                    </div>
-                    <div class="carousel-item position-relative" style="height: 430px;">
-                        <img class="position-absolute w-100 h-100" src="images/carousel-5.webp"
-                            style="object-fit: cover;">
-                    </div>
+<div class="container-fluid px-3 px-xl-5 py-3">
+
+    {# ===== Hero + side banners ===== #}
+    <div class="row g-3 mb-3">
+        <div class="col-lg-9">
+            {% set slides = banners is not empty ? banners : null %}
+            <div id="heroCarousel" class="carousel slide rounded overflow-hidden" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    {% if slides %}
+                        {% for b in slides %}<button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{{ loop.first ? 'active' : '' }}"></button>{% endfor %}
+                    {% else %}
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+                    {% endif %}
                 </div>
+                <div class="carousel-inner" style="aspect-ratio: 3/1; background:#fff">
+                    {% if slides %}
+                        {% for b in slides %}
+                            <div class="carousel-item {{ loop.first ? 'active' : '' }} h-100">
+                                {% if b.link %}<a href="{{ b.link }}">{% endif %}
+                                <img src="{{ asset(b.image) }}" class="w-100 h-100" style="object-fit:cover" alt="{{ b.title }}">
+                                {% if b.link %}</a>{% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="carousel-item active h-100"><img src="{{ asset('images/carousel-1.webp') }}" class="w-100 h-100" style="object-fit:cover" alt="Khuyến mãi"></div>
+                    {% endif %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="product-offer mb-30" style="height: 200px;">
-                <img class="img-fluid" src="images/offer-4.png" alt="">
-            </div>
-            <div class="product-offer mb-30" style="height: 200px;">
-                <img class="img-fluid" src="images/offer-5.png" alt="">
-            </div>
+        <div class="col-lg-3 d-none d-lg-flex flex-column gap-3">
+            <img src="{{ asset('images/offer-4.png') }}" class="w-100 rounded" style="height:calc(50% - 0.5rem);object-fit:cover" alt="Ưu đãi">
+            <img src="{{ asset('images/offer-5.png') }}" class="w-100 rounded" style="height:calc(50% - 0.5rem);object-fit:cover" alt="Ưu đãi">
         </div>
     </div>
-</div>
-<!-- Carousel End -->
 
-<!-- Featured Start -->
-<div class="container-fluid pt-5">
-    <div class="row px-xl-5 pb-3">
-        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
-            <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
-                <h1 class="fa fa-check text-primary m-0 mr-3"></h1>
-                <h5 class="font-weight-semi-bold m-0">Quality Product</h5>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
-            <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
-                <h1 class="fa fa-shipping-fast text-primary m-0 mr-2"></h1>
-                <h5 class="font-weight-semi-bold m-0">Free Shipping</h5>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
-            <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
-                <h1 class="fas fa-exchange-alt text-primary m-0 mr-3"></h1>
-                <h5 class="font-weight-semi-bold m-0">14-Day Return</h5>
-            </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12 pb-1">
-            <div class="d-flex align-items-center bg-light mb-4" style="padding: 30px;">
-                <h1 class="fa fa-phone-volume text-primary m-0 mr-3"></h1>
-                <h5 class="font-weight-semi-bold m-0">24/7 Support</h5>
-            </div>
-        </div>
+    {# ===== Benefits strip ===== #}
+    <div class="gv-benefits">
+        <div class="gv-benefit"><i class="bi bi-truck"></i><div><strong>Miễn phí vận chuyển</strong><small>Đơn từ 5 triệu</small></div></div>
+        <div class="gv-benefit"><i class="bi bi-shield-check"></i><div><strong>Bảo hành chính hãng</strong><small>1 đổi 1 trong 7 ngày</small></div></div>
+        <div class="gv-benefit"><i class="bi bi-credit-card"></i><div><strong>Trả góp 0%</strong><small>Qua thẻ tín dụng</small></div></div>
+        <div class="gv-benefit"><i class="bi bi-headset"></i><div><strong>Hỗ trợ 24/7</strong><small>Hotline 1900 5301</small></div></div>
     </div>
-</div>
-<!-- Featured End -->
 
-
-<!-- Categories Start -->
-<div class="container-fluid pt-5">
-    <h2 class="section-title position-relative text-uppercase mx-xl-5 mb-4">
-        <span class="bg-secondary pr-3">Categories</span>
-    </h2>
-    <div class="row px-xl-5 pb-3">
-        {% for category in category %}
-        <div class="col-lg-3 col-md-4 col-sm-6 pb-1">
-            <a class="text-decoration-none" href="{{ path('app_productofcate', {'id': category.id})}}">
-                <div class="cat-item d-flex align-items-center mb-4">
-                    <div class="overflow-hidden" style="width: 100px; height: 100px;">
-                        <img class="img-fluid" src="{{ asset('uploads/sanpham/' ~ category.getPhoto()) }}" alt="">
-                    </div>
-                    <div class="flex-fill pl-3">
-                        <h6>{{ category.getName() }}</h6>
-                        {# <small class="text-body">30 Products</small> #}
-                    </div>
-                </div>
+    {# ===== Category quick tiles ===== #}
+    <div class="gv-cats mb-4">
+        {% for c in category %}
+            <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="gv-cat-tile">
+                <img src="{{ asset('uploads/sanpham/' ~ c.getPhoto()) }}" alt="{{ c.name }}">
+                <span>{{ c.name }}</span>
             </a>
-        </div>
         {% endfor %}
     </div>
-</div>
 
-<!-- Categories End -->
+    {# ===== Flash sale ===== #}
+    {% if deals is not empty %}
+    <div class="gv-flashsale">
+        <div class="gv-flashsale__head">
+            <div class="gv-flashsale__title"><i class="bi bi-lightning-charge-fill"></i> FLASH SALE</div>
+            <div class="gv-countdown">
+                <span class="text-white me-1 fw-normal">Kết thúc sau</span>
+                <span id="cd-h">00</span>:<span id="cd-m">00</span>:<span id="cd-s">00</span>
+            </div>
+        </div>
+        <div class="row g-3">
+            {% for sp in deals %}
+                <div class="col-6 col-md-4 col-lg-2">
+                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: deals_ratings} %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
+    {# ===== All products + filters ===== #}
+    <div class="gv-section">
+        <div class="gv-section__head flex-wrap gap-2">
+            <h2>Sản phẩm nổi bật</h2>
+            <button class="btn btn-outline-danger btn-sm d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#filterBar"><i class="bi bi-funnel"></i> Bộ lọc</button>
+        </div>
 
-<!-- Products Start -->
-<div class="container-fluid pt-5 pb-3">
-    <h2 class="section-title position-relative text-uppercase mx-xl-5 mb-4">
-        <span class="bg-secondary pr-3">Featured Products</span>
-    </h2>
-    <div class="row px-xl-5">
-        {% for sp in data %}
-            <div class="col-lg-3 col-md-4 col-sm-6 pb-1" title="{{ sp.getName()}}">
-                <div class="product-item bg-light mb-4">
-                    <div class="product-img position-relative overflow-hidden">
-                        <img class="img-fluid w-100" src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" alt="">
-                    </div>
-                    <div class="text-center py-4">
-                        <a class="h6 text-decoration-none text-truncate" href="">{{ sp.getName() }}</a>
-                        <div class="d-flex align-items-center justify-content-center mt-2">
-                            <h5>{{ sp.getPrice() }} $</h5>
-                        </div>
-                        <div class="d-flex align-items-center justify-content-center mb-2">
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small class="fa fa-star text-primary mr-1"></small>
-                            <small>(99)</small>
-                        </div>
-                        <div class="btn" title="Add to cart">
-                            <form method="post" action="{{ path('app_cart_add', {'product_id': sp.getId()}) }}">
-                                <button class="btn btn-outline-danger btn-light rounded-2 pl-3 pr-3" type="submit" id="add-to-cart">
-                                    <i class="bi bi-bag-plus-fill"></i>
-                                </button>
-                            </form>                                            
-                        </div>
-                        <div class="btn" title="View detail">
-                            <a class="btn btn-outline-danger btn-light rounded-2 pl-3 pr-3" href="{{ path('app_detailsp', {'id': sp.id}) }}"><i class="bi bi-eye-fill"></i></a>
-                        </div>
+        <form method="get" id="filterBar" class="collapse d-lg-block bg-light border rounded-3 p-3 mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-6 col-lg-3">
+                    <label class="form-label small mb-1" for="f-cat">Danh mục</label>
+                    <select name="category" id="f-cat" class="form-select form-select-sm">
+                        <option value="">Tất cả danh mục</option>
+                        {% for c in category %}<option value="{{ c.id }}" {{ filters.category == c.id ? 'selected' : '' }}>{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label small mb-1" for="f-min">Giá từ</label>
+                    <input type="number" min="0" name="min_price" id="f-min" value="{{ filters.min_price }}" class="form-control form-control-sm" placeholder="{{ price_bounds.min|round }}">
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label small mb-1" for="f-max">Đến</label>
+                    <input type="number" min="0" name="max_price" id="f-max" value="{{ filters.max_price }}" class="form-control form-control-sm" placeholder="{{ price_bounds.max|round }}">
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label small mb-1" for="f-sort">Sắp xếp</label>
+                    <select name="sort" id="f-sort" class="form-select form-select-sm">
+                        <option value="newest" {{ sort == 'newest' ? 'selected' : '' }}>Mới nhất</option>
+                        <option value="price_asc" {{ sort == 'price_asc' ? 'selected' : '' }}>Giá tăng dần</option>
+                        <option value="price_desc" {{ sort == 'price_desc' ? 'selected' : '' }}>Giá giảm dần</option>
+                        <option value="name" {{ sort == 'name' ? 'selected' : '' }}>Tên A–Z</option>
+                    </select>
+                </div>
+                <div class="col-6 col-lg-2 pb-1">
+                    <div class="form-check">
+                        <input type="checkbox" value="1" name="in_stock" id="f-stock" class="form-check-input" {{ filters.in_stock ? 'checked' : '' }}>
+                        <label class="form-check-label small" for="f-stock">Còn hàng</label>
                     </div>
                 </div>
+                <div class="col-6 col-lg-1 d-grid">
+                    <button type="submit" class="btn btn-danger btn-sm">Lọc</button>
+                </div>
             </div>
-            {% if loop.index is divisible by(4) or loop.last %}
-                </div><div class="row px-xl-5">
-            {% endif %}
-        {% endfor %}
-        <div class="pagination justify-content-center p-3">
-            {% set pageCount = data.pageCount %}
-            {% set currentPage = data.current %}
-                    
-            {% if currentPage != 1 %}
-                <a href="{{ path(app.request.get('_route'), app.request.get('_route_params')|merge({'page': 1})) }}" class="btn btn-outline-danger btn-light rounded-2 pl-3 pr-3 mx-1">First</a>
-            {% endif %}
-                
-            {% for page in 1..pageCount %}
-                {% if currentPage != page %}
-                    <a href="{{ path(app.request.get('_route'), app.request.get('_route_params')|merge({'page': page})) }}" class="{{ (page==app.request.get('page'))?"active":"" }} btn btn-outline-danger btn-light rounded-3 pl-3 pr-3 mx-1">{{ page }}</a>
-                {% else %}
-                    <a href="{{ path(app.request.get('_route'), app.request.get('_route_params')|merge({'page': page})) }}" class="{{ (page==app.request.get('page'))?"active":"" }} btn btn-danger btn-light rounded-3 pl-3 pr-3 mx-1">{{ page }}</a>
-                {% endif %}
+            <div class="mt-2"><a href="{{ path('homepage') }}" class="small text-muted"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a></div>
+        </form>
+
+        <div class="row g-3">
+            {% for sp in data %}
+                <div class="col-6 col-md-4 col-lg-3">
+                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: ratings} %}
+                </div>
+            {% else %}
+                <div class="col-12 text-center text-muted py-5"><i class="bi bi-inboxes" style="font-size:2rem"></i><p class="mt-2 mb-0">Không có sản phẩm.</p></div>
             {% endfor %}
-            <a href="{{ path(app.request.get('_route'), app.request.get('_route_params')|merge({'page': pageCount})) }}" class="btn btn-outline-danger btn-light rounded-2 pl-3 pr-3 mx-1">Last</a>
-        </div>                                                                                       
+        </div>
+
+        {% if data.haveToPaginate is defined and data.haveToPaginate %}
+            <div class="d-flex justify-content-center mt-4">{{ knp_pagination_render(data) }}</div>
+        {% endif %}
+    </div>
+
+    {# ===== Product sections by category ===== #}
+    {% for section in sections %}
+    <div class="gv-section">
+        <div class="gv-section__head">
+            <h2>{{ section.category.name }}</h2>
+            <a href="{{ path('app_productofcate', {'id': section.category.id}) }}">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="row g-3">
+            {% for sp in section.products %}
+                <div class="col-6 col-md-4 col-lg-2">
+                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: section_ratings} %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    {# ===== Brands ===== #}
+    <div class="gv-section">
+        <div class="gv-section__head"><h2>Thương hiệu</h2></div>
+        <div class="gv-brands">
+            {% for b in ['ASUS','MSI','ACER','LOGITECH','CORSAIR','GIGABYTE'] %}
+                <a href="{{ path('search_products', {'keyword': b}) }}" class="gv-brand">{{ b }}</a>
+            {% endfor %}
+        </div>
     </div>
 </div>
-<!-- Products End -->
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function () {
+    var end = new Date(); end.setHours(23, 59, 59, 999);
+    function tick() {
+        var diff = Math.max(0, Math.floor((end - new Date()) / 1000));
+        var h = String(Math.floor(diff / 3600)).padStart(2, '0');
+        var m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
+        var s = String(diff % 60).padStart(2, '0');
+        var eh = document.getElementById('cd-h'); if (!eh) return;
+        eh.textContent = h; document.getElementById('cd-m').textContent = m; document.getElementById('cd-s').textContent = s;
+    }
+    tick(); setInterval(tick, 1000);
+})();
+</script>
 {% endblock %}

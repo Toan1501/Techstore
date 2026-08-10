@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }} — TECHSTORE{% endblock %}
+{% block meta_description %}{{ article.excerpt }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_news') }}">Tin tức</a></li>
+            <li class="breadcrumb-item active line-clamp-1" aria-current="page">{{ article.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="gv-section">
+                <h1 class="h4">{{ article.title }}</h1>
+                <div class="text-muted small mb-3"><i class="bi bi-calendar3"></i> {{ article.createdAt ? article.createdAt|date('d/m/Y') : '' }}</div>
+                <img src="{{ asset(article.image ?: 'images/banner1.webp') }}" alt="{{ article.title }}" class="img-fluid rounded mb-3 w-100" style="max-height:380px;object-fit:cover">
+                <div class="article-content">{{ article.content|raw }}</div>
+                <hr>
+                <a href="{{ path('app_news') }}" class="btn btn-outline-danger btn-sm"><i class="bi bi-arrow-left"></i> Quay lại tin tức</a>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="gv-section">
+                <div class="gv-section__head"><h2 style="font-size:1rem">Tin khác</h2></div>
+                {% for o in others %}
+                    <a href="{{ path('app_news_detail', {'slug': o.slug}) }}" class="d-flex gap-2 align-items-center py-2 border-bottom text-body">
+                        <img src="{{ asset(o.image ?: 'images/banner1.webp') }}" alt="{{ o.title }}" style="width:64px;height:48px;object-fit:cover;border-radius:6px">
+                        <div class="min-w-0">
+                            <div class="line-clamp-2 small">{{ o.title }}</div>
+                            <div class="text-muted" style="font-size:.75rem">{{ o.createdAt ? o.createdAt|date('d/m/Y') : '' }}</div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

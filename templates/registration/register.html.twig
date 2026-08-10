@@ -1,47 +1,28 @@
+{% extends 'base.html.twig' %}
 {% form_theme registrationForm 'bootstrap_5_layout.html.twig' %}
 
-{% extends 'base.html.twig' %}
-
-{% block title %}Register{% endblock %}
+{% block title %}Đăng ký — TECHSTORE{% endblock %}
 
 {% block body %}
-    <div class="container mt-5 col-5 justify-content-center">
-        <h1>Register</h1>
+<div class="container py-5" style="max-width:560px">
+    <div class="gv-section">
+        <h1 class="h4 text-center mb-4">Đăng ký tài khoản</h1>
 
         {{ form_errors(registrationForm) }}
-
         {{ form_start(registrationForm) }}
-            {{ form_row(registrationForm.username) }}
-            {{ form_row(registrationForm.first_name) }}
-            {{ form_row(registrationForm.last_name) }}
-            {{ form_row(registrationForm.address) }}
-            {{ form_row(registrationForm.phonenumber) }}
-            {{ form_row(registrationForm.plainPassword, {
-                label: 'Password'
-            }) }}
-            {{ form_row(registrationForm.agreeTerms) }}
-
-            <button type="submit" class="btn btn-danger rounded-2 btn-block mb-4">Register</button>
-            <div class="text-center">
-                <p>or sign up with:</p>
-                <button type="button" class="btn btn-danger btn-floating mx-1 rounded-5">
-                  <i class="fab fa-facebook-f text-light"></i>
-                </button>
-            
-                <button type="button" class="btn btn-danger btn-floating mx-1 rounded-5">
-                  <i class="fab fa-google text-light"></i>
-                </button>
-            
-                <button type="button" class="btn btn-danger btn-floating mx-1 rounded-5">
-                  <i class="fab fa-twitter text-light"></i>
-                </button>
-            
-                <button type="button" class="btn btn-danger btn-floating mx-1 rounded-5">
-                  <i class="fab fa-github text-light"></i>
-                </button>
-              </div>
+            <div class="row g-3">
+                <div class="col-12">{{ form_row(registrationForm.username, {label: 'Tên đăng nhập'}) }}</div>
+                <div class="col-md-6">{{ form_row(registrationForm.first_name, {label: 'Họ'}) }}</div>
+                <div class="col-md-6">{{ form_row(registrationForm.last_name, {label: 'Tên'}) }}</div>
+                <div class="col-12">{{ form_row(registrationForm.address, {label: 'Địa chỉ'}) }}</div>
+                <div class="col-12">{{ form_row(registrationForm.phonenumber, {label: 'Số điện thoại'}) }}</div>
+                <div class="col-12">{{ form_row(registrationForm.plainPassword, {label: 'Mật khẩu'}) }}</div>
+                <div class="col-12">{{ form_row(registrationForm.agreeTerms, {label: 'Tôi đồng ý với điều khoản sử dụng'}) }}</div>
+            </div>
+            <button type="submit" class="btn btn-danger w-100 mt-2">Đăng ký</button>
         {{ form_end(registrationForm) }}
-    </div>
 
-    
+        <p class="text-center mt-3 mb-0">Đã có tài khoản? <a href="{{ path('app_login') }}">Đăng nhập</a></p>
+    </div>
+</div>
 {% endblock %}

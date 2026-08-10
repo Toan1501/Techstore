@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}So sánh sản phẩm — TECHSTORE{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">So sánh</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <div class="gv-section__head">
+            <h2>So sánh sản phẩm</h2>
+            {% if products is not empty %}<a href="{{ path('app_compare_clear') }}" class="text-danger small">Xóa tất cả</a>{% endif %}
+        </div>
+
+        {% if products is empty %}
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-arrow-left-right" style="font-size:2.5rem"></i>
+                <p class="mt-2 mb-3">Chưa có sản phẩm nào để so sánh. Bấm nút so sánh trên sản phẩm để thêm.</p>
+                <a href="{{ path('homepage') }}" class="btn btn-danger">Chọn sản phẩm</a>
+            </div>
+        {% else %}
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle" style="min-width:640px">
+                <tbody>
+                    <tr>
+                        <th style="width:150px">Sản phẩm</th>
+                        {% for p in products %}
+                        <td class="text-center">
+                            <a href="{{ path('app_detailsp', {'id': p.id}) }}">
+                                <img src="{{ asset('uploads/sanpham/' ~ p.getPhoto()) }}" alt="{{ p.getName() }}" style="height:90px;object-fit:contain">
+                                <div class="small mt-1">{{ p.getName() }}</div>
+                            </a>
+                            <form method="post" action="{{ path('app_compare_toggle', {'id': p.id}) }}" class="mt-1"><button class="btn btn-sm btn-outline-danger">Bỏ</button></form>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    <tr><th>Giá</th>{% for p in products %}<td class="text-danger fw-bold text-center">{{ p.getPrice()|vnd }}</td>{% endfor %}</tr>
+                    <tr><th>Thương hiệu</th>{% for p in products %}<td class="text-center">{{ p.brand ?: '—' }}</td>{% endfor %}</tr>
+                    <tr><th>Bảo hành</th>{% for p in products %}<td class="text-center">{{ p.warranty ?: '—' }}</td>{% endfor %}</tr>
+                    <tr><th>Tồn kho</th>{% for p in products %}<td class="text-center">{{ p.isInStock() ? 'Còn hàng' : 'Hết hàng' }}</td>{% endfor %}</tr>
+                    {% for key in spec_keys %}
+                    <tr><th>{{ key }}</th>{% for p in products %}<td class="text-center">{{ p.getSpecMap()[key] ?? '—' }}</td>{% endfor %}</tr>
+                    {% endfor %}
+                    <tr>
+                        <th></th>
+                        {% for p in products %}
+                        <td class="text-center">
+                            <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': p.id}) }}">
+                                <button class="btn btn-sm btn-danger" {{ p.isInStock() ? '' : 'disabled' }}><i class="bi bi-cart-plus"></i> Thêm giỏ</button>
+                            </form>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

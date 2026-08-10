@@ -1,76 +1,77 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Cart page{% endblock %}
+{% block title %}Giỏ hàng — TECHSTORE{% endblock %}
 
 {% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Giỏ hàng</li>
+        </ol>
+    </nav>
 
-<section class="h-100 h-custom" style="background-color: #e7e7e7;">
-    <div class="container py-5 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
-            <div class="col-12">
-                <div class="card card-registration card-registration-2" style="border-radius: 15px;">
-                    <div class="card-body p-0">
-                        <div class="row g-0">
-                            <div class="col-lg-8">
-                                <div class="p-5">
-                                    <div class="d-flex justify-content-between align-items-center mb-5">
-                                        <h1 class="fw-bold mb-0 text-black">Shopping Cart</h1>
-                                    </div>
-                                    <hr class="my-4">
-
-                                    {% for item in cart_manager.items %}
-                                    <div class="row mb-5 d-flex justify-content-between align-items-center">
-                                        <div class="col-md-3 col-lg-3 col-xl-3">
-                                            <img src="{{ asset('uploads/sanpham/' ~ (item.product.photo)) }}" class="img-fluid rounded-3">
-                                        </div>
-                                        <div class="col-md-3 col-lg-3 col-xl-3">
-                                            <h6 class="text" style="font-size: 19px;">{{ item.product.name }}</h6>
-                                        </div>
-                                        <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-                                            <form action="{{ path('app_cart_update') }}" method="POST">
-                                                <input type='hidden' value='{{ item.product.id }}' name='product_id' />
-                                                <input type='number' onchange="this.form.submit()"
-                                                    value='{{ item.quantity }}' min="1" name='qty' class="form-control rounded-3 border border-dark" title="Quantity"/>
-                                            </form>
-                                        </div>
-                                        <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1" title="Unit price">
-                                            <h6 class="mb-0 ml-2" style="font-size: 19px;">{{ item.product.price }} $</h6>
-                                        </div>
-                                        <div class="col-md-1 col-lg-1 col-xl-1 text-end" title="Remove this product">
-                                            <a href="{{path('app_cart_remove',{'product_id':item.product.id})}}" class="text-muted"><i class="fas fa-times"></i></a>
-                                        </div>
-                                    </div>
-                                    <hr class="my-4">
-                                    {% endfor %}
-
-                                    <div class="pt-5">
-                                        <h6 class="mb-0"><a href="{{ path('homepage')}}" class="text-body"><i
-                                                    class="fas fa-long-arrow-alt-left me-2"></i>Back to shop</a></h6>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-4 rounded-right" style="background-color: #f4f1f1;">
-                                <div class="p-5">
-                                    <h3 class="fw-bold mb-5 mt-2 pt-1">Summary</h3>
-                                    <hr class="my-4">
-
-                                    <div class="d-flex justify-content-between mb-5">
-                                        <h5 class="text-uppercase">Total price</h5>
-                                        <h5>{{cart_manager.amount}} $</h5>
-                                    </div>
-
-                                    <a href="{{path('app_order')}}"><button type="button" class="btn btn-danger btn-block rounded-1"
-                                        data-mdb-ripple-color="light">Check out</button></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="gv-section">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 fw-bold mb-0">Giỏ hàng</h2>
+                    <span class="text-muted">{{ cart_manager.totalItems }} sản phẩm</span>
                 </div>
+                <hr class="my-2">
+
+                {% for item in cart_manager.items %}
+                <div class="cart-line d-flex align-items-center gap-3 py-3">
+                    <img src="{{ asset('uploads/sanpham/' ~ (item.product.photo)) }}" class="cart-line-img" alt="{{ item.product.name }}">
+                    <div class="flex-grow-1 min-w-0">
+                        <a href="{{ path('app_detailsp', {'id': item.product.id}) }}" class="text-body"><h6 class="mb-1 line-clamp-2">{{ item.product.name }}</h6></a>
+                        <span class="text-danger fw-semibold d-md-none">{{ item.product.price|vnd }}</span>
+                    </div>
+                    <form action="{{ path('app_cart_update') }}" method="POST" class="flex-shrink-0">
+                        <input type="hidden" value="{{ item.product.id }}" name="product_id" />
+                        <input type="number" onchange="this.form.submit()" value="{{ item.quantity }}" min="1" name="qty" class="form-control cart-qty rounded-3" title="Số lượng"/>
+                    </form>
+                    <div class="text-end d-none d-md-block fw-semibold" style="min-width:120px" title="Đơn giá">{{ item.product.price|vnd }}</div>
+                    <a href="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" class="text-muted flex-shrink-0" title="Xóa"><i class="bi bi-trash"></i></a>
+                </div>
+                {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-cart-x" style="font-size:2.5rem"></i>
+                    <p class="mt-2 mb-3">Giỏ hàng của bạn đang trống.</p>
+                    <a href="{{ path('homepage') }}" class="btn btn-danger">Tiếp tục mua sắm</a>
+                </div>
+                {% endfor %}
+
+                {% if cart_manager.totalItems > 0 %}
+                <div class="pt-3">
+                    <a href="{{ path('homepage') }}" class="text-body text-decoration-none"><i class="bi bi-arrow-left me-2"></i>Tiếp tục mua sắm</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="gv-section">
+                <h2 class="h5 fw-bold mb-3">Tóm tắt đơn hàng</h2>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tạm tính ({{ cart_manager.totalItems }} sản phẩm)</span>
+                    <span>{{ cart_manager.amount|vnd }}</span>
+                </div>
+                <div class="d-flex justify-content-between text-muted small mb-2">
+                    <span>Phí vận chuyển</span><span>Tính khi thanh toán</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold">Tổng cộng</span>
+                    <span class="fs-4 fw-bold text-danger">{{ cart_manager.amount|vnd }}</span>
+                </div>
+                {% if cart_manager.totalItems > 0 %}
+                    <a href="{{ path('app_order') }}" class="btn btn-danger w-100">THANH TOÁN</a>
+                {% else %}
+                    <button type="button" class="btn btn-danger w-100" disabled>THANH TOÁN</button>
+                {% endif %}
             </div>
         </div>
     </div>
-</section>
-{% endblock %}
-
-{% block javascripts %}
+</div>
 {% endblock %}

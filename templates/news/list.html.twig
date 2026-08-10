@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tin tức công nghệ — TECHSTORE{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tin tức</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <div class="gv-section__head"><h2>Tin tức công nghệ</h2></div>
+        <div class="row g-3">
+            {% for a in articles %}
+            <div class="col-6 col-md-4 col-lg-3">
+                <div class="gv-card h-100">
+                    <a href="{{ path('app_news_detail', {'slug': a.slug}) }}" class="gv-card__imgwrap" style="aspect-ratio:16/10">
+                        <img src="{{ asset(a.image ?: 'images/banner1.webp') }}" alt="{{ a.title }}" loading="lazy" style="object-fit:cover;padding:0">
+                    </a>
+                    <div class="gv-card__body">
+                        <a href="{{ path('app_news_detail', {'slug': a.slug}) }}" class="gv-card__title line-clamp-2">{{ a.title }}</a>
+                        <div class="text-muted small mb-1"><i class="bi bi-calendar3"></i> {{ a.createdAt ? a.createdAt|date('d/m/Y') : '' }}</div>
+                        <p class="small text-muted line-clamp-2 mb-0">{{ a.excerpt }}</p>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+                <p class="text-muted">Chưa có bài viết nào.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1f2933">
+    <h2 style="color:#e11d2a">Thank you for your order!</h2>
+    <p>Hi {{ order.customerName }}, we've received your order <strong>#{{ order.id }}</strong>.</p>
+
+    <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <thead>
+            <tr style="text-align:left;border-bottom:2px solid #eee">
+                <th style="padding:8px">Product</th>
+                <th style="padding:8px">Qty</th>
+                <th style="padding:8px;text-align:right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr style="border-bottom:1px solid #eee">
+                <td style="padding:8px">{{ item.product ? item.product.name : '(deleted)' }}</td>
+                <td style="padding:8px">{{ item.quantity }}</td>
+                <td style="padding:8px;text-align:right">{{ item.total|vnd }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table style="width:100%;margin-top:8px">
+        <tr><td>Subtotal</td><td style="text-align:right">{{ order.subtotal|vnd }}</td></tr>
+        <tr><td>Shipping</td><td style="text-align:right">{{ order.shippingFee == 0 ? 'Free' : order.shippingFee|vnd }}</td></tr>
+        <tr><td style="font-weight:bold;font-size:18px">Total</td><td style="text-align:right;font-weight:bold;font-size:18px;color:#e11d2a">{{ order.totalPrice|vnd }}</td></tr>
+    </table>
+
+    <h3>Delivery</h3>
+    <p>{{ order.customerName }} — {{ order.customerPhone }}<br>{{ order.fullAddress }}</p>
+    <p><strong>Payment:</strong> {{ order.paymentMethodLabel }}</p>
+
+    <p style="color:#6b7280;font-size:13px;margin-top:24px">This is an automated confirmation from Techstore.</p>
+</div>

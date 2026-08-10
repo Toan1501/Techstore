@@ -1,216 +1,362 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        <title>{% block title %}TECHSTORE{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}TECHSTORE — Cửa hàng máy tính, laptop, PC gaming & linh kiện chính hãng, giá tốt, trả góp 0%.{% endblock %}">
+        <meta property="og:type" content="website">
+        <meta property="og:site_name" content="TECHSTORE">
+        <meta property="og:title" content="{{ block('title') }}">
+        <meta property="og:description" content="{{ block('meta_description') }}">
+        <meta property="og:image" content="{{ absolute_url(asset('images/logo.jpg')) }}">
+        <link rel="canonical" href="{{ app.request.uri|split('?')|first }}">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🛒</text></svg>">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-        <link href="img/favicon.ico" rel="icon">
-
-        <!-- Google Web Fonts -->
         <link rel="preconnect" href="https://fonts.gstatic.com">
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
-    
-        <!-- Font Awesome -->
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-    
-        <!-- Libraries Stylesheet -->
-        <link href="lib/animate/animate.min.css" rel="stylesheet">
-        <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
-        <!-- Customized Bootstrap Stylesheet -->
-        <link href="css/style.css" rel="stylesheet">
-  
-        {% block stylesheets %}
-        {% endblock %}
-
+        <link href="{{ asset('css/techstore.css') }}" rel="stylesheet">
+        {% block stylesheets %}{% endblock %}
     </head>
     <body>
+    {% set _cart = app.session.get('cart') %}
 
-<!-- Navbar Start -->
-<div class="container-fluid mb-30 bg-danger fixed-top mb-5">
-    <div class="row px-xl-5">
-      <div class="col-lg-3 d-none d-lg-block">
-        <a class="btn d-flex align-items-center justify-content-between bg-danger border border-secondary" data-toggle="collapse" href="#navbar-vertical" style="height: 65px; padding: 0 30px;">
-          <h6 class="text-light m-0"><i class="fa fa-bars mr-2"></i>Menu</h6>
-          <i class="fa fa-angle-down text-dark"></i>
-        </a>
-        <nav class="collapse position-absolute navbar navbar-vertical navbar-light align-items-start p-0 bg-light" id="navbar-vertical" style="width: calc(100% - 30px); z-index: 999;">
-          <div class="navbar-nav w-100">
-            <div class="nav-item dropdown dropright">
-              <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Computer Accessories<i class="fa fa-angle-right float-right mt-1"></i></a>
-              <div class="dropdown-menu position-absolute rounded-0 border-0 m-0">
-                <a href="{{ path('app_productofcate', {'id': 30}) }}" class="dropdown-item">Case PC</a>
-                <a href="{{ path('app_productofcate', {'id': 22}) }}" class="dropdown-item">Screen</a>
-                <a href="{{ path('app_productofcate', {'id': 28}) }}" class="dropdown-item">RAM</a>
-                <a href="{{ path('app_productofcate', {'id': 27}) }}" class="dropdown-item">Graphic Card</a>
-              </div>
-            </div>
-            <a href="{{ path('app_productofcate', {'id': 23}) }}" class="nav-item nav-link">Laptops</a>
-            <a href="{{ path('app_productofcate', {'id': 21}) }}" class="nav-item nav-link">Desktops</a>
-            <a href="{{ path('app_productofcate', {'id': 24}) }}" class="nav-item nav-link">Mouses</a>
-          </div>
-        </nav>
-      </div>
-      <div class="col-lg-9">
-        <nav class="navbar navbar-expand-lg bg-danger navbar-dark py-3 py-lg-0 px-0">
-          <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
-            <div class="navbar-nav mr-auto py-0">
-              <a href="{{ path('homepage')}}" class="nav-link" aria-current="page">Home</a>
-              <a href="{{ path('feature_product')}}" class="nav-item nav-link">Products</a>
-              <a href="{{ path('app_category')}}" class="nav-item nav-link">Categories</a>
-              <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Cart <i class="fa fa-angle-down"></i></a>
-                <div class="dropdown-menu rounded-0 border-0 m-0">
-                  <a href="{{ path('app_cart') }}" class="dropdown-item">Shopping Cart</a>
-                  <a href="{{ path('app_order')}}" class="dropdown-item">Checkout</a>
+    <header class="gv-header">
+        <div class="gv-topbar d-none d-md-block">
+            <div class="container-fluid px-3 px-xl-5">
+                <div class="gv-topbar__row">
+                    <div class="gv-topbar__links">
+                        <a href="{{ path('feature_product') }}">Sản phẩm</a>
+                        <a href="{{ path('app_news') }}">Tin tức</a>
+                        <a href="{{ path('app_compare') }}">So sánh</a>
+                        <a href="{{ path('app_wishlist') }}">Yêu thích</a>
+                        <a href="{{ path('app_contact') }}">Liên hệ</a>
+                    </div>
+                    <div><i class="bi bi-headset me-1"></i> Hỗ trợ: <strong>1900 5301</strong> &nbsp;|&nbsp; 08:00 – 21:00</div>
                 </div>
-              </div>
-              <a href="{{ path('app_contact')}}" class="nav-item nav-link">Contact</a>
             </div>
-            <div class="col-lg-4 col-6 text-left mr-5">
-              <form action="{{ path('search_products') }}" method="GET">
-                  <div class="input-group">
-                      <input type="hidden" id="keyword" name="keyword" class="form-control" placeholder="Search for product..." />
-                      <select   id="search"></select>
-                      <button type="submit" class="btn btn-light btn-outline-danger"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search-heart" viewBox="0 0 16 16">
-                        <path d="M6.5 4.482c1.664-1.673 5.825 1.254 0 5.018-5.825-3.764-1.664-6.69 0-5.018Z"/>
-                        <path d="M13 6.5a6.471 6.471 0 0 1-1.258 3.844c.04.03.078.062.115.098l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1.007 1.007 0 0 1-.1-.115h.002A6.5 6.5 0 1 1 13 6.5ZM6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Z"/>
-                      </svg></button>
-                  </div>
-              </form>
-          </div>
-  
-            <div class="nav-item dropdown mr-1 ml-5">
-              {% if app.user %}
-              <a href="#" class="dropdown-toggle" role="button" id="userDropdown" data-toggle="dropdown" aria-expanded="false"><svg xmlns="http://www.w3.org/2000/svg" width="25" height="22" fill="currentColor" class="bi bi-person-circle text-light" viewBox="0 0 16 16">
-                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-              </svg><i class="fa fa-angle-down text-light"></i></a>
-                <div class="dropdown-menu rounded-0 border-0 m-0 aria-labelledby="userDropdown"">
-                  <a href="{{ path('profile') }}" class="dropdown-item">Profile</a>
-                  <a href="{{ path('edit_profile') }}" class="dropdown-item">Settings</a>
-                  <a class="dropdown-item" href="{{ path('app_logout') }}">Logout</a>
-                </div>
-              {% else %}
-              <a class="dropdown-toggle" href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="22" fill="currentColor" class="bi bi-person-fill text-light" viewBox="0 0 16 16">
-                  <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
-                </svg><i class="fa fa-angle-down text-light"></i>
-              </a>
-              <div class="dropdown-menu rounded-0 border-0 m-0 aria-labelledby="userDropdown"">
-                <a class="dropdown-item" href="{{ path('app_login') }}">Login</a>
-                <a class="dropdown-item" href="{{ path('app_register') }}">Register</a>
-              </div>
-              {% endif %}
-              <a href="{{ path('app_cart') }}" class="btn px-0 ml-3">
-                <i class="fas fa-shopping-cart text-light"></i>
-                <span class="badge text-secondary border border-secondary rounded-circle" style="padding-bottom: 2px;">{{ app.session.get('cart').getTotalItems() ?? 0 }}</span>
-              </a>
-            </div>            
-          </div>
-        </nav>
-      </div>
-    </div>
-  </div>
-  <div>
-<div>
-    <br><br>
-</div>
-<!-- Navbar End -->
-
-        <main>
-        {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
-
-        </main>
-
-        <div class="container">
-          <footer class="py-5">
-            <div class="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
-              <p>© 2023 NguyenThanhToan, Toanntbc00066@fpt.edu.vn, BC00066.</p>
-              <ul class="nav col-md-4 justify-content-end list-unstyled d-flex">
-                <li class="ms-3"><a class="text-body-secondary" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-twitter" viewBox="0 0 16 16">
-                  <path d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z"/>
-                </svg></a></li>
-                <li class="ms-3"><a class="text-body-secondary" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
-                  <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-                </svg></a></li>
-                <li class="ms-3"><a class="text-body-secondary" alt="facebook" href="https://www.facebook.com/thanhtoan.01502"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-facebook" viewBox="0 0 16 16">
-                  <path d="M16 8.049c0-4.446-3.582-8.05-8-8.05C3.58 0-.002 3.603-.002 8.05c0 4.017 2.926 7.347 6.75 7.951v-5.625h-2.03V8.05H6.75V6.275c0-2.017 1.195-3.131 3.022-3.131.876 0 1.791.157 1.791.157v1.98h-1.009c-.993 0-1.303.621-1.303 1.258v1.51h2.218l-.354 2.326H9.25V16c3.824-.604 6.75-3.934 6.75-7.951z"/>
-                </svg></a></li>
-              </ul>
-            </div>
-          </footer>
         </div>
-<style>
-  .select2-container--default .select2-selection--single
-  {
-    height: 38px!important;
-  }
-  #select2-search-container
-  {
-    line-height: 38px !important;
-  }
-  .select2-container--default .select2-selection--single .select2-selection__arrow
-  {
-   display: none;
-  }
-</style>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
-        <script src="lib/easing/easing.min.js"></script>
-        <script src="lib/owlcarousel/owl.carousel.min.js"></script>
-        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        <!-- Contact Javascript File -->
-        <script src="mail/jqBootstrapValidation.min.js"></script>
-        <script src="mail/contact.js"></script>
-    
-        <!-- Template Javascript -->
-        <script src="js/main.js"></script>
-        <script>
-          $('#search').select2({
-            width:'80%',
-            closeOnSelect: false,
-            minimumInputLength:3,
+        <div class="gv-header__main">
+            <div class="container-fluid px-3 px-xl-5">
+                <div class="gv-header__row">
+                    <a href="{{ path('homepage') }}" class="gv-logo">
+                        <span class="gv-logo__icon"><i class="bi bi-pc-display"></i></span>
+                        <span class="gv-logo__text">
+                            <span class="gv-logo__name">TECH<b>STORE</b></span>
+                            <span class="gv-logo__tag d-none d-lg-block">Máy tính &amp; Linh kiện</span>
+                        </span>
+                    </a>
+
+                    <button class="gv-menu-btn btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#catOffcanvas" aria-label="Danh mục">
+                        <i class="bi bi-list"></i>
+                    </button>
+
+                    <form class="gv-search flex-grow-1 d-none d-md-block" action="{{ path('search_products') }}" method="get" style="max-width:560px">
+                        <div class="input-group">
+                            <input type="hidden" id="keyword" name="keyword">
+                            <select id="search"></select>
+                            <button type="submit" class="btn"><i class="bi bi-search"></i></button>
+                        </div>
+                    </form>
+
+                    <div class="gv-icons">
+                        <div class="gv-hotline gv-icon-btn d-none d-xl-flex">
+                            <i class="bi bi-headset"></i>
+                            <div><small>Hotline</small><strong>1900 5301</strong></div>
+                        </div>
+
+                        <a href="{{ path('app_wishlist') }}" class="gv-icon-btn position-relative d-none d-md-flex" aria-label="Yêu thích">
+                            <i class="bi bi-heart"></i>
+                            <div class="d-none d-lg-block text-start"><small>Yêu</small><strong>thích</strong></div>
+                            <span id="wish-count" class="gv-cart-count">{{ app.session.get('wishlist')|default([])|length }}</span>
+                        </a>
+
+                        <div class="dropdown">
+                            <button class="gv-icon-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                                <div class="d-none d-lg-block text-start">
+                                    <small>{{ app.user ? 'Xin chào' : 'Đăng nhập / Đăng ký' }}</small>
+                                    <strong>{{ app.user ? app.user.userIdentifier : 'Tài khoản' }}</strong>
+                                </div>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% if app.user %}
+                                    <li><a class="dropdown-item" href="{{ path('profile') }}"><i class="bi bi-person me-2"></i>Tài khoản của tôi</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_my_orders') }}"><i class="bi bi-bag me-2"></i>Đơn hàng của tôi</a></li>
+                                    {% if is_granted('ROLE_ADMIN') %}<li><a class="dropdown-item" href="{{ path('app_admin') }}"><i class="bi bi-speedometer2 me-2"></i>Trang quản trị</a></li>{% endif %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="{{ path('app_login') }}">Đăng nhập</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_register') }}">Đăng ký</a></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <button class="gv-icon-btn position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#miniCart" aria-label="Giỏ hàng">
+                            <i class="bi bi-cart3"></i>
+                            <div class="d-none d-lg-block text-start"><small>Giỏ</small><strong>hàng</strong></div>
+                            <span id="cart-count" class="gv-cart-count">{{ _cart ? _cart.getTotalItems() : 0 }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <form class="gv-search d-md-none pb-2" action="{{ path('search_products') }}" method="get">
+                    <div class="input-group">
+                        <input type="text" name="keyword" class="form-control" placeholder="Bạn cần tìm gì?">
+                        <button type="submit" class="btn"><i class="bi bi-search"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="gv-catbar d-none d-lg-block">
+            <div class="container-fluid px-xl-5">
+                <ul class="gv-catbar__list">
+                    <li class="gv-mega">
+                        <a href="{{ path('app_category') }}"><i class="bi bi-list"></i> Danh mục sản phẩm</a>
+                        <div class="gv-mega__panel">
+                            {% for c in all_categories() %}
+                                <a href="{{ path('app_productofcate', {'id': c.id}) }}"><i class="bi bi-chevron-right"></i> {{ c.name }}</a>
+                            {% endfor %}
+                        </div>
+                    </li>
+                    {% for c in all_categories()|slice(0, 7) %}
+                        <li><a href="{{ path('app_productofcate', {'id': c.id}) }}">{{ c.name }}</a></li>
+                    {% endfor %}
+                    <li><a href="{{ path('feature_product') }}">Tất cả sản phẩm</a></li>
+                    <li><a href="{{ path('app_news') }}">Tin tức</a></li>
+                    <li><a href="{{ path('app_contact') }}">Liên hệ</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    {# ===== Categories offcanvas (mobile) ===== #}
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="catOffcanvas" aria-labelledby="catOffcanvasLabel">
+        <div class="offcanvas-header bg-danger text-white">
+            <h5 class="offcanvas-title" id="catOffcanvasLabel">Danh mục</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="list-group list-group-flush">
+                <a href="{{ path('homepage') }}" class="list-group-item list-group-item-action">Trang chủ</a>
+                <a href="{{ path('feature_product') }}" class="list-group-item list-group-item-action">Tất cả sản phẩm</a>
+                <div class="list-group-item bg-light fw-semibold text-uppercase small text-muted">Danh mục</div>
+                {% for c in all_categories() %}
+                    <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="list-group-item list-group-item-action">{{ c.name }}</a>
+                {% else %}
+                    <span class="list-group-item text-muted">Chưa có danh mục</span>
+                {% endfor %}
+                <a href="{{ path('app_news') }}" class="list-group-item list-group-item-action">Tin tức</a>
+                <a href="{{ path('app_contact') }}" class="list-group-item list-group-item-action">Liên hệ</a>
+            </div>
+        </div>
+    </div>
+
+    {# ===== Mini-cart offcanvas ===== #}
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="miniCart" aria-labelledby="miniCartLabel">
+        <div class="offcanvas-header bg-danger text-white">
+            <h5 class="offcanvas-title" id="miniCartLabel">Giỏ hàng</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column">
+            {% if _cart and _cart.getTotalItems() > 0 %}
+                <div class="flex-grow-1 overflow-auto">
+                    {% for item in _cart.getItems() %}
+                        <div class="d-flex align-items-center gap-2 py-2 border-bottom">
+                            <img src="{{ asset('uploads/sanpham/' ~ item.product.photo) }}" alt="{{ item.product.name }}" style="width:48px;height:48px;flex:0 0 48px;object-fit:contain;border:1px solid var(--ts-border);border-radius:6px">
+                            <div class="flex-grow-1 min-w-0">
+                                <div class="line-clamp-1 small">{{ item.product.name }}</div>
+                                <div class="text-muted small">{{ item.quantity }} &times; {{ item.product.price|vnd }}</div>
+                            </div>
+                            <a href="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" class="text-muted" aria-label="Xóa"><i class="bi bi-x-lg"></i></a>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="d-flex justify-content-between fw-bold my-3">
+                    <span>Tổng cộng</span><span class="text-danger">{{ _cart.getAmount()|vnd }}</span>
+                </div>
+                <a href="{{ path('app_cart') }}" class="btn btn-outline-danger mb-2">Xem giỏ hàng</a>
+                <a href="{{ path('app_order') }}" class="btn btn-danger">Thanh toán</a>
+            {% else %}
+                <div class="text-center text-muted my-auto">
+                    <i class="bi bi-cart-x" style="font-size:2.2rem"></i>
+                    <p class="mt-2 mb-0">Giỏ hàng của bạn đang trống.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Flash messages #}
+    <div class="container-fluid px-3 px-xl-5 mt-3">
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ type == 'error' ? 'danger' : (type == 'success' ? 'success' : type) }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <main>{% block body %}{% endblock %}</main>
+
+    <footer class="gv-footer">
+        <div class="container-fluid px-3 px-xl-5">
+            <div class="row g-4">
+                <div class="col-6 col-lg-3">
+                    <h6>VỀ TECHSTORE</h6>
+                    <a href="#">Giới thiệu</a>
+                    <a href="{{ path('app_contact') }}">Liên hệ</a>
+                    <a href="#">Tuyển dụng</a>
+                    <a href="{{ path('app_news') }}">Tin công nghệ</a>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <h6>CHÍNH SÁCH</h6>
+                    <a href="#">Chính sách bảo hành</a>
+                    <a href="#">Chính sách đổi trả</a>
+                    <a href="#">Chính sách giao hàng</a>
+                    <a href="#">Bảo mật thông tin</a>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <h6>HỖ TRỢ</h6>
+                    <a href="#">Hướng dẫn mua hàng</a>
+                    <a href="#">Hướng dẫn thanh toán</a>
+                    <a href="#">Hướng dẫn trả góp</a>
+                    <a href="{{ path('app_my_orders') }}">Tra cứu đơn hàng</a>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <h6>KẾT NỐI</h6>
+                    <p class="small mb-1"><i class="bi bi-headset text-danger"></i> Hotline: <strong>1900 5301</strong></p>
+                    <p class="small mb-2"><i class="bi bi-envelope text-danger"></i> support@techstore.vn</p>
+                    <div class="d-flex gap-3 fs-4 mb-2">
+                        <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+                        <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    </div>
+                    <div class="gv-footer__pay">
+                        <span>VISA</span><span>Mastercard</span><span>MoMo</span><span>VNPay</span><span>COD</span>
+                    </div>
+                </div>
+            </div>
+            <div class="gv-footer__bottom text-center">© 2024 TECHSTORE — Cửa hàng máy tính &amp; linh kiện. Website demo xây dựng bằng Symfony.</div>
+        </div>
+    </footer>
+
+    <style>
+        .gv-search .select2-container { width: 100% !important; }
+        .gv-search .select2-container--default .select2-selection--single { height: 40px !important; border: 0 !important; display: flex; align-items: center; }
+        .gv-search .select2-selection__arrow { display: none; }
+    </style>
+
+    <!-- jQuery (Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Bootstrap 5 bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $('#search').select2({
+            width: '100%',
+            placeholder: 'Bạn cần tìm gì?',
+            minimumInputLength: 2,
             ajax: {
-              url: "{{ path('search_api') }}",
-              data: function (params) {
-                $('#keyword').val(params.term)
-                
-                $('#select2-search-container').html(params.term)
-                var query = {
-                  keyword: params.term,
+                url: "{{ path('search_api') }}",
+                dataType: 'json',
+                data: function (params) { $('#keyword').val(params.term); return { keyword: params.term }; },
+                processResults: function (data) {
+                    return { results: $.map(data, function (obj) { return { id: obj.id, text: obj.name }; }) };
                 }
-                return query;
-              },
-              dataType: 'json',
-              processResults: function (data) {
-                return {results: $.map(data, function (obj) {
-                  return {
-                    id: obj.id,
-                    text: obj.name,
-                    photo:obj.photo
-                  };
-                })}
-                
-              }
-
-              // Additional AJAX parameters go here; see the end of this chapter for the full code of this example
             }
-          })
-          $('#search').on('select2:select', function (e) {
-
-            var data = e.params.data;
-            window.location.href="/feature/"+data.id
         });
-        </script>
+        $('#search').on('select2:select', function (e) { window.location.href = "/feature/" + e.params.data.id; });
+    </script>
+
+    {# Floating compare bar #}
+    {% set _compare = app.session.get('compare')|default([]) %}
+    <div id="compare-bar" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 bg-dark text-white rounded-pill px-3 py-2 shadow d-flex align-items-center gap-3" style="z-index:1070; {{ _compare|length == 0 ? 'display:none' : '' }}">
+        <span><i class="bi bi-arrow-left-right"></i> So sánh (<span id="compare-count">{{ _compare|length }}</span>)</span>
+        <a href="{{ path('app_compare') }}" class="btn btn-sm btn-danger">Xem so sánh</a>
+        <a href="{{ path('app_compare_clear') }}" class="text-white-50" aria-label="Xóa"><i class="bi bi-x-lg"></i></a>
+    </div>
+
+    {# Toast for AJAX add-to-cart #}
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+        <div id="cart-toast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="cart-toast-body">Đã thêm vào giỏ.</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Đóng"></button>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('submit', function (e) {
+        var form = e.target.closest('.add-to-cart-form');
+        if (!form) return;
+        e.preventDefault();
+        fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: new FormData(form) })
+            .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+            .then(function (res) {
+                var toastEl = document.getElementById('cart-toast');
+                var body = document.getElementById('cart-toast-body');
+                if (res.ok && res.d.ok) {
+                    var badge = document.getElementById('cart-count');
+                    if (badge) badge.textContent = res.d.count;
+                    toastEl.classList.remove('bg-danger'); toastEl.classList.add('bg-success');
+                } else {
+                    toastEl.classList.remove('bg-success'); toastEl.classList.add('bg-danger');
+                }
+                body.textContent = res.d.message || 'Có lỗi xảy ra.';
+                bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2500 }).show();
+            })
+            .catch(function () { window.location.href = form.action; });
+    });
+    // Wishlist toggle (AJAX)
+    document.addEventListener('submit', function (e) {
+        var form = e.target.closest('.wishlist-form');
+        if (!form) return;
+        e.preventDefault();
+        fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d.ok) return;
+                var btn = form.querySelector('.gv-wish-btn');
+                var icon = form.querySelector('i');
+                if (btn) btn.classList.toggle('active', d.active);
+                if (icon) { icon.className = 'bi ' + (d.active ? 'bi-heart-fill' : 'bi-heart'); }
+                var wc = document.getElementById('wish-count'); if (wc) wc.textContent = d.count;
+                var toastEl = document.getElementById('cart-toast');
+                document.getElementById('cart-toast-body').textContent = d.message;
+                toastEl.classList.remove('bg-danger'); toastEl.classList.add('bg-success');
+                bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2000 }).show();
+            })
+            .catch(function () { window.location.href = form.action; });
+    });
+    // Compare toggle (AJAX)
+    document.addEventListener('submit', function (e) {
+        var form = e.target.closest('.compare-form');
+        if (!form) return;
+        e.preventDefault();
+        fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                var toastEl = document.getElementById('cart-toast');
+                document.getElementById('cart-toast-body').textContent = d.message;
+                toastEl.classList.remove('bg-success', 'bg-danger'); toastEl.classList.add(d.ok ? 'bg-success' : 'bg-danger');
+                bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2000 }).show();
+                if (!d.ok) return;
+                var btn = form.querySelector('.gv-wish-btn'); if (btn) btn.classList.toggle('active', d.active);
+                var cc = document.getElementById('compare-count'); if (cc) cc.textContent = d.count;
+                var bar = document.getElementById('compare-bar'); if (bar) bar.style.display = d.count > 0 ? '' : 'none';
+            })
+            .catch(function () { window.location.href = form.action; });
+    });
+    </script>
+    {% block javascripts %}{% endblock %}
     </body>
 </html>
