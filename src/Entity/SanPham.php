@@ -21,6 +21,9 @@ class SanPham
     #[Assert\Length(max: 200)]
     private ?string $name = null;
 
+    #[ORM\Column(length: 220, nullable: true)]
+    private ?string $slug = null;
+
     #[ORM\Column]
     #[Assert\NotNull]
     #[Assert\Positive(message: 'Price must be greater than 0.')]
@@ -75,6 +78,30 @@ class SanPham
     public function getName(): ?string
     {
         return $this->name;
+    }
+
+    /** URL slug; falls back to the id so links always work. */
+    public function getSlug(): string
+    {
+        return $this->slug ?: (string) $this->id;
+    }
+
+    public function setSlug(?string $slug): static
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    /** Vietnamese-aware slugify used when saving a product. */
+    public static function slugify(string $text): string
+    {
+        $map = ['à','á','ạ','ả','ã','â','ầ','ấ','ậ','ẩ','ẫ','ă','ằ','ắ','ặ','ẳ','ẵ','è','é','ẹ','ẻ','ẽ','ê','ề','ế','ệ','ể','ễ','ì','í','ị','ỉ','ĩ','ò','ó','ọ','ỏ','õ','ô','ồ','ố','ộ','ổ','ỗ','ơ','ờ','ớ','ợ','ở','ỡ','ù','ú','ụ','ủ','ũ','ư','ừ','ứ','ự','ử','ữ','ỳ','ý','ỵ','ỷ','ỹ','đ'];
+        $to  = ['a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','a','e','e','e','e','e','e','e','e','e','e','e','i','i','i','i','i','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','o','u','u','u','u','u','u','u','u','u','u','u','y','y','y','y','y','d'];
+        $text = str_replace($map, $to, mb_strtolower($text));
+        $text = preg_replace('/[^a-z0-9]+/', '-', $text);
+
+        return trim($text, '-') ?: 'sp';
     }
 
     public function setName(string $name): self
