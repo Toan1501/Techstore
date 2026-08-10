@@ -22,6 +22,7 @@ class CategoryController extends AbstractController
     #[Route('/adcategory', name: 'ad_category')]
     public function index(EntityManagerInterface $em, Request $req, FileUploader $fileUploader): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $sp = new Category();
         $form = $this->createForm(CategoryType::class, $sp);
         $form->handleRequest($req);
@@ -42,44 +43,55 @@ class CategoryController extends AbstractController
         ]);
     }
     #[Route('/category/ds', name: 'app_ds_category')]
-    public function list_cat(EntityManagerInterface $em): Response
+    public function list_cat(\App\Repository\CategoryRepository $categoryRepository): Response
     {
-        $query = $em->createQuery('SELECT cg FROM App\Entity\Category cg');
-        $lSp = $query->getResult();
-        return $this->render('category/list.html.twig', [
-            'data' => $lSp
-        ]);
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        return $this->render('category/list.html.twig', [
+            'data' => $categoryRepository->findAllOrdered(),
+        ]);
     }
     #[Route('/category_ad/{id}', name: 'app_edit_category')]
     public function edit(EntityManagerInterface $em, int $id,Request $req,FileUploader $fileUploader): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $cg = $em->find(Category::class, $id);
-        $form = $this->createForm(CateFormType::class, $cg);
+        $form = $this->createForm(CategoryType::class, $cg);
         $form -> handleRequest($req);
 
         if ($form->isSubmitted() && $form->isValid()){
             $data = $form->getData();
-            
+
             $file = $form-> get("photo")->getData();
-            if ($file){   
+            if ($file){
             $fileName = $fileUploader->upload($file);
             $data -> setPhoto($fileName);
             }
             $cg->setName($data->getName());
             $em->flush();
-            return new RedirectResponse($this->url->generate('app_ds_category'));
+            return new RedirectResponse($this->urlGenerator->generate('app_ds_category'));
         }
         return $this->render('category/index.html.twig', [
             'category_form' => $form->createView(),
         ]);
     }
-    #[Route('/category/{id}/delete', name: 'app_delete_category')]
+    #[Route('/category/{id}/delete', name: 'app_delete_category', methods: ['POST'])]
     public function deletecat(EntityManagerInterface $em, int $id,Request $req): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        if (!$this->isCsrfTokenValid('delete_category_' . $id, $req->request->get('_token'))) {
+            return new RedirectResponse($this->urlGenerator->generate('app_ds_category'));
+        }
         $cg = $em->find(Category::class, $id);
-        $em->remove($cg);
-        $em->flush();
-        return new RedirectResponse($this->url->generate('app_ds_category'));
+        if ($cg) {
+            try {
+                $em->remove($cg);
+                $em->flush();
+                $this->addFlash('success', 'Đã xóa danh mục.');
+            } catch (\Throwable $e) {
+                $this->addFlash('error', 'Không thể xóa: danh mục còn sản phẩm.');
+            }
+        }
+        return new RedirectResponse($this->urlGenerator->generate('app_ds_category'));
     }
 }

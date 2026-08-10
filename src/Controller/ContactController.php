@@ -33,7 +33,7 @@ class ContactController extends AbstractController
     }
 
     
-    #[Route('/contact/success", name="contact_success')]    
+    #[Route('/contact/success', name: 'contact_success')]
     public function contactSuccess(): Response
     {
         return $this->render('contact/success.html.twig');

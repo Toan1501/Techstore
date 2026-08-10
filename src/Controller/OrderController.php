@@ -7,6 +7,9 @@ use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\SanPham;
 use App\Form\OrderFormType;
+use App\Repository\OrderRepository;
+use App\Service\OrderMailer;
+use App\Service\ShippingCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,48 +25,160 @@ class OrderController extends AbstractController
     {
     }
 
+    #[Route('/my-orders', name: 'app_my_orders')]
+    public function myOrders(OrderRepository $orderRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        return $this->render('homepage/orders.html.twig', [
+            'orders' => $orderRepository->findByUser($this->getUser()),
+        ]);
+    }
+
+    #[Route('/my-orders/{id}', name: 'app_order_detail_customer', requirements: ['id' => '\d+'])]
+    public function customerOrderDetail(Order $order): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if ($order->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+
+        return $this->render('homepage/order_detail.html.twig', ['order' => $order]);
+    }
+
+    #[Route('/my-orders/{id}/cancel', name: 'app_order_cancel', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function cancelOrder(Order $order, Request $request, EntityManagerInterface $em): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if ($order->getUser() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+        if (!$this->isCsrfTokenValid('cancel_order_' . $order->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token không hợp lệ.');
+            return $this->redirectToRoute('app_order_detail_customer', ['id' => $order->getId()]);
+        }
+        if ($order->getStatus() !== Order::STATUS_PENDING) {
+            $this->addFlash('error', 'Chỉ có thể hủy đơn đang chờ xử lý.');
+            return $this->redirectToRoute('app_order_detail_customer', ['id' => $order->getId()]);
+        }
+
+        // restore stock
+        foreach ($order->getItems() as $item) {
+            if ($item->getProduct()) {
+                $item->getProduct()->setStock((int) $item->getProduct()->getStock() + (int) $item->getQuantity());
+            }
+        }
+        $order->setStatus(Order::STATUS_CANCELLED);
+        $order->setUpdatedAt(new \DateTime());
+        $em->flush();
+
+        $this->addFlash('success', 'Đã hủy đơn hàng #' . $order->getId() . '.');
+
+        return $this->redirectToRoute('app_order_detail_customer', ['id' => $order->getId()]);
+    }
+
     #[Route('/order', name: 'app_order')]
-    public function index(EntityManagerInterface $em, Request $req): Response
+    public function index(EntityManagerInterface $em, Request $req, ShippingCalculator $shipping, OrderMailer $mailer, \App\Repository\CouponRepository $couponRepo): Response
     {
         $order = new Order();
-        $message = $req->query->get('message');
         $form = $this->createForm(OrderFormType::class, $order);
         $form->handleRequest($req);
         $session = $req->getSession();
         $cart_manager = $session->get('cart', new CartManager());
 
+        // Resolve applied coupon (session) against the current cart subtotal.
+        $subtotalNow = $cart_manager->getAmount();
+        $appliedCoupon = null;
+        $discountNow = 0.0;
+        if ($code = $session->get('coupon')) {
+            $c = $couponRepo->findByCode($code);
+            if ($c && $c->isValidNow() && $subtotalNow >= $c->getMinOrder()) {
+                $appliedCoupon = $c;
+                $discountNow = $c->computeDiscount($subtotalNow);
+            } else {
+                $session->remove('coupon');
+            }
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
+            if (empty($cart_manager->getItems())) {
+                $this->addFlash('error', 'Your cart is empty.');
+                return new RedirectResponse($this->urlGenerator->generate('app_cart'));
+            }
+
             $order = $form->getData();
             $em->getConnection()->beginTransaction();
             try {
-                $order->setTotalPrice($cart_manager->getAmount());
-                $order->setStatus(false);
+                $subtotal = $cart_manager->getAmount();
+                $fee = $shipping->calculate($order->getShippingProvince(), $subtotal);
+                $discount = $appliedCoupon ? $appliedCoupon->computeDiscount($subtotal) : 0.0;
+
+                $order->setShippingFee($fee);
+                $order->setDiscount($discount);
+                $order->setCouponCode($appliedCoupon ? $appliedCoupon->getCode() : null);
+                $order->setTotalPrice($subtotal - $discount + $fee);
+                $order->setStatus('pending');
+                $order->setCreatedAt(new \DateTime());
+                $order->setUser($this->getUser());
                 $em->persist($order);
-                $cart_items = $cart_manager->getItems();
-                foreach ($cart_items as $key => $cart_item) {
+
+                foreach ($cart_manager->getItems() as $cart_item) {
+                    $product = $em->find(SanPham::class, $cart_item->getProduct()->getId());
+                    if (!$product) {
+                        throw new Exception('Product no longer available.');
+                    }
+                    if ((int) $product->getStock() < (int) $cart_item->quantity) {
+                        throw new Exception('Not enough stock for "' . $product->getName() . '".');
+                    }
                     $orderItem = new OrderItem();
-                    $product = $em->find(SanPham::class,$cart_item->getProduct()->getId());
                     $orderItem->setProduct($product);
                     $orderItem->setQuantity($cart_item->quantity);
-                    $orderItem->setPrice($cart_item->getProduct()->getPrice());
+                    $orderItem->setPrice($product->getPrice());
                     $orderItem->setOrderRef($order);
                     $em->persist($orderItem);
-                    $em->flush();
+                    $product->setStock((int) $product->getStock() - (int) $cart_item->quantity);
                 }
+
                 $em->flush();
                 $em->getConnection()->commit();
                 $session->set('cart', new CartManager());
+                $session->set('last_order_id', $order->getId());
+                $session->remove('coupon');
             } catch (Exception $e) {
                 $em->getConnection()->rollBack();
-                return new RedirectResponse($this->urlGenerator->generate('app_order',["message"=>"Error! Unable to create order"]));
+                $this->addFlash('error', 'Unable to create order: ' . $e->getMessage());
+                return new RedirectResponse($this->urlGenerator->generate('app_cart'));
             }
-            return new RedirectResponse($this->urlGenerator->generate('homepage',["message"=>"Successful order creation"]));
+
+            $mailer->sendConfirmation($order);
+
+            return new RedirectResponse($this->urlGenerator->generate('app_order_confirmation', ['id' => $order->getId()]));
         }
 
         return $this->render('order/index.html.twig', [
             'order_form' => $form->createView(),
             'cart_manager' => $cart_manager,
-            'message' => $message
+            'shipping_fee_map' => $shipping->feeMap(),
+            'free_ship_threshold' => $shipping->freeThreshold(),
+            'applied_coupon' => $appliedCoupon,
+            'discount' => $discountNow,
+        ]);
+    }
+
+    #[Route('/order/{id}/confirmation', name: 'app_order_confirmation', requirements: ['id' => '\d+'])]
+    public function confirmation(Order $order, Request $req): Response
+    {
+        // Access: the owner (if logged in) or the buyer who just placed it (session token).
+        $user = $this->getUser();
+        $ownsIt = $user && $order->getUser() && $order->getUser() === $user;
+        $justPlaced = $req->getSession()->get('last_order_id') === $order->getId();
+
+        if (!$ownsIt && !$justPlaced) {
+            throw $this->createAccessDeniedException('You cannot view this order.');
+        }
+
+        return $this->render('order/confirmation.html.twig', [
+            'order' => $order,
         ]);
     }
 }

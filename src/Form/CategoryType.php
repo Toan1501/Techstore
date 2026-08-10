@@ -14,8 +14,8 @@ class CategoryType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('name', TextType::class)
-            ->add('photo', FileType::class, array('label' => 'Photo (png, jpeg)', 'data_class' => null, 'required' => false))
+            ->add('name', TextType::class, ['label' => 'Tên danh mục'])
+            ->add('photo', FileType::class, ['label' => 'Ảnh (png, jpeg)', 'data_class' => null, 'required' => false])
         ;
     }
 

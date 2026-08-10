@@ -2,97 +2,147 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\SanPham;
 use App\Entity\Category;
-use App\Entity\User;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use App\Entity\SanPham;
+use App\Repository\CategoryRepository;
+use App\Repository\ReviewRepository;
+use App\Repository\SanPhamRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use App\Form\UserType;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
 class HomepageController extends AbstractController
 {
-    private $entityManager;
+    public function __construct(
+        private SanPhamRepository $sanPhamRepository,
+        private CategoryRepository $categoryRepository,
+        private ReviewRepository $reviewRepository,
+    ) {
+    }
 
-    public function __construct(EntityManagerInterface $entityManager)
+    /** Build a productId => {average, count} map for a set of products (single query). */
+    private function ratingsFor(iterable $products): array
     {
-        $this->entityManager = $entityManager;
+        $ids = [];
+        foreach ($products as $p) {
+            $ids[] = $p->getId();
+        }
+
+        return $this->reviewRepository->getRatingsMap($ids);
     }
 
     #[Route('/feature', name: 'feature_product')]
-    public function viewdetail(EntityManagerInterface $em): Response
+    public function viewdetail(PaginatorInterface $paginator, Request $request): Response
     {
-        $query = $em->createQuery('SELECT sp FROM App\Entity\SanPham sp');
-        $lSp = $query->getResult();
-                                
+        $pagination = $paginator->paginate(
+            $this->sanPhamRepository->queryFiltered(['sort' => 'newest']),
+            $request->query->getInt('page', 1),
+            12
+        );
+
         return $this->render('homepage/sanpham.html.twig', [
-            "data"=>$lSp
+            'data' => $pagination,
+            'ratings' => $this->ratingsFor($pagination),
+            'heading' => 'All products',
         ]);
     }
+
     #[Route('/category', name: 'app_category')]
-    public function viewCate(EntityManagerInterface $em): Response
+    public function viewCate(): Response
     {
-        $query = $em->createQuery('SELECT category FROM App\Entity\Category category');
-        $category = $query->getResult();
-                                
         return $this->render('homepage/category.html.twig', [
-            'category' => $category,
+            'category' => $this->categoryRepository->findAllOrdered(),
         ]);
     }
-    #[Route('/feature/{id}', name: 'app_detailsp')]
-    public function detail(EntityManagerInterface $em, int $id): Response
-    {
-        $sp = $em->find(SanPham::class, $id);
 
+    #[Route('/feature/{id}', name: 'app_detailsp', requirements: ['id' => '\d+'])]
+    public function detail(SanPham $product): Response
+    {
         return $this->render('homepage/detail.html.twig', [
-            'data' => $sp,
+            'data' => $product,
+            'reviews' => $this->reviewRepository->findByProduct($product),
+            'rating' => $this->reviewRepository->getRatingSummary($product),
+            'related' => $this->sanPhamRepository->findRelated($product, 4),
         ]);
     }
-    
-    #[Route('/', name: 'homepage')]
-    public function cate(EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, PaginatorInterface $paginator, Request $request): Response
-    {
-        $query = $em->createQuery('SELECT category FROM App\Entity\Category category');
-        $category = $query->getResult();
 
-        $query = $em->createQuery('SELECT sp FROM App\Entity\SanPham sp');
-        $lSp = $query->getResult();
+    #[Route('/', name: 'homepage')]
+    public function cate(PaginatorInterface $paginator, Request $request, \App\Repository\BannerRepository $bannerRepository): Response
+    {
+        $sort = $request->query->get('sort', 'newest');
+        if (!in_array($sort, SanPhamRepository::SORTS, true)) {
+            $sort = 'newest';
+        }
+
+        $categoryId = $request->query->getInt('category') ?: null;
+        $filters = [
+            'sort' => $sort,
+            'category' => $categoryId,
+            'min_price' => $request->query->get('min_price'),
+            'max_price' => $request->query->get('max_price'),
+            'in_stock' => $request->query->getBoolean('in_stock'),
+        ];
 
         $pagination = $paginator->paginate(
-            $lSp, 
+            $this->sanPhamRepository->queryFiltered($filters),
             $request->query->getInt('page', 1),
             8
         );
 
+        $deals = $this->sanPhamRepository->findDeals(6);
+        $categories = $this->categoryRepository->findAllOrdered();
+
+        // Per-category product sections (a few products each) for the homepage.
+        $sections = [];
+        $sectionProducts = [];
+        foreach ($categories as $c) {
+            $prods = $this->sanPhamRepository->findBy(['cate' => $c], ['id' => 'DESC'], 6);
+            if ($prods) {
+                $sections[] = ['category' => $c, 'products' => $prods];
+                $sectionProducts = array_merge($sectionProducts, $prods);
+            }
+        }
+
         return $this->render('homepage/index.html.twig', [
-            'category' => $category,
+            'category' => $categories,
             'data' => $pagination,
+            'sort' => $sort,
+            'ratings' => $this->ratingsFor($pagination),
+            'deals' => $deals,
+            'deals_ratings' => $this->ratingsFor($deals),
+            'sections' => $sections,
+            'section_ratings' => $this->ratingsFor($sectionProducts),
+            'banners' => $bannerRepository->findActiveOrdered(),
+            'price_bounds' => $this->sanPhamRepository->priceBounds(),
+            'filters' => $filters,
         ]);
     }
 
-    #[Route('/category/{id}', name: 'app_productofcate')]
-    public function viewCategoryProducts(EntityManagerInterface $em, int $id, Request $request): Response
+    #[Route('/category/{id}', name: 'app_productofcate', requirements: ['id' => '\d+'])]
+    public function viewCategoryProducts(Category $category, PaginatorInterface $paginator, Request $request): Response
     {
-        $cate = $em->find(Category::class, $id);
-        $lSp = $cate->getSanPhams();
+        $pagination = $paginator->paginate(
+            $this->sanPhamRepository->queryFiltered(['category' => $category, 'sort' => 'newest']),
+            $request->query->getInt('page', 1),
+            12
+        );
+
         return $this->render('homepage/sanpham.html.twig', [
-            "data"=>$lSp
+            'data' => $pagination,
+            'ratings' => $this->ratingsFor($pagination),
+            'heading' => 'Category: ' . $category->getName(),
         ]);
     }
 
     #[Route('/profile', name: 'profile')]
-    public function profile()
+    public function profile(): Response
     {
-        $user = $this->getUser();
-
         return $this->render('homepage/profile.html.twig', [
-            'user' => $user,
+            'user' => $this->getUser(),
         ]);
     }
 
@@ -107,7 +157,9 @@ class HomepageController extends AbstractController
             $user->setAddress($request->request->get('address'));
             $user->setPhonenumber($request->request->get('phone_number'));
             $entityManager->flush();
-        
+
+            $this->addFlash('success', 'Your profile has been updated.');
+
             return $this->redirectToRoute('profile');
         }
 
@@ -117,33 +169,38 @@ class HomepageController extends AbstractController
     }
 
     #[Route('/search', name: 'search_products')]
-    public function search(Request $request): Response
+    public function search(Request $request, PaginatorInterface $paginator): Response
     {
         $keyword = $request->query->get('keyword');
+        $pagination = $paginator->paginate(
+            $this->sanPhamRepository->queryByKeyword($keyword),
+            $request->query->getInt('page', 1),
+            12
+        );
 
-        $products = $this->entityManager->getRepository(SanPham::class)->findByKeyword($keyword);
-
-        return $this->render('homepage/sanpham.html.twig', ['data' => $products]);
+        return $this->render('homepage/sanpham.html.twig', [
+            'data' => $pagination,
+            'ratings' => $this->ratingsFor($pagination),
+            'heading' => 'Search: "' . $keyword . '"',
+        ]);
     }
-    #[Route('/search-api',methods: ['GET'],name:'search_api')]
-    public function apiSearch(Request $request)
+
+    #[Route('/search-api', name: 'search_api', methods: ['GET'])]
+    public function apiSearch(Request $request): JsonResponse
     {
         $keyword = $request->query->get('keyword');
+        $products = $this->sanPhamRepository->findByKeywordWithLimit($keyword);
 
-        $products = $this->entityManager->getRepository(SanPham::class)
-        ->findByKeywordWithLimit($keyword);
         $results = [];
-
-        foreach($products as $product)
-        {
+        foreach ($products as $product) {
             $results[] = [
-                'id'=>$product->getId(),
-                'name'=>$product->getName(),
-                'photo'=>$product->getPhoto(),
-                'price'=>$product->getPrice(),
+                'id' => $product->getId(),
+                'name' => $product->getName(),
+                'photo' => $product->getPhoto(),
+                'price' => $product->getPrice(),
             ];
         }
-       return new JsonResponse($results);
-       
+
+        return new JsonResponse($results);
     }
 }
