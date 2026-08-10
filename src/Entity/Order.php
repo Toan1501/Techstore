@@ -7,11 +7,27 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
 class Order
 {
+    public const STATUS_PENDING   = 'pending';
+    public const STATUS_CONFIRMED = 'confirmed';
+    public const STATUS_SHIPPING  = 'shipping';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_CANCELLED = 'cancelled';
+
+    /** All selectable order statuses => Bootstrap badge colour */
+    public const STATUSES = [
+        self::STATUS_PENDING   => 'warning',
+        self::STATUS_CONFIRMED => 'info',
+        self::STATUS_SHIPPING  => 'primary',
+        self::STATUS_COMPLETED => 'success',
+        self::STATUS_CANCELLED => 'danger',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -30,16 +46,56 @@ class Order
     private ?\DateTimeInterface $updatedAt = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Please enter your name.')]
     private ?string $customer_name = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Please enter your delivery address.')]
     private ?string $customer_address = null;
 
     #[ORM\Column(length: 12)]
+    #[Assert\NotBlank(message: 'Please enter your phone number.')]
+    #[Assert\Regex(pattern: '/^[0-9]{9,12}$/', message: 'Phone number must be 9–12 digits.')]
     private ?string $customer_phone = null;
+
+    #[ORM\Column(length: 150, nullable: true)]
+    #[Assert\NotBlank(message: 'Please enter your email.')]
+    #[Assert\Email(message: 'Please enter a valid email address.')]
+    private ?string $customer_email = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Please choose your province/city.')]
+    private ?string $shipping_province = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Please enter your district.')]
+    private ?string $shipping_district = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Assert\NotBlank(message: 'Please enter your ward.')]
+    private ?string $shipping_ward = null;
+
+    #[ORM\Column(nullable: true, options: ['default' => 0])]
+    private ?float $shipping_fee = 0;
+
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $payment_method = 'cod';
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(max: 500)]
+    private ?string $note = null;
+
+    #[ORM\Column(length: 40, nullable: true)]
+    private ?string $couponCode = null;
+
+    #[ORM\Column(nullable: true, options: ['default' => 0])]
+    private ?float $discount = 0;
 
     #[ORM\Column]
     private ?float $total_price = null;
+
+    #[ORM\ManyToOne]
+    private ?User $user = null;
 
     public function __construct()
     {
@@ -79,10 +135,13 @@ class Order
 
     public function removeItem(OrderItem $item): self
     {
-        foreach ($this->getItems() as $item) {
-            $this->removeItem($item);
+        if ($this->items->removeElement($item)) {
+            // set the owning side to null (unless already changed)
+            if ($item->getOrderRef() === $this) {
+                $item->setOrderRef(null);
+            }
         }
-    
+
         return $this;
     }
 
@@ -96,6 +155,24 @@ class Order
         $this->status = $status;
 
         return $this;
+    }
+
+    /** Bootstrap contextual colour for the current status (for badges). */
+    public function getStatusColor(): string
+    {
+        return self::STATUSES[$this->status] ?? 'secondary';
+    }
+
+    /** Vietnamese label for the current status. */
+    public function getStatusLabel(): string
+    {
+        return [
+            self::STATUS_PENDING   => 'Chờ xử lý',
+            self::STATUS_CONFIRMED => 'Đã xác nhận',
+            self::STATUS_SHIPPING  => 'Đang giao',
+            self::STATUS_COMPLETED => 'Hoàn thành',
+            self::STATUS_CANCELLED => 'Đã hủy',
+        ][$this->status] ?? ($this->status ?? '');
     }
 
     public function getCreatedAt(): ?\DateTimeInterface
@@ -178,5 +255,150 @@ class Order
         $this->total_price = $total_price;
 
         return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getCustomerEmail(): ?string
+    {
+        return $this->customer_email;
+    }
+
+    public function setCustomerEmail(?string $customer_email): static
+    {
+        $this->customer_email = $customer_email;
+
+        return $this;
+    }
+
+    public function getShippingProvince(): ?string
+    {
+        return $this->shipping_province;
+    }
+
+    public function setShippingProvince(?string $v): static
+    {
+        $this->shipping_province = $v;
+
+        return $this;
+    }
+
+    public function getShippingDistrict(): ?string
+    {
+        return $this->shipping_district;
+    }
+
+    public function setShippingDistrict(?string $v): static
+    {
+        $this->shipping_district = $v;
+
+        return $this;
+    }
+
+    public function getShippingWard(): ?string
+    {
+        return $this->shipping_ward;
+    }
+
+    public function setShippingWard(?string $v): static
+    {
+        $this->shipping_ward = $v;
+
+        return $this;
+    }
+
+    public function getShippingFee(): ?float
+    {
+        return $this->shipping_fee;
+    }
+
+    public function setShippingFee(?float $shipping_fee): static
+    {
+        $this->shipping_fee = $shipping_fee;
+
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?string
+    {
+        return $this->payment_method;
+    }
+
+    public function setPaymentMethod(?string $payment_method): static
+    {
+        $this->payment_method = $payment_method;
+
+        return $this;
+    }
+
+    public function getPaymentMethodLabel(): string
+    {
+        return match ($this->payment_method) {
+            'bank_transfer' => 'Chuyển khoản ngân hàng',
+            default => 'Thanh toán khi nhận hàng (COD)',
+        };
+    }
+
+    public function getNote(): ?string
+    {
+        return $this->note;
+    }
+
+    public function setNote(?string $note): static
+    {
+        $this->note = $note;
+
+        return $this;
+    }
+
+    public function getCouponCode(): ?string
+    {
+        return $this->couponCode;
+    }
+
+    public function setCouponCode(?string $couponCode): static
+    {
+        $this->couponCode = $couponCode;
+
+        return $this;
+    }
+
+    public function getDiscount(): ?float
+    {
+        return $this->discount;
+    }
+
+    public function setDiscount(?float $discount): static
+    {
+        $this->discount = $discount;
+
+        return $this;
+    }
+
+    /** Goods subtotal = total + discount − shipping. */
+    public function getSubtotal(): float
+    {
+        return (float) $this->total_price + (float) $this->discount - (float) $this->shipping_fee;
+    }
+
+    /** Human-readable full delivery address. */
+    public function getFullAddress(): string
+    {
+        return implode(', ', array_filter([
+            $this->customer_address,
+            $this->shipping_ward,
+            $this->shipping_district,
+            $this->shipping_province,
+        ]));
     }
 }

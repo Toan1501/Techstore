@@ -39,6 +39,93 @@ class OrderRepository extends ServiceEntityRepository
         }
     }
 
+    /** @return Order[] All orders, newest first. */
+    public function findAllOrdered(): array
+    {
+        return $this->createQueryBuilder('o')
+            ->orderBy('o.createdAt', 'DESC')
+            ->addOrderBy('o.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /** Total revenue from completed orders. */
+    public function totalRevenue(): float
+    {
+        return (float) $this->createQueryBuilder('o')
+            ->select('COALESCE(SUM(o.total_price), 0)')
+            ->andWhere('o.status = :s')->setParameter('s', Order::STATUS_COMPLETED)
+            ->getQuery()->getSingleScalarResult();
+    }
+
+    /** @return array<string,int> status => count */
+    public function countByStatusMap(): array
+    {
+        $rows = $this->createQueryBuilder('o')
+            ->select('o.status AS status', 'COUNT(o.id) AS cnt')
+            ->groupBy('o.status')
+            ->getQuery()->getScalarResult();
+
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r['status'] ?? 'pending'] = (int) $r['cnt'];
+        }
+
+        return $map;
+    }
+
+    /**
+     * Revenue bucketed per day for the last $days days (zero-filled).
+     *
+     * @return array<string,float> 'Y-m-d' => revenue
+     */
+    public function revenueByDay(int $days = 14): array
+    {
+        $from = new \DateTime('-' . ($days - 1) . ' days');
+        $from->setTime(0, 0, 0);
+
+        $rows = $this->createQueryBuilder('o')
+            ->select('o.createdAt AS createdAt', 'o.total_price AS total')
+            ->andWhere('o.createdAt >= :from')->setParameter('from', $from)
+            ->getQuery()->getScalarResult();
+
+        $buckets = [];
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $buckets[(new \DateTime("-$i days"))->format('Y-m-d')] = 0.0;
+        }
+        foreach ($rows as $r) {
+            $d = $r['createdAt'] instanceof \DateTimeInterface
+                ? $r['createdAt']->format('Y-m-d')
+                : substr((string) $r['createdAt'], 0, 10);
+            if (isset($buckets[$d])) {
+                $buckets[$d] += (float) $r['total'];
+            }
+        }
+
+        return $buckets;
+    }
+
+    /** @return Order[] Newest orders. */
+    public function findRecent(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('o')
+            ->orderBy('o.createdAt', 'DESC')->addOrderBy('o.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()->getResult();
+    }
+
+    /** @return Order[] Orders belonging to a given user, newest first. */
+    public function findByUser($user): array
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.user = :user')
+            ->setParameter('user', $user)
+            ->orderBy('o.createdAt', 'DESC')
+            ->addOrderBy('o.id', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Order[] Returns an array of Order objects
 //     */

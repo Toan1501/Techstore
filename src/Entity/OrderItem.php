@@ -73,7 +73,10 @@ class OrderItem
     }
     public function getTotal(): float
     {
-        return $this->getProduct()->getPrice() * $this->getQuantity();
+        // Use the price captured at order time (snapshot), not the current product price
+        $unitPrice = $this->price ?? $this->getProduct()->getPrice();
+
+        return $unitPrice * $this->getQuantity();
     }
 
     public function getPrice(): ?float

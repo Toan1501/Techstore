@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\SanPham;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 
@@ -40,13 +41,124 @@ class SanPhamRepository extends ServiceEntityRepository
         }
     }
 
-    public function findByKeyword($keyword)
+    /** Allowed sort keys for the product listing. */
+    public const SORTS = ['newest', 'price_asc', 'price_desc', 'name'];
+
+    /** @return SanPham[] All products, newest first. */
+    public function findAllNewestFirst(): array
     {
-        return $this->createQueryBuilder('s')
-            ->where('s.name LIKE :keyword')
-            ->setParameter('keyword', '%'.$keyword.'%')
+        return $this->findBy([], ['id' => 'DESC']);
+    }
+
+    /** Build a Query for all products ordered by the given (already validated) sort key. */
+    public function queryBySort(string $sort): Query
+    {
+        return $this->queryFiltered(['sort' => $sort]);
+    }
+
+    /**
+     * Build a filtered + sorted Query for the product listing.
+     * Supported keys: category (Category|id), min_price, max_price, in_stock (bool), sort.
+     */
+    public function queryFiltered(array $filters): Query
+    {
+        $qb = $this->createQueryBuilder('sp');
+
+        if (!empty($filters['category'])) {
+            $qb->andWhere('sp.cate = :cat')->setParameter('cat', $filters['category']);
+        }
+        if (isset($filters['min_price']) && $filters['min_price'] !== '' && $filters['min_price'] !== null) {
+            $qb->andWhere('sp.price >= :minp')->setParameter('minp', (float) $filters['min_price']);
+        }
+        if (isset($filters['max_price']) && $filters['max_price'] !== '' && $filters['max_price'] !== null) {
+            $qb->andWhere('sp.price <= :maxp')->setParameter('maxp', (float) $filters['max_price']);
+        }
+        if (!empty($filters['in_stock'])) {
+            $qb->andWhere('sp.stock > 0');
+        }
+
+        switch ($filters['sort'] ?? 'newest') {
+            case 'price_asc':
+                $qb->orderBy('sp.price', 'ASC');
+                break;
+            case 'price_desc':
+                $qb->orderBy('sp.price', 'DESC');
+                break;
+            case 'name':
+                $qb->orderBy('sp.name', 'ASC');
+                break;
+            default:
+                $qb->orderBy('sp.id', 'DESC');
+        }
+
+        return $qb->getQuery();
+    }
+
+    /** @return array{min: float, max: float} Lowest and highest product price. */
+    public function priceBounds(): array
+    {
+        $row = $this->createQueryBuilder('sp')
+            ->select('MIN(sp.price) AS mn', 'MAX(sp.price) AS mx')
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'min' => (float) ($row['mn'] ?? 0),
+            'max' => (float) ($row['mx'] ?? 0),
+        ];
+    }
+
+    /** @return SanPham[] Products at or below a low-stock threshold. */
+    public function findLowStock(int $threshold = 5, int $limit = 10): array
+    {
+        return $this->createQueryBuilder('sp')
+            ->andWhere('sp.stock <= :t')->setParameter('t', $threshold)
+            ->orderBy('sp.stock', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()->getResult();
+    }
+
+    /** @return SanPham[] Discounted products (priceOld set and higher than price). */
+    public function findDeals(int $limit = 6): array
+    {
+        return $this->createQueryBuilder('sp')
+            ->andWhere('sp.priceOld IS NOT NULL')
+            ->andWhere('sp.priceOld > sp.price')
+            ->orderBy('sp.id', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /** @return SanPham[] Up to $limit products in the same category, excluding $product. */
+    public function findRelated(SanPham $product, int $limit = 4): array
+    {
+        if (!$product->getCate()) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('sp')
+            ->andWhere('sp.cate = :cat')->setParameter('cat', $product->getCate())
+            ->andWhere('sp.id != :id')->setParameter('id', $product->getId())
+            ->orderBy('sp.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByKeyword($keyword)
+    {
+        return $this->queryByKeyword($keyword)->getResult();
+    }
+
+    /** Query for products matching a keyword in name or brand (for pagination). */
+    public function queryByKeyword(?string $keyword): Query
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.name LIKE :keyword OR s.brand LIKE :keyword')
+            ->setParameter('keyword', '%'.$keyword.'%')
+            ->orderBy('s.id', 'DESC')
+            ->getQuery();
     }
     
     public function findByKeywordWithLimit($keyword,$limit=5,$page=1)
