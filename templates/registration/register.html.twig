@@ -25,6 +25,7 @@
             {{ form_start(registrationForm) }}
                 <div class="row g-3">
                     <div class="col-12">{{ ui.field(registrationForm.username, 'person', 'Tên đăng nhập') }}</div>
+                    <div class="col-12">{{ ui.field(registrationForm.email, 'envelope', 'Email') }}</div>
                     <div class="col-md-6">{{ ui.field(registrationForm.first_name, 'person-badge', 'Họ') }}</div>
                     <div class="col-md-6">{{ ui.field(registrationForm.last_name, 'person-badge', 'Tên') }}</div>
                     <div class="col-12">{{ ui.field(registrationForm.address, 'geo-alt', 'Địa chỉ') }}</div>

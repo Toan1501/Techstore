@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Quên mật khẩu — TECHSTORE{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width:460px">
+    <div class="auth-card">
+        <div class="auth-card__head">
+            <h1><i class="bi bi-key me-1"></i> Quên mật khẩu</h1>
+            <p>Nhập email để nhận liên kết đặt lại mật khẩu</p>
+        </div>
+        <div class="auth-card__body">
+            {% for flash_error in app.flashes('reset_password_error') %}
+                <div class="alert alert-danger py-2" role="alert">{{ flash_error }}</div>
+            {% endfor %}
+
+            {{ form_start(requestForm) }}
+                <div class="mb-3">
+                    {{ form_label(requestForm.email, 'Email') }}
+                    <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-envelope"></i></span>{{ form_widget(requestForm.email, {attr: {class: 'form-control', placeholder: 'email@example.com'}}) }}</div>
+                    {{ form_errors(requestForm.email) }}
+                </div>
+                <p class="text-muted small mb-3">Chúng tôi sẽ gửi cho bạn một liên kết để đặt lại mật khẩu.</p>
+                <button class="btn btn-danger btn-lg-cta w-100" type="submit"><i class="bi bi-send"></i> Gửi liên kết đặt lại</button>
+            {{ form_end(requestForm) }}
+
+            <p class="text-center mt-3 mb-0 small"><a href="{{ path('app_login') }}" class="fw-semibold text-danger">&larr; Quay lại đăng nhập</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

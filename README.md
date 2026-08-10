@@ -29,7 +29,7 @@ Website thương mại điện tử (e-commerce) bán máy tính, laptop, PC gam
 - Giỏ hàng (mini-cart), **yêu thích**, **so sánh sản phẩm**
 - Thanh toán: địa chỉ VN (Tỉnh/Quận/Phường), phí ship tự tính, **mã giảm giá**
 - Phương thức: **COD**, **chuyển khoản**, **Ví MoMo online**
-- Tài khoản: đăng ký/đăng nhập, đơn hàng của tôi, chi tiết đơn + timeline trạng thái, hủy đơn
+- Tài khoản: đăng ký (có email)/đăng nhập, **quên & đặt lại mật khẩu qua email**, đơn hàng của tôi, chi tiết đơn + timeline trạng thái, hủy đơn
 
 **Quản trị (admin)**
 - Dashboard: thống kê + **biểu đồ doanh thu**
@@ -124,6 +124,7 @@ php bin/phpunit
   ```sql
   ALTER USER 'user'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'matkhau';
   ```
+- **Đặt lại mật khẩu** gửi email qua `MAILER_DSN`. Mặc định `null` (không gửi thật) — cấu hình SMTP thật trong `.env.local`, ví dụ Gmail: `MAILER_DSN=smtp://user:app_password@smtp.gmail.com:587`. Luồng tạo token vẫn hoạt động; chỉ khâu gửi email cần SMTP.
 - **MoMo IPN** (webhook) cần URL công khai để MoMo gọi được; trên localhost dùng [ngrok](https://ngrok.com) để test. Đường dẫn `return` (trên trình duyệt) vẫn hoạt động bình thường.
 - Nếu chưa cấu hình MoMo, checkout vẫn dùng được **COD / chuyển khoản** (MoMo tự vô hiệu).
 - Cấu hình cửa hàng (hotline, số tài khoản, phí ship…) chỉnh trong **Admin → Cài đặt cửa hàng**.

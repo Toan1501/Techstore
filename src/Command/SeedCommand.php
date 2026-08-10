@@ -48,6 +48,7 @@ class SeedCommand extends Command
         // 2) Users
         $admin = (new User())
             ->setUsername('admin')
+            ->setEmail('admin@techstore.vn')
             ->setRoles(['ROLE_ADMIN'])
             ->setFirstName('Store')->setLastName('Admin')
             ->setAddress('Techstore HQ')->setPhonenumber('0900000000');
@@ -56,6 +57,7 @@ class SeedCommand extends Command
 
         $customer = (new User())
             ->setUsername('customer')
+            ->setEmail('customer@techstore.vn')
             ->setRoles(['ROLE_USER'])
             ->setFirstName('Nguyen')->setLastName('Van A')
             ->setAddress('123 Lê Lợi')->setPhonenumber('0911111111');

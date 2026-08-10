@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Đã gửi email đặt lại mật khẩu — TECHSTORE{% endblock %}
+
+{% block body %}
+<div class="container py-5" style="max-width:520px">
+    <div class="auth-card">
+        <div class="auth-card__head">
+            <h1><i class="bi bi-envelope-check me-1"></i> Kiểm tra email</h1>
+        </div>
+        <div class="auth-card__body text-center">
+            <p class="mb-2">Nếu tồn tại tài khoản khớp với email của bạn, chúng tôi vừa gửi một email chứa liên kết để đặt lại mật khẩu.</p>
+            {% if resetToken is defined %}
+            <p class="text-muted small mb-3">Liên kết sẽ hết hạn sau {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.</p>
+            {% endif %}
+            <p class="text-muted small mb-3">Không nhận được email? Kiểm tra hộp thư rác hoặc <a href="{{ path('app_forgot_password_request') }}" class="text-danger">thử lại</a>.</p>
+            <a href="{{ path('app_login') }}" class="btn btn-outline-danger btn-lg-cta">Quay lại đăng nhập</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

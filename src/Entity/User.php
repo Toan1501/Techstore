@@ -11,6 +11,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
+#[UniqueEntity(fields: ['email'], message: 'Email này đã được sử dụng.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,6 +23,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\NotBlank(message: 'Username is required.')]
     #[Assert\Length(min: 3, max: 180)]
     private ?string $username = null;
+
+    #[ORM\Column(length: 180, unique: true, nullable: true)]
+    #[Assert\Email(message: 'Email không hợp lệ.')]
+    private ?string $email = null;
 
     #[ORM\Column]
     private array $roles = [];
@@ -69,6 +74,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         return (string) $this->username;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
     }
 
     /**
