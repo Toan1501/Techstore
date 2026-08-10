@@ -1,0 +1,45 @@
+{% extends 'adbase.html.twig' %}
+
+{% block title %}Quản lý tin tức{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Tin tức ({{ items|length }})</h6>
+            <a href="{{ path('admin_news_new') }}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Thêm bài viết</a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead><tr><th>Ảnh</th><th>Tiêu đề</th><th>Slug</th><th>Ngày</th><th>Thao tác</th></tr></thead>
+                    <tbody>
+                        {% for n in items %}
+                        <tr>
+                            <td><img src="{{ asset(n.image ?: 'images/banner1.webp') }}" height="46" alt=""></td>
+                            <td>{{ n.title }}</td>
+                            <td class="text-muted small">{{ n.slug }}</td>
+                            <td>{{ n.createdAt ? n.createdAt|date('d/m/Y') : '' }}</td>
+                            <td class="text-nowrap">
+                                <a href="{{ path('app_news_detail', {'slug': n.slug}) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Xem</a>
+                                <a href="{{ path('admin_news_edit', {'id': n.id}) }}" class="btn btn-sm btn-warning">Sửa</a>
+                                <form method="post" action="{{ path('admin_news_delete', {'id': n.id}) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_news_' ~ n.id) }}">
+                                    <button class="btn btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="5" class="text-center text-muted">Chưa có bài viết.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>function delItem(u){ if(confirm("Bạn có chắc muốn xóa bài viết này?")){ window.location.href=u; } }</script>
+{% endblock %}

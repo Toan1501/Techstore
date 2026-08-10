@@ -1,0 +1,47 @@
+{% extends 'adbase.html.twig' %}
+
+{% block title %}Quản lý đơn hàng{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Đơn hàng ({{ orders|length }})</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Khách hàng</th>
+                            <th>Điện thoại</th>
+                            <th>SP</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>#{{ order.id }}</td>
+                            <td>{{ order.customerName }}</td>
+                            <td>{{ order.customerPhone }}</td>
+                            <td>{{ order.items|length }}</td>
+                            <td class="text-danger fw-semibold">{{ order.totalPrice|vnd }}</td>
+                            <td><span class="badge badge-{{ order.statusColor }}">{{ order.statusLabel }}</span></td>
+                            <td>{{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}</td>
+                            <td><a href="{{ path('admin_order_detail', {'id': order.id}) }}" class="btn btn-sm btn-primary">Xem</a></td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="8" class="text-center text-muted">Chưa có đơn hàng nào.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

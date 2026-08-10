@@ -1,0 +1,20 @@
+{% extends 'adbase.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}{{ is_new ? 'Thêm bài viết' : 'Sửa bài viết' }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4" style="max-width:860px">
+        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">{{ is_new ? 'Thêm bài viết' : 'Sửa bài viết' }}</h6></div>
+        <div class="card-body">
+            {% if news.image %}<img src="{{ asset(news.image) }}" height="80" class="mb-3 rounded" alt="">{% endif %}
+            {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu</button>
+            <a href="{{ path('admin_news_list') }}" class="btn btn-secondary mt-2">Hủy</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

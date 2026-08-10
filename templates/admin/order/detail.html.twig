@@ -1,0 +1,70 @@
+{% extends 'adbase.html.twig' %}
+
+{% block title %}Đơn hàng #{{ order.id }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <a href="{{ path('admin_order_list') }}" class="btn btn-sm btn-secondary mb-3">&larr; Quay lại danh sách</a>
+
+    <div class="row">
+        <div class="col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Sản phẩm — Đơn #{{ order.id }}</h6></div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead>
+                                <tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>{{ item.product ? item.product.name : '(sản phẩm đã xóa)' }}</td>
+                                    <td>{{ item.price|vnd }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.total|vnd }}</td>
+                                </tr>
+                                {% endfor %}
+                                <tr><td colspan="3" class="text-end">Tạm tính</td><td>{{ order.subtotal|vnd }}</td></tr>
+                                {% if order.discount > 0 %}<tr class="text-success"><td colspan="3" class="text-end">Giảm giá{{ order.couponCode ? ' (' ~ order.couponCode ~ ')' : '' }}</td><td>-{{ order.discount|vnd }}</td></tr>{% endif %}
+                                <tr><td colspan="3" class="text-end">Phí vận chuyển</td><td>{{ order.shippingFee == 0 ? 'Miễn phí' : order.shippingFee|vnd }}</td></tr>
+                                <tr class="fw-bold"><td colspan="3" class="text-end">Tổng cộng</td><td class="text-danger">{{ order.totalPrice|vnd }}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Khách hàng & trạng thái</h6></div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Họ tên:</strong> {{ order.customerName }}</p>
+                    <p class="mb-1"><strong>Điện thoại:</strong> {{ order.customerPhone }}</p>
+                    <p class="mb-1"><strong>Email:</strong> {{ order.customerEmail }}</p>
+                    <p class="mb-1"><strong>Địa chỉ:</strong> {{ order.fullAddress }}</p>
+                    <p class="mb-1"><strong>Thanh toán:</strong> {{ order.paymentMethodLabel }}</p>
+                    <p class="mb-1"><strong>Ngày đặt:</strong> {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}</p>
+                    {% if order.note %}<p class="mb-1"><strong>Ghi chú:</strong> {{ order.note }}</p>{% endif %}
+                    <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge badge-{{ order.statusColor }}">{{ order.statusLabel }}</span></p>
+                    <hr>
+                    {% set statusLabels = {'pending':'Chờ xử lý','confirmed':'Đã xác nhận','shipping':'Đang giao','completed':'Hoàn thành','cancelled':'Đã hủy'} %}
+                    <form method="post" action="{{ path('admin_order_status', {'id': order.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('order_status_' ~ order.id) }}">
+                        <div class="form-group">
+                            <label for="status">Cập nhật trạng thái</label>
+                            <select name="status" id="status" class="form-control">
+                                {% for value, color in statuses %}
+                                    <option value="{{ value }}" {{ order.status == value ? 'selected' : '' }}>{{ statusLabels[value] ?? value }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-2">Lưu</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

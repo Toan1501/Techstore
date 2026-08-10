@@ -4,23 +4,17 @@
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
-        {% block stylesheets %}
-                <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+        {# Core admin styles — always loaded, not inside an overridable block #}
+        <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
         <link
             href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
             rel="stylesheet">
 
-        <!-- Custom styles for this template-->
-        <link href="css/sb-admin-2.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+        <!-- SB Admin 2 theme (Bootstrap 4 based) -->
+        <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-        {% endblock %}
+
+        {% block stylesheets %}{% endblock %}
     </head>
     <body id="page-top">
       
@@ -35,7 +29,7 @@
                     {# <div class="sidebar-brand-icon rotate-n-15">
                         <img src="" alt="">
                     </div> #}
-                    <div class="sidebar-brand-text mx-3">Toan</div>
+                    <div class="sidebar-brand-text mx-3">TECHSTORE</div>
                 </a>
     
                 <!-- Divider -->
@@ -45,15 +39,15 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="{{ path('app_admin')}}">
                         <i class="fa fa-home"></i>
-                        <span>Adminstrator page</span></a>
+                        <span>Trang quản trị</span></a>
                 </li>
-    
+
                 <!-- Divider -->
                 <hr class="sidebar-divider">
-    
+
                 <!-- Heading -->
                 <div class="sidebar-heading">
-                  Key Management
+                  Quản lý chính
               </div>
     
                 <!-- Nav Item - Products Collapse Menu -->
@@ -61,13 +55,13 @@
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
                         aria-expanded="true" aria-controls="collapseTwo">
                         <i class="fas fa-fw fa-cog"></i>
-                        <span>Manage Products</span>
+                        <span>Quản lý sản phẩm</span>
                     </a>
                     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Custom More:</h6>
-                            <a class="collapse-item" href="{{ path('app_ds_san_pham') }}">View List Products</a>
-                            <a class="collapse-item" href="{{ path('app_san_pham') }}">Add New Product</a>
+                            <h6 class="collapse-header">Chức năng:</h6>
+                            <a class="collapse-item" href="{{ path('app_ds_san_pham') }}">Danh sách sản phẩm</a>
+                            <a class="collapse-item" href="{{ path('app_san_pham') }}">Thêm sản phẩm</a>
                         </div>
                     </div>
                 </li>
@@ -77,47 +71,74 @@
                     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
                         aria-expanded="true" aria-controls="collapseUtilities">
                         <i class="fas fa-fw fa-wrench"></i>
-                        <span>Manage Categories</span>
+                        <span>Quản lý danh mục</span>
                     </a>
                     <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
                         data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Custom More:</h6>
-                            <a class="collapse-item" href="{{ path('app_cart') }}">View List Categories</a>
-                            <a class="collapse-item" href="">Add New Category</a>
+                            <h6 class="collapse-header">Chức năng:</h6>
+                            <a class="collapse-item" href="{{ path('app_ds_category') }}">Danh sách danh mục</a>
+                            <a class="collapse-item" href="{{ path('ad_category') }}">Thêm danh mục</a>
                         </div>
                     </div>
                 </li>
-    
+
+                <!-- Nav Item - News -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('admin_news_list') }}">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Quản lý tin tức</span></a>
+                </li>
+
+                <!-- Nav Item - Banners -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('admin_banner_list') }}">
+                        <i class="fas fa-images"></i>
+                        <span>Quản lý banner</span></a>
+                </li>
+
+                <!-- Nav Item - Contacts -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('admin_contact_list') }}">
+                        <i class="fas fa-envelope"></i>
+                        <span>Tin nhắn liên hệ</span></a>
+                </li>
+
+                <!-- Nav Item - Users -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('admin_user_list') }}">
+                        <i class="fas fa-users"></i>
+                        <span>Quản lý người dùng</span></a>
+                </li>
+
+                <!-- Nav Item - Reviews -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ path('admin_review_list') }}">
+                        <i class="fas fa-star"></i>
+                        <span>Duyệt đánh giá</span></a>
+                </li>
+
                 <!-- Divider -->
                 <hr class="sidebar-divider">
     
                 <!-- Heading -->
                 <div class="sidebar-heading">
-                    More
+                    Khác
                 </div>
-    
-                <!-- Nav Item - Pages Collapse Menu -->
+
+                <!-- Nav Item - Orders -->
                 <li class="nav-item">
-                    <a class="nav-link collapsed" href="" data-toggle="collapse" data-target="#collapsePages"
-                        aria-expanded="true" aria-controls="collapsePages">
+                    <a class="nav-link" href="{{ path('admin_order_list') }}">
                         <i class="fas fa-shopping-bag"></i>
-                        <span>Check Order</span>
+                        <span>Quản lý đơn hàng</span>
                     </a>
-                    <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Manage Order:</h6>
-                            <a class="collapse-item" href="{{ path('app_cart') }}">View Order</a>
-                            <a class="collapse-item" href="">View Order Detail</a>
-                        </div>
-                    </div>
                 </li>
-    
-                <!-- Nav Item - Charts -->
+
+                <!-- Nav Item - Store front -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ path('app_contact')}}">
-                        <i class="fas fa-envelope"></i>
-                        <span>Manage Contact</span></a>
+                    <a class="nav-link" href="{{ path('homepage') }}">
+                        <i class="fas fa-store"></i>
+                        <span>Về cửa hàng</span></a>
                 </li>
     
                 <!-- Divider -->
@@ -148,7 +169,7 @@
                         <form action="{{ path('search_products') }}" method="GET"
                             class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                             <div class="input-group">
-                                <input type="text" name="keyword" class="form-control bg-light border-1 small" placeholder="Search for..."
+                                <input type="text" name="keyword" class="form-control bg-light border-1 small" placeholder="Tìm sản phẩm..."
                                     aria-label="Search" aria-describedby="basic-addon2">
                                 <div class="input-group-append">
                                     <button class="btn btn-primary" type="button">
@@ -173,7 +194,7 @@
                                     <form class="form-inline mr-auto w-100 navbar-search">
                                         <div class="input-group">
                                             <input type="text" class="form-control bg-light border-0 small"
-                                                placeholder="Search for..." aria-label="Search"
+                                                placeholder="Tìm sản phẩm..." aria-label="Search"
                                                 aria-describedby="basic-addon2">
                                             <div class="input-group-append">
                                                 <button class="btn btn-primary" type="button">
@@ -189,7 +210,7 @@
                             <li class="nav-item dropdown no-arrow mx-1">
                                 <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">Shopping Cart</span>
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">Giỏ hàng</span>
                                     <div type="button" class="btn btn-outline-primary rounded-3">
                                         <i class="bi bi-cart3"></i>
                                     </div>
@@ -204,7 +225,7 @@
                             <li class="nav-item dropdown no-arrow">
                                 <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas Toan</span>
+                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ app.user ? app.user.userIdentifier : 'Quản trị' }}</span>
                                     <div type="button" class="btn btn-outline-primary rounded-3">
                                         <i class="bi bi-person-fill"></i>
                                     </div>
@@ -215,16 +236,16 @@
                                     aria-labelledby="userDropdown">
                                     <a class="dropdown-item" href="{{ path('profile') }}">
                                         <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Profile
+                                        Tài khoản
                                     </a>
                                     <a class="dropdown-item" href="{{ path('edit_profile') }}">
                                         <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Settings
+                                        Cài đặt
                                     </a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="{{ path('app_logout') }}" data-toggle="modal" data-target="#logoutModal">
+                                    <a class="dropdown-item" href="{{ path('app_logout') }}">
                                         <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Logout
+                                        Đăng xuất
                                     </a>
                                 </div>
                                 {% else %}
@@ -232,50 +253,43 @@
                                 aria-labelledby="userDropdown">
                                 <a class="dropdown-item" href="{{ path('app_login') }}">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Sign in
+                                    Đăng nhập
                                 </a>
                                 <a class="dropdown-item" href="{{ path('app_register') }}">
                                     <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Sign up
+                                    Đăng ký
                                 </a>
                             </div>
                                 {% endif %}
                             </li>
                         </ul>
                     </nav>
-                    {% block body %}{% endblock %}
+                    {# Flash messages #}
+                    <div class="container-fluid">
+                        {% for type, messages in app.flashes %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ type == 'error' ? 'danger' : (type == 'success' ? 'success' : type) }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
+                            {% endfor %}
+                        {% endfor %}
                     </div>
-        {% block javascripts %}
-        <script src="vendor/jquery/jquery.min.js"></script>
-        <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    
-        <!-- Core plugin JavaScript-->
-        <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-    
-        <!-- Custom scripts for all pages-->
-        <script src="js/sb-admin-2.min.js"></script>
-    
-        <!-- Page level plugins -->
-        <script src="vendor/chart.js/Chart.min.js"></script>
-    
-        <!-- Page level custom scripts -->
-        <script src="js/demo/chart-area-demo.js"></script>
-        <script src="js/demo/chart-pie-demo.js"></script>
-        {% endblock %}
-        <script src="vendor/jquery/jquery.min.js"></script>
-        <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-    
-        <!-- Core plugin JavaScript-->
-        <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
-    
-        <!-- Custom scripts for all pages-->
-        <script src="js/sb-admin-2.min.js"></script>
-    
-        <!-- Page level plugins -->
-        <script src="vendor/chart.js/Chart.min.js"></script>
-    
-        <!-- Page level custom scripts -->
-        <script src="js/demo/chart-area-demo.js"></script>
-        <script src="js/demo/chart-pie-demo.js"></script>
+
+                    {% block body %}{% endblock %}
+                </div>
+                <!-- End of Main Content -->
+            </div>
+            <!-- End of Content Wrapper -->
+        </div>
+        <!-- End of Page Wrapper -->
+
+        <!-- Core scripts (always loaded) -->
+        <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+        <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+        <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+        <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+
+        {% block javascripts %}{% endblock %}
     </body>
 </html>

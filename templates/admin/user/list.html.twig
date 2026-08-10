@@ -1,0 +1,40 @@
+{% extends 'adbase.html.twig' %}
+
+{% block title %}Quản lý người dùng{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Người dùng ({{ items|length }})</h6></div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead><tr><th>ID</th><th>Tên đăng nhập</th><th>Họ tên</th><th>Điện thoại</th><th>Quyền</th><th>Thao tác</th></tr></thead>
+                    <tbody>
+                        {% for u in items %}
+                        {% set isAdmin = 'ROLE_ADMIN' in u.roles %}
+                        <tr>
+                            <td>{{ u.id }}</td>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.firstName }} {{ u.lastName }}</td>
+                            <td>{{ u.phonenumber }}</td>
+                            <td>{% if isAdmin %}<span class="badge badge-danger">Admin</span>{% else %}<span class="badge badge-secondary">Khách hàng</span>{% endif %}</td>
+                            <td class="text-nowrap">
+                                <form method="post" action="{{ path('admin_user_toggle', {'id': u.id}) }}" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ u.id) }}">
+                                    <button class="btn btn-sm btn-outline-primary">{{ isAdmin ? 'Bỏ quyền admin' : 'Cấp quyền admin' }}</button>
+                                </form>
+                                <form method="post" action="{{ path('admin_user_delete', {'id': u.id}) }}" class="d-inline" onsubmit="return confirm('Xóa người dùng này?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
+                                    <button class="btn btn-sm btn-danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
