@@ -8,6 +8,18 @@ Website thương mại điện tử (e-commerce) bán máy tính, laptop, PC gam
 
 ---
 
+## 🖼️ Giao diện
+
+| Trang chủ | Chi tiết sản phẩm |
+|:---:|:---:|
+| [![Trang chủ](docs/screenshots/01-homepage.png)](docs/screenshots/01-homepage.png) | [![Chi tiết sản phẩm](docs/screenshots/02-product-detail.png)](docs/screenshots/02-product-detail.png) |
+
+| Danh sách sản phẩm | Thanh toán | Tin tức |
+|:---:|:---:|:---:|
+| [![Danh sách](docs/screenshots/03-products.png)](docs/screenshots/03-products.png) | [![Thanh toán](docs/screenshots/04-checkout.png)](docs/screenshots/04-checkout.png) | [![Tin tức](docs/screenshots/05-news.png)](docs/screenshots/05-news.png) |
+
+---
+
 ## ✨ Tính năng
 
 **Người mua**
