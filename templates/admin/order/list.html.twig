@@ -6,10 +6,37 @@
 <div class="container-fluid mt-4">
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary d-inline">Đơn hàng ({{ orders|length }})</h6>
+            <h6 class="m-0 font-weight-bold text-primary d-inline">Đơn hàng ({{ orders.getTotalItemCount }})</h6>
             <a href="{{ path('admin_orders_export') }}" class="btn btn-sm btn-outline-success float-right"><i class="fas fa-file-csv"></i> Xuất CSV</a>
         </div>
         <div class="card-body">
+            <form method="get" class="form-row align-items-end mb-3">
+                <div class="col-md-3 mb-2">
+                    <label class="small mb-1">Tìm kiếm</label>
+                    <input type="text" name="q" value="{{ filters.q }}" class="form-control form-control-sm" placeholder="Mã đơn / tên / SĐT / email">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="small mb-1">Trạng thái</label>
+                    <select name="status" class="form-control form-control-sm">
+                        <option value="">Tất cả</option>
+                        {% for key, label in statuses %}
+                            <option value="{{ key }}" {{ filters.status == key ? 'selected' }}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="small mb-1">Từ ngày</label>
+                    <input type="date" name="from" value="{{ filters.from }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="small mb-1">Đến ngày</label>
+                    <input type="date" name="to" value="{{ filters.to }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-search"></i> Lọc</button>
+                    <a href="{{ path('admin_order_list') }}" class="btn btn-sm btn-outline-secondary">Xóa lọc</a>
+                </div>
+            </form>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle" width="100%" cellspacing="0">
                     <thead>
@@ -37,11 +64,12 @@
                             <td><a href="{{ path('admin_order_detail', {'id': order.id}) }}" class="btn btn-sm btn-primary">Xem</a></td>
                         </tr>
                         {% else %}
-                        <tr><td colspan="8" class="text-center text-muted">Chưa có đơn hàng nào.</td></tr>
+                        <tr><td colspan="8" class="text-center text-muted">Không tìm thấy đơn hàng phù hợp.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+            <div class="d-flex justify-content-center mt-3">{{ knp_pagination_render(orders) }}</div>
         </div>
     </div>
 </div>

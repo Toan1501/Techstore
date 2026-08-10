@@ -9,6 +9,9 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SanPhamRepository::class)]
+#[ORM\Index(name: 'idx_sanpham_slug', columns: ['slug'])]
+#[ORM\Index(name: 'idx_sanpham_brand', columns: ['brand'])]
+#[ORM\Index(name: 'idx_sanpham_sku', columns: ['sku'])]
 class SanPham
 {
     #[ORM\Id]

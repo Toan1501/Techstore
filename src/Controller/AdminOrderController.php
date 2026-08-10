@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Order;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,13 +15,27 @@ use Symfony\Component\Routing\Annotation\Route;
 class AdminOrderController extends AbstractController
 {
     #[Route('', name: 'admin_order_list', methods: ['GET'])]
-    public function list(OrderRepository $orderRepository): Response
+    public function list(OrderRepository $orderRepository, PaginatorInterface $paginator, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        $filters = [
+            'status' => $request->query->get('status') ?: null,
+            'q' => trim((string) $request->query->get('q')) ?: null,
+            'from' => $request->query->get('from') ?: null,
+            'to' => $request->query->get('to') ?: null,
+        ];
+
+        $orders = $paginator->paginate(
+            $orderRepository->filteredQuery($filters),
+            $request->query->getInt('page', 1),
+            20
+        );
+
         return $this->render('admin/order/list.html.twig', [
-            'orders' => $orderRepository->findAllOrdered(),
+            'orders' => $orders,
             'statuses' => Order::STATUSES,
+            'filters' => $filters,
         ]);
     }
 

@@ -11,6 +11,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
+#[ORM\Index(name: 'idx_order_status', columns: ['status'])]
+#[ORM\Index(name: 'idx_order_created_at', columns: ['created_at'])]
+#[ORM\Index(name: 'idx_order_user', columns: ['user_id'])]
 class Order
 {
     public const STATUS_PENDING   = 'pending';

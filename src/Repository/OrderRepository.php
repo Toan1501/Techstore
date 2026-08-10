@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Order;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -47,6 +48,44 @@ class OrderRepository extends ServiceEntityRepository
             ->addOrderBy('o.id', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Query builder for the admin order list with optional filters.
+     * Suitable for KnpPaginator.
+     *
+     * @param array{status?:?string,q?:?string,from?:?string,to?:?string} $filters
+     */
+    public function filteredQuery(array $filters = []): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->orderBy('o.createdAt', 'DESC')
+            ->addOrderBy('o.id', 'DESC');
+
+        if (!empty($filters['status'])) {
+            $qb->andWhere('o.status = :status')->setParameter('status', $filters['status']);
+        }
+        if (!empty($filters['q'])) {
+            $qb->andWhere('o.customer_name LIKE :q OR o.customer_phone LIKE :q OR o.customer_email LIKE :q OR o.id = :qid')
+                ->setParameter('q', '%' . $filters['q'] . '%')
+                ->setParameter('qid', (int) $filters['q']);
+        }
+        if (!empty($filters['from'])) {
+            $from = \DateTime::createFromFormat('Y-m-d', $filters['from']);
+            if ($from) {
+                $from->setTime(0, 0, 0);
+                $qb->andWhere('o.createdAt >= :from')->setParameter('from', $from);
+            }
+        }
+        if (!empty($filters['to'])) {
+            $to = \DateTime::createFromFormat('Y-m-d', $filters['to']);
+            if ($to) {
+                $to->setTime(23, 59, 59);
+                $qb->andWhere('o.createdAt <= :to')->setParameter('to', $to);
+            }
+        }
+
+        return $qb;
     }
 
     /** Whether a user has an order containing the given product. */

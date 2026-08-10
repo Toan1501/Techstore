@@ -90,12 +90,18 @@ class SanPhamController extends AbstractController
     }
 
     #[Route('/san/pham/ds', name: 'app_ds_san_pham')]
-    public function list_sp(\App\Repository\SanPhamRepository $sanPhamRepository): Response
+    public function list_sp(\App\Repository\SanPhamRepository $sanPhamRepository, \Knp\Component\Pager\PaginatorInterface $paginator, Request $req): Response
         {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+            $pagination = $paginator->paginate(
+                $sanPhamRepository->queryBySort('newest'),
+                $req->query->getInt('page', 1),
+                20
+            );
+
             return $this->render('san_pham/list.html.twig', [
-                "data" => $sanPhamRepository->findAllNewestFirst(),
+                "data" => $pagination,
             ]);
         }
 
@@ -148,16 +154,20 @@ class SanPhamController extends AbstractController
             }
 
         #[Route('/cate/{id}', name: 'app_ds_san_pham_in_category')]
-        public function listSPinCate(EntityManagerInterface $em, int $id, Request $req): Response
+        public function listSPinCate(EntityManagerInterface $em, int $id, Request $req, \Knp\Component\Pager\PaginatorInterface $paginator): Response
             {
                 $this->denyAccessUnlessGranted('ROLE_ADMIN');
                 $cate = $em->find(Category::class, $id);
                 if (!$cate) {
                     throw $this->createNotFoundException('Danh mục không tồn tại.');
                 }
-                $lSp = $cate->getSanPhams();
+                $pagination = $paginator->paginate(
+                    $cate->getSanPhams()->toArray(),
+                    $req->query->getInt('page', 1),
+                    20
+                );
                 return $this->render('san_pham/list.html.twig', [
-                    "data"=>$lSp
+                    "data"=>$pagination
                 ]);
             }
             
