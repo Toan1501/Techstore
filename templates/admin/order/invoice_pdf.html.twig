@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { font-family: 'DejaVu Sans', sans-serif; }
+        body { color: #222; font-size: 12px; }
+        .head { border-bottom: 3px solid #e30019; padding-bottom: 10px; }
+        .brand { font-size: 22px; font-weight: bold; color: #e30019; }
+        .title { font-size: 18px; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+        th, td { border: 1px solid #ddd; padding: 6px; font-size: 12px; }
+        th { background: #f4f4f4; text-align: left; }
+        .totals td { border: none; padding: 3px 6px; }
+        .grand td { font-size: 15px; font-weight: bold; color: #e30019; }
+        .muted { color: #666; font-size: 11px; }
+        .right { text-align: right; }
+    </style>
+</head>
+<body>
+    {% set st = store_settings() %}
+    <table class="head" style="border:none"><tr style="border:none">
+        <td style="border:none">
+            <div class="brand">{{ st.storeName }}</div>
+            <div class="muted">{{ st.address }}<br>Hotline: {{ st.hotline }} · {{ st.email }}</div>
+        </td>
+        <td style="border:none" class="right">
+            <div class="title">HÓA ĐƠN #{{ order.id }}</div>
+            <div class="muted">Ngày: {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '' }}</div>
+        </td>
+    </tr></table>
+
+    <p><strong>Khách hàng:</strong> {{ order.customerName }} — {{ order.customerPhone }}<br>
+       <strong>Địa chỉ:</strong> {{ order.fullAddress }}<br>
+       <strong>Thanh toán:</strong> {{ order.paymentMethodLabel }} ({{ order.paid ? 'Đã thanh toán' : 'Chưa thanh toán' }})</p>
+
+    <table>
+        <thead><tr><th>#</th><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+        <tbody>
+            {% for item in order.items %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.product ? item.product.name : '(đã xóa)' }}</td>
+                <td>{{ item.price|vnd }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.total|vnd }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <table class="totals" style="width:45%; margin-left:auto">
+        <tr><td>Tạm tính:</td><td class="right">{{ order.subtotal|vnd }}</td></tr>
+        {% if order.discount > 0 %}<tr><td>Giảm giá:</td><td class="right">-{{ order.discount|vnd }}</td></tr>{% endif %}
+        <tr><td>Phí vận chuyển:</td><td class="right">{{ order.shippingFee == 0 ? 'Miễn phí' : order.shippingFee|vnd }}</td></tr>
+        <tr class="grand"><td>TỔNG CỘNG:</td><td class="right">{{ order.totalPrice|vnd }}</td></tr>
+    </table>
+
+    <p class="muted" style="text-align:center; margin-top:24px">Cảm ơn quý khách đã mua hàng tại {{ st.storeName }}!</p>
+</body>
+</html>

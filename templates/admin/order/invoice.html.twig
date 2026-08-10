@@ -23,6 +23,7 @@
     {% set st = store_settings() %}
     <div class="no-print">
         <button onclick="window.print()">🖨️ In hóa đơn</button>
+        <a href="{{ path('admin_order_invoice_pdf', {'id': order.id}) }}">⬇️ Tải PDF</a>
         <a href="{{ path('admin_order_detail', {'id': order.id}) }}">← Quay lại</a>
     </div>
 

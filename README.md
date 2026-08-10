@@ -33,7 +33,9 @@ Website thương mại điện tử (e-commerce) bán máy tính, laptop, PC gam
 
 **Quản trị (admin)**
 - Dashboard: thống kê + **biểu đồ doanh thu**
-- Báo cáo bán hàng (bán chạy, doanh thu theo danh mục), **in hóa đơn**, **xuất CSV**
+- Báo cáo bán hàng (bán chạy, doanh thu theo danh mục), **in hóa đơn / tải hóa đơn PDF**, **xuất CSV**
+- Danh sách đơn hàng & sản phẩm **phân trang** + **tìm/lọc đơn** (mã/tên/SĐT/email, trạng thái, khoảng ngày)
+- Ảnh tải lên tự động **nén & thu nhỏ** (tối đa 1200px) để nhẹ trang
 - Quản lý: sản phẩm, danh mục, đơn hàng (trạng thái + thanh toán), tin tức, banner, người dùng, đánh giá, hỏi đáp, mã giảm giá, tin nhắn liên hệ, cài đặt cửa hàng
 
 **Kỹ thuật:** SEO (URL slug, JSON-LD, sitemap.xml, robots.txt, trang 404), migrations, seed dữ liệu mẫu, unit test.

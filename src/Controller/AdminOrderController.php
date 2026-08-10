@@ -77,6 +77,27 @@ class AdminOrderController extends AbstractController
         return $this->render('admin/order/invoice.html.twig', ['order' => $order]);
     }
 
+    #[Route('/{id}/invoice.pdf', name: 'admin_order_invoice_pdf', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function invoicePdf(Order $order): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $html = $this->renderView('admin/order/invoice_pdf.html.twig', ['order' => $order]);
+
+        $options = new \Dompdf\Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', false);
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4');
+        $dompdf->render();
+
+        return new Response($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="hoa-don-' . $order->getId() . '.pdf"',
+        ]);
+    }
+
     /** @param array<int, array<int, string|int>> $rows */
     private function csv(array $rows, string $filename): Response
     {
