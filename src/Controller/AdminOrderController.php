@@ -24,6 +24,25 @@ class AdminOrderController extends AbstractController
         ]);
     }
 
+    #[Route('/export.csv', name: 'admin_orders_export', methods: ['GET'])]
+    public function export(OrderRepository $orderRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $rows = [];
+        $rows[] = ['Mã đơn', 'Khách hàng', 'Điện thoại', 'Email', 'Địa chỉ', 'Thanh toán', 'Đã trả', 'Trạng thái', 'Tổng tiền', 'Ngày đặt'];
+        foreach ($orderRepository->findAllOrdered() as $o) {
+            $rows[] = [
+                $o->getId(), $o->getCustomerName(), $o->getCustomerPhone(), $o->getCustomerEmail(),
+                $o->getFullAddress(), $o->getPaymentMethodLabel(), $o->isPaid() ? 'Có' : 'Không',
+                $o->getStatusLabel(), (int) $o->getTotalPrice(),
+                $o->getCreatedAt() ? $o->getCreatedAt()->format('d/m/Y H:i') : '',
+            ];
+        }
+
+        return $this->csv($rows, 'don-hang.csv');
+    }
+
     #[Route('/{id}', name: 'admin_order_detail', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function detail(Order $order): Response
     {
@@ -32,6 +51,28 @@ class AdminOrderController extends AbstractController
         return $this->render('admin/order/detail.html.twig', [
             'order' => $order,
             'statuses' => Order::STATUSES,
+        ]);
+    }
+
+    #[Route('/{id}/invoice', name: 'admin_order_invoice', requirements: ['id' => '\d+'], methods: ['GET'])]
+    public function invoice(Order $order): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('admin/order/invoice.html.twig', ['order' => $order]);
+    }
+
+    /** @param array<int, array<int, string|int>> $rows */
+    private function csv(array $rows, string $filename): Response
+    {
+        $out = "\xEF\xBB\xBF"; // UTF-8 BOM for Excel
+        foreach ($rows as $row) {
+            $out .= implode(',', array_map(fn ($c) => '"' . str_replace('"', '""', (string) $c) . '"', $row)) . "\r\n";
+        }
+
+        return new Response($out, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 

@@ -35,12 +35,12 @@ class SeedCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         // 1) Wipe (children first to respect FKs) so the command is repeatable.
-        foreach (['App\Entity\Review', 'App\Entity\OrderItem', 'App\Entity\ProductImage', 'App\Entity\Order', 'App\Entity\SanPham', 'App\Entity\Category', 'App\Entity\News', 'App\Entity\Banner', 'App\Entity\Coupon', 'App\Entity\User'] as $class) {
+        foreach (['App\Entity\Question', 'App\Entity\Review', 'App\Entity\OrderItem', 'App\Entity\ProductImage', 'App\Entity\Order', 'App\Entity\SanPham', 'App\Entity\Category', 'App\Entity\News', 'App\Entity\Banner', 'App\Entity\Coupon', 'App\Entity\User'] as $class) {
             $this->em->createQuery("DELETE FROM $class")->execute();
         }
         // Reset AUTO_INCREMENT so demo IDs start clean at 1.
         $conn = $this->em->getConnection();
-        foreach (['review', 'order_item', 'product_image', '`order`', 'san_pham', 'category', 'news', 'banner', 'coupon', 'user'] as $table) {
+        foreach (['question', 'review', 'order_item', 'product_image', '`order`', 'san_pham', 'category', 'news', 'banner', 'coupon', 'user'] as $table) {
             $conn->executeStatement("ALTER TABLE $table AUTO_INCREMENT = 1");
         }
         $io->text('Cleared existing data.');
@@ -88,6 +88,7 @@ class SeedCommand extends Command
             $pi++;
             $sp = (new SanPham())
                 ->setName($p['name'])
+                ->setSlug(SanPham::slugify($p['name']))
                 ->setPrice($p['price'])
                 ->setPriceOld($priceOld)
                 ->setStock($p['stock'])

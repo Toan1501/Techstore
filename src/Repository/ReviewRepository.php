@@ -17,6 +17,11 @@ class ReviewRepository extends ServiceEntityRepository
         parent::__construct($registry, Review::class);
     }
 
+    public function hasReviewed(SanPham $product, $user): bool
+    {
+        return $this->count(['product' => $product, 'user' => $user]) > 0;
+    }
+
     /** @return Review[] Reviews for a product, newest first. */
     public function findByProduct(SanPham $product): array
     {

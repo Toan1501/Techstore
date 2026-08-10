@@ -76,6 +76,13 @@ class SanPhamRepository extends ServiceEntityRepository
         if (!empty($filters['in_stock'])) {
             $qb->andWhere('sp.stock > 0');
         }
+        if (!empty($filters['brand'])) {
+            $qb->andWhere('sp.brand = :brand')->setParameter('brand', $filters['brand']);
+        }
+        if (!empty($filters['min_rating'])) {
+            $qb->andWhere('(SELECT AVG(rv.rating) FROM App\Entity\Review rv WHERE rv.product = sp) >= :minRating')
+                ->setParameter('minRating', (float) $filters['min_rating']);
+        }
 
         switch ($filters['sort'] ?? 'newest') {
             case 'price_asc':
@@ -92,6 +99,18 @@ class SanPhamRepository extends ServiceEntityRepository
         }
 
         return $qb->getQuery();
+    }
+
+    /** @return string[] Distinct non-empty brand names. */
+    public function distinctBrands(): array
+    {
+        $rows = $this->createQueryBuilder('sp')
+            ->select('DISTINCT sp.brand AS brand')
+            ->andWhere('sp.brand IS NOT NULL')->andWhere("sp.brand != ''")
+            ->orderBy('sp.brand', 'ASC')
+            ->getQuery()->getScalarResult();
+
+        return array_column($rows, 'brand');
     }
 
     /** @return array{min: float, max: float} Lowest and highest product price. */

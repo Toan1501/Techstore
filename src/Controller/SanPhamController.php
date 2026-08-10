@@ -59,6 +59,7 @@ class SanPhamController extends AbstractController
             }
             $fileName = $fileUploader->upload($file);
             $data->setPhoto($fileName);
+            $data->setSlug(SanPham::slugify($data->getName()));
             $this->handleGallery($form, $data, $fileUploader);
 
             $em->persist($data);
@@ -70,6 +71,22 @@ class SanPhamController extends AbstractController
         return $this->render('san_pham/index.html.twig', [
             'sp_form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/san/pham/export.csv', name: 'admin_products_export', methods: ['GET'])]
+    public function export(\App\Repository\SanPhamRepository $sanPhamRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $out = "\xEF\xBB\xBF";
+        $head = ['ID', 'Tên', 'SKU', 'Thương hiệu', 'Danh mục', 'Giá bán', 'Giá gốc', 'Tồn kho', 'Bảo hành'];
+        $out .= implode(',', array_map(fn ($c) => '"' . $c . '"', $head)) . "\r\n";
+        foreach ($sanPhamRepository->findAllNewestFirst() as $p) {
+            $row = [$p->getId(), $p->getName(), $p->getSku() ?? '', $p->getBrand() ?? '', $p->getCate() ? $p->getCate()->getName() : '', (int) $p->getPrice(), (int) ($p->getPriceOld() ?? 0), $p->getStock(), $p->getWarranty() ?? ''];
+            $out .= implode(',', array_map(fn ($c) => '"' . str_replace('"', '""', (string) $c) . '"', $row)) . "\r\n";
+        }
+
+        return new Response($out, 200, ['Content-Type' => 'text/csv; charset=UTF-8', 'Content-Disposition' => 'attachment; filename="san-pham.csv"']);
     }
 
     #[Route('/san/pham/ds', name: 'app_ds_san_pham')]
@@ -98,6 +115,7 @@ class SanPhamController extends AbstractController
                         $fileName = $fileUploader->upload($file);
                         $data->setPhoto($fileName);
                     }
+                    $sp->setSlug(SanPham::slugify($sp->getName()));
                     $this->handleGallery($form, $sp, $fileUploader);
                     $em->flush();
                     $this->addFlash('success', 'Product updated.');

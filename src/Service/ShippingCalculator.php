@@ -17,6 +17,20 @@ class ShippingCalculator
         'Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Hải Phòng', 'Cần Thơ',
     ];
 
+    public function __construct(private \App\Repository\StoreSettingsRepository $settingsRepo)
+    {
+    }
+
+    private function feeMajor(): int
+    {
+        return (int) ($this->settingsRepo->get()->getShipFeeInner() ?? self::FEE_MAJOR);
+    }
+
+    private function feeOther(): int
+    {
+        return (int) ($this->settingsRepo->get()->getShipFeeOuter() ?? self::FEE_OTHER);
+    }
+
     /** 63 provinces/cities of Vietnam. */
     public const PROVINCES = [
         'An Giang', 'Bà Rịa - Vũng Tàu', 'Bắc Giang', 'Bắc Kạn', 'Bạc Liêu', 'Bắc Ninh',
@@ -33,23 +47,25 @@ class ShippingCalculator
 
     public function calculate(?string $province, float $subtotal): float
     {
-        if ($subtotal >= self::FREE_SHIP_THRESHOLD) {
+        if ($subtotal >= $this->freeThreshold()) {
             return 0.0;
         }
 
         if ($province !== null && in_array($province, self::MAJOR_CITIES, true)) {
-            return self::FEE_MAJOR;
+            return $this->feeMajor();
         }
 
-        return self::FEE_OTHER;
+        return $this->feeOther();
     }
 
     /** province => base fee (ignoring the free-ship threshold) — used for live JS preview. */
     public function feeMap(): array
     {
+        $major = $this->feeMajor();
+        $other = $this->feeOther();
         $map = [];
         foreach (self::PROVINCES as $p) {
-            $map[$p] = in_array($p, self::MAJOR_CITIES, true) ? self::FEE_MAJOR : self::FEE_OTHER;
+            $map[$p] = in_array($p, self::MAJOR_CITIES, true) ? $major : $other;
         }
 
         return $map;
@@ -57,6 +73,6 @@ class ShippingCalculator
 
     public function freeThreshold(): int
     {
-        return self::FREE_SHIP_THRESHOLD;
+        return (int) ($this->settingsRepo->get()->getFreeShipThreshold() ?? self::FREE_SHIP_THRESHOLD);
     }
 }

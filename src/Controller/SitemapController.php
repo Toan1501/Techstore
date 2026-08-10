@@ -28,7 +28,7 @@ class SitemapController extends AbstractController
             $urls[] = $this->generateUrl('app_productofcate', ['id' => $c->getId()], $abs);
         }
         foreach ($products->findAllNewestFirst() as $p) {
-            $urls[] = $this->generateUrl('app_detailsp', ['id' => $p->getId()], $abs);
+            $urls[] = $this->generateUrl('app_product', ['slug' => $p->getSlug(), 'id' => $p->getId()], $abs);
         }
         foreach ($news->findAllOrdered() as $n) {
             $urls[] = $this->generateUrl('app_news_detail', ['slug' => $n->getSlug()], $abs);

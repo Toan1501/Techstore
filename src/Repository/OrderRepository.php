@@ -49,6 +49,19 @@ class OrderRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** Whether a user has an order containing the given product. */
+    public function userBoughtProduct($user, $product): bool
+    {
+        $n = (int) $this->createQueryBuilder('o')
+            ->select('COUNT(i.id)')
+            ->join('o.items', 'i')
+            ->andWhere('o.user = :u')->setParameter('u', $user)
+            ->andWhere('i.product = :p')->setParameter('p', $product)
+            ->getQuery()->getSingleScalarResult();
+
+        return $n > 0;
+    }
+
     /** Total revenue from completed orders. */
     public function totalRevenue(): float
     {

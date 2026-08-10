@@ -59,14 +59,33 @@ class HomepageController extends AbstractController
         ]);
     }
 
+    #[Route('/san-pham/{slug}-{id}', name: 'app_product', requirements: ['id' => '\d+', 'slug' => '[a-z0-9\-]+'])]
     #[Route('/feature/{id}', name: 'app_detailsp', requirements: ['id' => '\d+'])]
-    public function detail(SanPham $product): Response
+    public function detail(SanPham $product, Request $request, \App\Repository\QuestionRepository $questionRepo): Response
     {
+        // Canonical SEO URL: redirect legacy /feature/{id} or wrong slug to /san-pham/{slug}-{id}
+        $slug = $product->getSlug();
+        if ($request->attributes->get('_route') !== 'app_product' || $request->attributes->get('slug') !== $slug) {
+            return $this->redirectToRoute('app_product', ['slug' => $slug, 'id' => $product->getId()], 301);
+        }
+
+        // Track recently viewed (session), most recent first, capped.
+        $session = $request->getSession();
+        $viewed = array_values(array_diff($session->get('recently_viewed', []), [$product->getId()]));
+        array_unshift($viewed, $product->getId());
+        $viewed = array_slice($viewed, 0, 12);
+        $session->set('recently_viewed', $viewed);
+
+        $rvIds = array_slice(array_values(array_diff($viewed, [$product->getId()])), 0, 6);
+        $recentlyViewed = $rvIds ? $this->sanPhamRepository->findBy(['id' => $rvIds]) : [];
+
         return $this->render('homepage/detail.html.twig', [
             'data' => $product,
             'reviews' => $this->reviewRepository->findByProduct($product),
             'rating' => $this->reviewRepository->getRatingSummary($product),
             'related' => $this->sanPhamRepository->findRelated($product, 4),
+            'recently_viewed' => $recentlyViewed,
+            'questions' => $questionRepo->findByProduct($product),
         ]);
     }
 
@@ -85,6 +104,8 @@ class HomepageController extends AbstractController
             'min_price' => $request->query->get('min_price'),
             'max_price' => $request->query->get('max_price'),
             'in_stock' => $request->query->getBoolean('in_stock'),
+            'brand' => $request->query->get('brand') ?: null,
+            'min_rating' => $request->query->get('min_rating') ?: null,
         ];
 
         $pagination = $paginator->paginate(
@@ -118,6 +139,7 @@ class HomepageController extends AbstractController
             'section_ratings' => $this->ratingsFor($sectionProducts),
             'banners' => $bannerRepository->findActiveOrdered(),
             'price_bounds' => $this->sanPhamRepository->priceBounds(),
+            'brands' => $this->sanPhamRepository->distinctBrands(),
             'filters' => $filters,
         ]);
     }
