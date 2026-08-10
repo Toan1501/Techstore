@@ -48,7 +48,7 @@
                     <p class="mb-1"><strong>Email:</strong> {{ order.customerEmail }}</p>
                     <p class="mb-1"><strong>Địa chỉ:</strong> {{ order.fullAddress }}</p>
                     <p class="mb-1"><strong>Thanh toán:</strong> {{ order.paymentMethodLabel }}
-                        {% if order.paid %}<span class="badge badge-success">Đã thanh toán</span>{% elseif order.paymentMethod == 'vnpay' %}<span class="badge badge-warning">Chờ thanh toán</span>{% endif %}
+                        {% if order.paid %}<span class="badge badge-success">Đã thanh toán</span>{% elseif order.paymentMethod in ['momo', 'vnpay'] %}<span class="badge badge-warning">Chờ thanh toán</span>{% endif %}
                     </p>
                     <p class="mb-1"><strong>Ngày đặt:</strong> {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}</p>
                     {% if order.note %}<p class="mb-1"><strong>Ghi chú:</strong> {{ order.note }}</p>{% endif %}

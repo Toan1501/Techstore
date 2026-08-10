@@ -78,7 +78,7 @@ class OrderController extends AbstractController
     }
 
     #[Route('/order', name: 'app_order')]
-    public function index(EntityManagerInterface $em, Request $req, ShippingCalculator $shipping, OrderMailer $mailer, \App\Repository\CouponRepository $couponRepo, \App\Service\VnpayService $vnpay): Response
+    public function index(EntityManagerInterface $em, Request $req, ShippingCalculator $shipping, OrderMailer $mailer, \App\Repository\CouponRepository $couponRepo, \App\Service\MomoService $momo): Response
     {
         $order = new Order();
         $form = $this->createForm(OrderFormType::class, $order);
@@ -152,9 +152,13 @@ class OrderController extends AbstractController
 
             $mailer->sendConfirmation($order);
 
-            // Online payment: hand off to the VNPay gateway (if configured).
-            if ($order->getPaymentMethod() === 'vnpay' && $vnpay->isConfigured()) {
-                return new RedirectResponse($vnpay->createPaymentUrl($order, $req));
+            // Online payment: hand off to the MoMo gateway (if configured).
+            if ($order->getPaymentMethod() === 'momo' && $momo->isConfigured()) {
+                $payUrl = $momo->createPaymentUrl($order, $req);
+                if ($payUrl !== null) {
+                    return new RedirectResponse($payUrl);
+                }
+                $this->addFlash('error', 'Không thể khởi tạo thanh toán MoMo. Đơn hàng đã được ghi nhận, vui lòng thử thanh toán lại.');
             }
 
             return new RedirectResponse($this->urlGenerator->generate('app_order_confirmation', ['id' => $order->getId()]));

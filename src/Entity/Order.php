@@ -351,6 +351,7 @@ class Order
     {
         return match ($this->payment_method) {
             'bank_transfer' => 'Chuyển khoản ngân hàng',
+            'momo' => 'Thanh toán online qua Ví MoMo',
             'vnpay' => 'Thanh toán online qua VNPay',
             default => 'Thanh toán khi nhận hàng (COD)',
         };

@@ -50,10 +50,10 @@
             <div class="gv-section">
                 <div class="gv-section__head"><h2 style="font-size:1rem">Thanh toán</h2></div>
                 <p class="mb-2">{{ order.paymentMethodLabel }}
-                    {% if order.paid %}<span class="badge bg-success">Đã thanh toán</span>{% elseif order.paymentMethod == 'vnpay' %}<span class="badge bg-warning text-dark">Chờ thanh toán</span>{% endif %}
+                    {% if order.paid %}<span class="badge bg-success">Đã thanh toán</span>{% elseif order.paymentMethod == 'momo' %}<span class="badge bg-warning text-dark">Chờ thanh toán</span>{% endif %}
                 </p>
-                {% if order.paymentMethod == 'vnpay' and not order.paid %}
-                    <a href="{{ path('app_payment_vnpay_start', {'id': order.id}) }}" class="btn btn-danger w-100 mb-2"><i class="bi bi-credit-card"></i> Thanh toán qua VNPay</a>
+                {% if order.paymentMethod == 'momo' and not order.paid %}
+                    <a href="{{ path('app_payment_momo_start', {'id': order.id}) }}" class="btn w-100 mb-2 text-white" style="background:#a50064"><i class="bi bi-wallet2"></i> Thanh toán qua Ví MoMo</a>
                 {% endif %}
                 {% if order.paymentMethod == 'bank_transfer' %}
                     {% set st = store_settings() %}

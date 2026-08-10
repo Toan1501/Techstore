@@ -28,7 +28,7 @@ Website thương mại điện tử (e-commerce) bán máy tính, laptop, PC gam
 - Tìm kiếm gợi ý, lọc theo danh mục / khoảng giá / thương hiệu / số sao, sắp xếp, phân trang
 - Giỏ hàng (mini-cart), **yêu thích**, **so sánh sản phẩm**
 - Thanh toán: địa chỉ VN (Tỉnh/Quận/Phường), phí ship tự tính, **mã giảm giá**
-- Phương thức: **COD**, **chuyển khoản**, **VNPay online**
+- Phương thức: **COD**, **chuyển khoản**, **Ví MoMo online**
 - Tài khoản: đăng ký/đăng nhập, đơn hàng của tôi, chi tiết đơn + timeline trạng thái, hủy đơn
 
 **Quản trị (admin)**
@@ -68,9 +68,11 @@ Tạo file **`.env.local`** ở thư mục gốc (không commit file này). Ví 
 ```dotenv
 DATABASE_URL="mysql://root:@127.0.0.1:3306/techstore?serverVersion=8.4.0&charset=utf8mb4"
 
-# (Tùy chọn) VNPay sandbox — lấy tại https://sandbox.vnpayment.vn
-VNP_TMN_CODE=
-VNP_HASH_SECRET=
+# (Tùy chọn) MoMo — mặc định đã dùng thông tin sandbox test công khai của MoMo.
+# Chỉ cần điền khi bạn có tài khoản MoMo Business sandbox riêng:
+# MOMO_PARTNER_CODE=
+# MOMO_ACCESS_KEY=
+# MOMO_SECRET_KEY=
 
 # (Tùy chọn) Gửi email thật — mặc định null (không gửi)
 # MAILER_DSN=smtp://user:pass@smtp.gmail.com:587
@@ -105,7 +107,7 @@ Lệnh này tạo: 6 danh mục, 20 sản phẩm (ảnh/thông số/tồn kho/gi
 
 **Mã giảm giá thử:** `GIAM10` (giảm 10%), `GIAM100K` (giảm 100.000₫, đơn từ 2 triệu), `SALE15` (giảm 15%, đơn từ 10 triệu).
 
-**Thẻ test VNPay (NCB):** số thẻ `9704198526191432198` · tên `NGUYEN VAN A` · ngày `07/15` · OTP `123456`.
+**Ví test MoMo (sandbox):** dùng app **MoMo Test** (Android) hoặc trang QR sandbox. Thẻ ATIENT test (NCB): số thẻ `9704 0000 0000 0018` · tên `NGUYEN VAN A` · ngày `03/07` · OTP `OTP`. Xem hướng dẫn tại [developers.momo.vn](https://developers.momo.vn/v3/vi/docs/payment/onboarding/test-instructions).
 
 ---
 
@@ -122,8 +124,8 @@ php bin/phpunit
   ```sql
   ALTER USER 'user'@'localhost' IDENTIFIED WITH caching_sha2_password BY 'matkhau';
   ```
-- **VNPay IPN** (webhook) cần URL công khai để VNPay gọi được; trên localhost dùng [ngrok](https://ngrok.com) để test. Đường dẫn `return` (trên trình duyệt) vẫn hoạt động bình thường.
-- Nếu chưa cấu hình VNPay, checkout vẫn dùng được **COD / chuyển khoản** (VNPay tự vô hiệu).
+- **MoMo IPN** (webhook) cần URL công khai để MoMo gọi được; trên localhost dùng [ngrok](https://ngrok.com) để test. Đường dẫn `return` (trên trình duyệt) vẫn hoạt động bình thường.
+- Nếu chưa cấu hình MoMo, checkout vẫn dùng được **COD / chuyển khoản** (MoMo tự vô hiệu).
 - Cấu hình cửa hàng (hotline, số tài khoản, phí ship…) chỉnh trong **Admin → Cài đặt cửa hàng**.
 - Chạy lại `php bin/console app:seed` để **reset** về dữ liệu mẫu ban đầu.
 
