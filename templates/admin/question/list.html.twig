@@ -1,0 +1,37 @@
+{% extends 'adbase.html.twig' %}
+
+{% block title %}Hỏi đáp sản phẩm{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Câu hỏi ({{ items|length }})</h6></div>
+        <div class="card-body">
+            {% for q in items %}
+            <div class="border rounded p-3 mb-3">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <span class="text-muted small">{{ q.product ? q.product.name : '(đã xóa)' }} · {{ q.authorName }} · {{ q.createdAt|date('d/m/Y H:i') }}</span>
+                        {% if q.isAnswered %}<span class="badge badge-success">Đã trả lời</span>{% else %}<span class="badge badge-warning">Chờ trả lời</span>{% endif %}
+                        <p class="mb-2 mt-1"><i class="fas fa-question-circle text-primary"></i> {{ q.content }}</p>
+                    </div>
+                    <form method="post" action="{{ path('admin_question_delete', {'id': q.id}) }}" onsubmit="return confirm('Xóa câu hỏi này?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_question_' ~ q.id) }}">
+                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
+                    </form>
+                </div>
+                <form method="post" action="{{ path('admin_question_answer', {'id': q.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('answer_question_' ~ q.id) }}">
+                    <div class="input-group">
+                        <input type="text" name="answer" class="form-control" value="{{ q.answer }}" placeholder="Nhập câu trả lời...">
+                        <button class="btn btn-primary">Lưu</button>
+                    </div>
+                </form>
+            </div>
+            {% else %}
+            <p class="text-center text-muted mb-0">Chưa có câu hỏi nào.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends 'adbase.html.twig' %}
+
+{% block title %}Báo cáo bán hàng{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <h1 class="h3 mb-4 text-gray-800">Báo cáo bán hàng</h1>
+
+    <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2"><div class="card-body">
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Doanh thu (hoàn thành)</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ revenue|vnd }}</div>
+            </div></div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2"><div class="card-body">
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Đơn hoàn thành</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ completed_orders }} / {{ total_orders }}</div>
+            </div></div>
+        </div>
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2"><div class="card-body">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Giá trị đơn trung bình</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ avg_order|vnd }}</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Doanh thu 30 ngày</h6>
+            <a href="{{ path('admin_orders_export') }}" class="btn btn-sm btn-outline-success"><i class="fas fa-file-csv"></i> Xuất đơn hàng (CSV)</a>
+        </div>
+        <div class="card-body"><div style="height:280px"><canvas id="repChart"></canvas></div></div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Sản phẩm bán chạy</h6></div>
+                <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+                    <thead><tr><th>#</th><th>Sản phẩm</th><th>SL bán</th><th>Doanh thu</th></tr></thead>
+                    <tbody>
+                        {% for b in best_sellers %}
+                        <tr><td>{{ loop.index }}</td><td>{{ b.name }}</td><td>{{ b.qty }}</td><td class="text-danger">{{ b.revenue|vnd }}</td></tr>
+                        {% else %}<tr><td colspan="4" class="text-center text-muted">Chưa có dữ liệu.</td></tr>{% endfor %}
+                    </tbody>
+                </table></div></div>
+            </div>
+        </div>
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Doanh thu theo danh mục</h6></div>
+                <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
+                    <thead><tr><th>Danh mục</th><th>Doanh thu</th></tr></thead>
+                    <tbody>
+                        {% for c in revenue_by_category %}
+                        <tr><td>{{ c.name }}</td><td class="text-danger">{{ c.revenue|vnd }}</td></tr>
+                        {% else %}<tr><td colspan="2" class="text-center text-muted">Chưa có dữ liệu.</td></tr>{% endfor %}
+                    </tbody>
+                </table></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    var el = document.getElementById('repChart');
+    if (!el || typeof Chart === 'undefined') return;
+    new Chart(el, {
+        type: 'bar',
+        data: { labels: {{ chart_labels|json_encode|raw }}, datasets: [{ label: 'Doanh thu (₫)', data: {{ chart_values|json_encode|raw }}, backgroundColor: '#e30019' }] },
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return new Intl.NumberFormat('vi-VN').format(v); } } } } }
+    });
+})();
+</script>
+{% endblock %}

@@ -11,12 +11,12 @@
             <button type="submit" class="gv-wish-btn {{ inCompare ? 'active' : '' }}" aria-label="So sánh" title="So sánh"><i class="bi bi-arrow-left-right"></i></button>
         </form>
     </div>
-    <a href="{{ path('app_detailsp', {'id': sp.id}) }}" class="gv-card__imgwrap">
+    <a href="{{ path('app_product', {'slug': sp.slug, 'id': sp.id}) }}" class="gv-card__imgwrap">
         {% if not sp.isInStock() %}<span class="gv-card__soldout"><span>Hết hàng</span></span>{% endif %}
         <img src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" alt="{{ sp.getName() }}" loading="lazy">
     </a>
     <div class="gv-card__body">
-        <a class="gv-card__title line-clamp-2" href="{{ path('app_detailsp', {'id': sp.id}) }}" title="{{ sp.getName() }}">{{ sp.getName() }}</a>
+        <a class="gv-card__title line-clamp-2" href="{{ path('app_product', {'slug': sp.slug, 'id': sp.id}) }}" title="{{ sp.getName() }}">{{ sp.getName() }}</a>
         <div class="gv-card__price">
             <span class="gv-card__price-now">{{ sp.getPrice()|vnd }}</span>
             {% if sp.hasDiscount() %}<span class="gv-card__price-old">{{ sp.getPriceOld()|vnd }}</span>{% endif %}

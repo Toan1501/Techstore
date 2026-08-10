@@ -1,0 +1,19 @@
+{% if status == 'cancelled' %}
+    <div class="alert alert-danger mb-0"><i class="bi bi-x-circle"></i> Đơn hàng đã bị hủy.</div>
+{% else %}
+    {% set steps = [
+        {'l': 'Chờ xử lý', 'i': 'clock'},
+        {'l': 'Đã xác nhận', 'i': 'check-circle'},
+        {'l': 'Đang giao', 'i': 'truck'},
+        {'l': 'Hoàn thành', 'i': 'box-seam'}
+    ] %}
+    {% set idx = {'pending': 0, 'confirmed': 1, 'shipping': 2, 'completed': 3}[status] ?? 0 %}
+    <div class="order-timeline d-flex">
+        {% for step in steps %}
+            <div class="ot-step flex-fill {{ loop.index0 <= idx ? 'active' : '' }}">
+                <div class="ot-dot"><i class="bi bi-{{ step.i }}"></i></div>
+                <div class="ot-label">{{ step.l }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}

@@ -87,11 +87,26 @@
 
         <form method="get" id="filterBar" class="collapse d-lg-block bg-light border rounded-3 p-3 mb-3">
             <div class="row g-2 align-items-end">
-                <div class="col-6 col-lg-3">
+                <div class="col-6 col-lg-2">
                     <label class="form-label small mb-1" for="f-cat">Danh mục</label>
                     <select name="category" id="f-cat" class="form-select form-select-sm">
-                        <option value="">Tất cả danh mục</option>
+                        <option value="">Tất cả</option>
                         {% for c in category %}<option value="{{ c.id }}" {{ filters.category == c.id ? 'selected' : '' }}>{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label small mb-1" for="f-brand">Thương hiệu</label>
+                    <select name="brand" id="f-brand" class="form-select form-select-sm">
+                        <option value="">Tất cả</option>
+                        {% for b in brands %}<option value="{{ b }}" {{ filters.brand == b ? 'selected' : '' }}>{{ b }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <label class="form-label small mb-1" for="f-rating">Đánh giá</label>
+                    <select name="min_rating" id="f-rating" class="form-select form-select-sm">
+                        <option value="">Tất cả</option>
+                        <option value="4" {{ filters.min_rating == '4' ? 'selected' : '' }}>Từ 4 sao</option>
+                        <option value="3" {{ filters.min_rating == '3' ? 'selected' : '' }}>Từ 3 sao</option>
                     </select>
                 </div>
                 <div class="col-6 col-lg-2">

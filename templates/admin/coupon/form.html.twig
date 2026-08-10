@@ -1,0 +1,19 @@
+{% extends 'adbase.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}{{ is_new ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá' }}{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4" style="max-width:620px">
+        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">{{ is_new ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá' }}</h6></div>
+        <div class="card-body">
+            {{ form_start(form) }}
+            {{ form_widget(form) }}
+            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu</button>
+            <a href="{{ path('admin_coupon_list') }}" class="btn btn-secondary mt-2">Hủy</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

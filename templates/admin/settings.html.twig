@@ -1,0 +1,24 @@
+{% extends 'adbase.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Cài đặt cửa hàng{% endblock %}
+
+{% block body %}
+<div class="container-fluid mt-4">
+    <div class="card shadow mb-4" style="max-width:760px">
+        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Cài đặt cửa hàng</h6></div>
+        <div class="card-body">
+            {{ form_start(form) }}
+            <div class="row">
+                <div class="col-md-6">{{ form_row(form.storeName) }}{{ form_row(form.hotline) }}{{ form_row(form.email) }}{{ form_row(form.address) }}</div>
+                <div class="col-md-6">
+                    {{ form_row(form.bankName) }}{{ form_row(form.bankAccount) }}{{ form_row(form.bankOwner) }}
+                    {{ form_row(form.freeShipThreshold) }}{{ form_row(form.shipFeeInner) }}{{ form_row(form.shipFeeOuter) }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu cài đặt</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

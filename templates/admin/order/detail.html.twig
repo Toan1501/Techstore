@@ -4,7 +4,10 @@
 
 {% block body %}
 <div class="container-fluid mt-4">
-    <a href="{{ path('admin_order_list') }}" class="btn btn-sm btn-secondary mb-3">&larr; Quay lại danh sách</a>
+    <div class="mb-3">
+        <a href="{{ path('admin_order_list') }}" class="btn btn-sm btn-secondary">&larr; Quay lại danh sách</a>
+        <a href="{{ path('admin_order_invoice', {'id': order.id}) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-print"></i> In hóa đơn</a>
+    </div>
 
     <div class="row">
         <div class="col-lg-7">

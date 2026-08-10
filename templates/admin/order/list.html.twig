@@ -6,7 +6,8 @@
 <div class="container-fluid mt-4">
     <div class="card shadow mb-4">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Đơn hàng ({{ orders|length }})</h6>
+            <h6 class="m-0 font-weight-bold text-primary d-inline">Đơn hàng ({{ orders|length }})</h6>
+            <a href="{{ path('admin_orders_export') }}" class="btn btn-sm btn-outline-success float-right"><i class="fas fa-file-csv"></i> Xuất CSV</a>
         </div>
         <div class="card-body">
             <div class="table-responsive">

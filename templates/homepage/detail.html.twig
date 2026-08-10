@@ -13,6 +13,19 @@
         </ol>
     </nav>
 
+    {% set ld = {
+        '@context': 'https://schema.org', '@type': 'Product',
+        'name': data.getName(),
+        'image': absolute_url(asset('uploads/sanpham/' ~ data.getPhoto())),
+        'description': data.getDescription() ?: data.getName(),
+        'sku': data.sku ?: '', 'brand': {'@type': 'Brand', 'name': data.brand ?: 'TECHSTORE'},
+        'offers': {'@type': 'Offer', 'priceCurrency': 'VND', 'price': data.getPrice(),
+            'availability': data.isInStock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            'url': app.request.uri}
+    } %}
+    {% if rating.count > 0 %}{% set ld = ld|merge({'aggregateRating': {'@type': 'AggregateRating', 'ratingValue': rating.average, 'reviewCount': rating.count}}) %}{% endif %}
+    <script type="application/ld+json">{{ ld|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
+
     <div class="gv-section">
         <div class="row g-4">
             {# Gallery #}
@@ -147,6 +160,31 @@
                     <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
                 {% endfor %}
             </div>
+
+            <div class="gv-section">
+                <div class="gv-section__head"><h2>Hỏi đáp về sản phẩm</h2></div>
+                <form method="post" action="{{ path('app_question_add', {'id': data.getId()}) }}" class="border rounded p-3 mb-3">
+                    <input type="hidden" name="_token" value="{{ csrf_token('question_' ~ data.getId()) }}">
+                    {% if not app.user %}
+                    <div class="mb-2"><input type="text" name="author_name" class="form-control" placeholder="Tên của bạn" required></div>
+                    {% endif %}
+                    <div class="mb-2"><textarea name="content" class="form-control" rows="2" placeholder="Đặt câu hỏi về sản phẩm..." required></textarea></div>
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Gửi câu hỏi</button>
+                </form>
+                {% for q in questions %}
+                    <div class="border-bottom py-3">
+                        <div><i class="bi bi-question-circle text-danger"></i> <strong>{{ q.authorName }}</strong> <small class="text-muted">{{ q.createdAt|date('d/m/Y') }}</small></div>
+                        <p class="mb-1">{{ q.content }}</p>
+                        {% if q.isAnswered %}
+                            <div class="ms-3 ps-2 border-start"><i class="bi bi-reply text-success"></i> <strong>TECHSTORE:</strong> {{ q.answer }}</div>
+                        {% else %}
+                            <span class="badge bg-secondary">Chờ trả lời</span>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">Chưa có câu hỏi nào.</p>
+                {% endfor %}
+            </div>
         </div>
 
         {# Related #}
@@ -155,7 +193,7 @@
             <div class="gv-section">
                 <div class="gv-section__head"><h2 style="font-size:1rem">Sản phẩm liên quan</h2></div>
                 {% for sp in related %}
-                    <a href="{{ path('app_detailsp', {'id': sp.id}) }}" class="d-flex gap-2 align-items-center py-2 border-bottom text-body">
+                    <a href="{{ path('app_product', {'slug': sp.slug, 'id': sp.id}) }}" class="d-flex gap-2 align-items-center py-2 border-bottom text-body">
                         <img src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" alt="{{ sp.getName() }}" style="width:56px;height:56px;object-fit:contain;border:1px solid var(--ts-border);border-radius:6px">
                         <div class="min-w-0">
                             <div class="line-clamp-2 small">{{ sp.getName() }}</div>
@@ -168,6 +206,19 @@
         </div>
     </div>
 </div>
+
+{% if recently_viewed is not empty %}
+<div class="container-fluid px-3 px-xl-5 pb-3">
+    <div class="gv-section">
+        <div class="gv-section__head"><h2>Đã xem gần đây</h2></div>
+        <div class="row g-3">
+            {% for sp in recently_viewed %}
+                <div class="col-6 col-md-4 col-lg-2">{% include 'partials/_product_card.html.twig' with {sp: sp, ratings: {}} %}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
 
 {# spacer + sticky add-to-cart bar (mobile) #}
 <div class="d-lg-none" style="height:64px"></div>
@@ -185,6 +236,7 @@
 {% endblock %}
 
 {% block javascripts %}
+<div class="ts-lightbox" id="lightbox"><img id="lightboxImg" src="" alt=""></div>
 <script>
 document.querySelectorAll('.thumb-img').forEach(function (t) {
     t.addEventListener('click', function () {
@@ -194,6 +246,16 @@ document.querySelectorAll('.thumb-img').forEach(function (t) {
         this.classList.add('active');
     });
 });
+// Lightbox zoom
+(function () {
+    var main = document.getElementById('mainImg');
+    var box = document.getElementById('lightbox');
+    var img = document.getElementById('lightboxImg');
+    if (main && box) {
+        main.addEventListener('click', function () { img.src = main.src; box.classList.add('open'); });
+        box.addEventListener('click', function () { box.classList.remove('open'); });
+    }
+})();
 // keep hidden qty inputs in sync with the quantity selector
 var qty = document.getElementById('qty');
 if (qty) qty.addEventListener('change', function () {

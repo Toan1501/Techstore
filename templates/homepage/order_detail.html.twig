@@ -17,6 +17,10 @@
         <span class="badge bg-{{ order.statusColor }} fs-6">{{ order.statusLabel }}</span>
     </div>
 
+    <div class="gv-section">
+        {% include 'partials/_order_timeline.html.twig' with {status: order.status} %}
+    </div>
+
     <div class="row g-3">
         <div class="col-lg-7">
             <div class="gv-section">

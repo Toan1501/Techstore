@@ -22,6 +22,7 @@
     </head>
     <body>
     {% set _cart = app.session.get('cart') %}
+    {% set st = store_settings() %}
 
     <header class="gv-header">
         <div class="gv-topbar d-none d-md-block">
@@ -34,7 +35,7 @@
                         <a href="{{ path('app_wishlist') }}">Yêu thích</a>
                         <a href="{{ path('app_contact') }}">Liên hệ</a>
                     </div>
-                    <div><i class="bi bi-headset me-1"></i> Hỗ trợ: <strong>1900 5301</strong> &nbsp;|&nbsp; 08:00 – 21:00</div>
+                    <div><i class="bi bi-headset me-1"></i> Hỗ trợ: <strong>{{ st.hotline }}</strong> &nbsp;|&nbsp; 08:00 – 21:00</div>
                 </div>
             </div>
         </div>
@@ -64,7 +65,7 @@
                     <div class="gv-icons">
                         <div class="gv-hotline gv-icon-btn d-none d-xl-flex">
                             <i class="bi bi-headset"></i>
-                            <div><small>Hotline</small><strong>1900 5301</strong></div>
+                            <div><small>Hotline</small><strong>{{ st.hotline }}</strong></div>
                         </div>
 
                         <a href="{{ path('app_wishlist') }}" class="gv-icon-btn position-relative d-none d-md-flex" aria-label="Yêu thích">
@@ -230,8 +231,9 @@
                 </div>
                 <div class="col-6 col-lg-3">
                     <h6>KẾT NỐI</h6>
-                    <p class="small mb-1"><i class="bi bi-headset text-danger"></i> Hotline: <strong>1900 5301</strong></p>
-                    <p class="small mb-2"><i class="bi bi-envelope text-danger"></i> support@techstore.vn</p>
+                    <p class="small mb-1"><i class="bi bi-geo-alt text-danger"></i> {{ st.address }}</p>
+                    <p class="small mb-1"><i class="bi bi-headset text-danger"></i> Hotline: <strong>{{ st.hotline }}</strong></p>
+                    <p class="small mb-2"><i class="bi bi-envelope text-danger"></i> {{ st.email }}</p>
                     <div class="d-flex gap-3 fs-4 mb-2">
                         <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
                         <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
