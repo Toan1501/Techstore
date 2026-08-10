@@ -173,7 +173,10 @@
                                 <div class="line-clamp-1 small">{{ item.product.name }}</div>
                                 <div class="text-muted small">{{ item.quantity }} &times; {{ item.product.price|vnd }}</div>
                             </div>
-                            <a href="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" class="text-muted" aria-label="Xóa"><i class="bi bi-x-lg"></i></a>
+                            <form action="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" method="POST">
+                                <input type="hidden" name="_token" value="{{ csrf_token('cart_remove_' ~ item.product.id) }}" />
+                                <button type="submit" class="btn btn-link text-muted p-0" aria-label="Xóa"><i class="bi bi-x-lg"></i></button>
+                            </form>
                         </div>
                     {% endfor %}
                 </div>

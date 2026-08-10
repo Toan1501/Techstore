@@ -63,13 +63,15 @@ class CartController extends AbstractController
 
         return new RedirectResponse($this->urlGenerator->generate('app_cart'));
     }
-    #[Route('/cart/remove/{product_id}', name: 'app_cart_remove')]
-    public function remove(int $product_id, Request $request, EntityManagerInterface $em): Response
+    #[Route('/cart/remove/{product_id}', name: 'app_cart_remove', methods: ['POST'])]
+    public function remove(int $product_id, Request $request): Response
     {
-        $product = $em->find(SanPham::class, $product_id);
+        if (!$this->isCsrfTokenValid('cart_remove_' . $product_id, (string) $request->request->get('_token'))) {
+            return new RedirectResponse($this->urlGenerator->generate('app_cart'));
+        }
         $session = $request->getSession();
         $cart_manager = $session->get('cart', new CartManager());
-        $cart_manager->removeItem($product);
+        $cart_manager->removeItemById($product_id);
         $session->set('cart', $cart_manager);
         return new RedirectResponse($this->urlGenerator->generate('app_cart'));
     }
@@ -109,16 +111,25 @@ class CartController extends AbstractController
         return new RedirectResponse($this->urlGenerator->generate('app_order'));
     }
 
-    #[Route('/cart/update/', name: 'app_cart_update')]
+    #[Route('/cart/update', name: 'app_cart_update', methods: ['POST'])]
     public function update(Request $request, EntityManagerInterface $em): Response
     {
-        $product_id = $request->request->get('product_id');
-        $quantity = $request->request->get('qty');
-        $product = $em->find(SanPham::class, $product_id);
-        $session = $request->getSession();
-        $cart_manager = $session->get('cart', new CartManager());
-        $cart_manager->updateItem($product, $quantity);
-        $session->set('cart', $cart_manager);
+        if (!$this->isCsrfTokenValid('cart_update', (string) $request->request->get('_token'))) {
+            return new RedirectResponse($this->urlGenerator->generate('app_cart'));
+        }
+        $product = $em->find(SanPham::class, (int) $request->request->get('product_id'));
+        if ($product) {
+            $qty = max(1, (int) $request->request->get('qty', 1));
+            $stock = (int) $product->getStock();
+            if ($stock > 0 && $qty > $stock) {
+                $qty = $stock;
+                $this->addFlash('warning', 'Chỉ còn ' . $stock . ' sản phẩm "' . $product->getName() . '" trong kho.');
+            }
+            $session = $request->getSession();
+            $cart_manager = $session->get('cart', new CartManager());
+            $cart_manager->updateItem($product, $qty);
+            $session->set('cart', $cart_manager);
+        }
         return new RedirectResponse($this->urlGenerator->generate('app_cart'));
     }
 }

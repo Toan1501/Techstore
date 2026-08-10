@@ -14,6 +14,7 @@ class CartManager
         }
     }
     public function updateItem($product, $quantity = 1){
+        $quantity = max(1, (int) $quantity);
         if (array_key_exists($product->getId(), $this->items)){
             $this->items[$product->getId()]->quantity = $quantity;
         }
@@ -30,6 +31,10 @@ class CartManager
         if (array_key_exists($product->getId(), $this->items)){
             unset($this->items[$product->getId()]);
         }
+    }
+    /** Remove by product id — works even if the product row was deleted. */
+    public function removeItemById($id){
+        unset($this->items[$id]);
     }
     public function getAmount(){
         $total = 0;

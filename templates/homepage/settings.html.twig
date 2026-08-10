@@ -14,6 +14,7 @@
     <div class="gv-section">
         <div class="gv-section__head"><h2>Chỉnh sửa thông tin</h2></div>
         <form method="post" action="{{ path('edit_profile') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('edit_profile') }}">
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="first_name" class="form-label">Họ</label>

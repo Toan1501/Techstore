@@ -10,6 +10,7 @@ use App\Form\OrderFormType;
 use App\Repository\OrderRepository;
 use App\Service\OrderMailer;
 use App\Service\ShippingCalculator;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -109,35 +110,41 @@ class OrderController extends AbstractController
             $order = $form->getData();
             $em->getConnection()->beginTransaction();
             try {
-                $subtotal = $cart_manager->getAmount();
-                $fee = $shipping->calculate($order->getShippingProvince(), $subtotal);
-                $discount = $appliedCoupon ? $appliedCoupon->computeDiscount($subtotal) : 0.0;
-
-                $order->setShippingFee($fee);
-                $order->setDiscount($discount);
-                $order->setCouponCode($appliedCoupon ? $appliedCoupon->getCode() : null);
-                $order->setTotalPrice($subtotal - $discount + $fee);
                 $order->setStatus('pending');
                 $order->setCreatedAt(new \DateTime());
                 $order->setUser($this->getUser());
                 $em->persist($order);
 
+                $itemsSubtotal = 0.0;
                 foreach ($cart_manager->getItems() as $cart_item) {
-                    $product = $em->find(SanPham::class, $cart_item->getProduct()->getId());
+                    // Lock the product row for the duration of the transaction so the
+                    // read-check-decrement is atomic (prevents overselling under concurrency).
+                    $product = $em->find(SanPham::class, $cart_item->getProduct()->getId(), LockMode::PESSIMISTIC_WRITE);
                     if (!$product) {
                         throw new Exception('Product no longer available.');
                     }
-                    if ((int) $product->getStock() < (int) $cart_item->quantity) {
+                    $qty = max(1, (int) $cart_item->quantity);
+                    if ((int) $product->getStock() < $qty) {
                         throw new Exception('Not enough stock for "' . $product->getName() . '".');
                     }
                     $orderItem = new OrderItem();
                     $orderItem->setProduct($product);
-                    $orderItem->setQuantity($cart_item->quantity);
+                    $orderItem->setQuantity($qty);
                     $orderItem->setPrice($product->getPrice());
                     $orderItem->setOrderRef($order);
                     $em->persist($orderItem);
-                    $product->setStock((int) $product->getStock() - (int) $cart_item->quantity);
+                    $product->setStock((int) $product->getStock() - $qty);
+                    $itemsSubtotal += (float) $product->getPrice() * $qty;
                 }
+
+                // Totals are derived from the DB-authoritative subtotal — never from
+                // session/client prices — so admin price changes can't be exploited.
+                $fee = $shipping->calculate($order->getShippingProvince(), $itemsSubtotal);
+                $discount = $appliedCoupon ? $appliedCoupon->computeDiscount($itemsSubtotal) : 0.0;
+                $order->setShippingFee($fee);
+                $order->setDiscount($discount);
+                $order->setCouponCode($appliedCoupon ? $appliedCoupon->getCode() : null);
+                $order->setTotalPrice($itemsSubtotal - $discount + $fee);
 
                 $em->flush();
                 $em->getConnection()->commit();

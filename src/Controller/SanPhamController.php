@@ -150,7 +150,11 @@ class SanPhamController extends AbstractController
         #[Route('/cate/{id}', name: 'app_ds_san_pham_in_category')]
         public function listSPinCate(EntityManagerInterface $em, int $id, Request $req): Response
             {
+                $this->denyAccessUnlessGranted('ROLE_ADMIN');
                 $cate = $em->find(Category::class, $id);
+                if (!$cate) {
+                    throw $this->createNotFoundException('Danh mục không tồn tại.');
+                }
                 $lSp = $cate->getSanPhams();
                 return $this->render('san_pham/list.html.twig', [
                     "data"=>$lSp

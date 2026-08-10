@@ -174,13 +174,32 @@ class HomepageController extends AbstractController
         $user = $this->getUser();
 
         if ($request->isMethod('POST')) {
-            $user->setFirstName($request->request->get('first_name'));
-            $user->setLastName($request->request->get('last_name'));
-            $user->setAddress($request->request->get('address'));
-            $user->setPhonenumber($request->request->get('phone_number'));
+            if (!$this->isCsrfTokenValid('edit_profile', (string) $request->request->get('_token'))) {
+                $this->addFlash('error', 'Phiên làm việc không hợp lệ, vui lòng thử lại.');
+                return $this->redirectToRoute('edit_profile');
+            }
+
+            $firstName = trim((string) $request->request->get('first_name'));
+            $lastName = trim((string) $request->request->get('last_name'));
+            $address = trim((string) $request->request->get('address'));
+            $phone = trim((string) $request->request->get('phone_number'));
+
+            if ($firstName === '' || $lastName === '' || $address === '') {
+                $this->addFlash('error', 'Vui lòng điền đầy đủ họ, tên và địa chỉ.');
+                return $this->redirectToRoute('edit_profile');
+            }
+            if (!preg_match('/^[0-9]{9,12}$/', $phone)) {
+                $this->addFlash('error', 'Số điện thoại phải gồm 9–12 chữ số.');
+                return $this->redirectToRoute('edit_profile');
+            }
+
+            $user->setFirstName($firstName);
+            $user->setLastName($lastName);
+            $user->setAddress($address);
+            $user->setPhonenumber($phone);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Your profile has been updated.');
+            $this->addFlash('success', 'Đã cập nhật thông tin tài khoản.');
 
             return $this->redirectToRoute('profile');
         }

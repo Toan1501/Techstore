@@ -17,6 +17,10 @@ security:
             lazy: true
             provider: app_user_provider
             custom_authenticator: App\Security\AppCustomAuthenticator
+            # Throttle repeated failed logins (brute-force / credential-stuffing defense).
+            login_throttling:
+                max_attempts: 5          # per minute, per username+IP
+                interval: '1 minute'
             logout:
                 path: app_logout
                 target: homepage

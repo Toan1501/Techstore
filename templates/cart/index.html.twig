@@ -29,10 +29,14 @@
                     </div>
                     <form action="{{ path('app_cart_update') }}" method="POST" class="flex-shrink-0">
                         <input type="hidden" value="{{ item.product.id }}" name="product_id" />
+                        <input type="hidden" name="_token" value="{{ csrf_token('cart_update') }}" />
                         <input type="number" onchange="this.form.submit()" value="{{ item.quantity }}" min="1" name="qty" class="form-control cart-qty rounded-3" title="Số lượng"/>
                     </form>
                     <div class="text-end d-none d-md-block fw-semibold" style="min-width:120px" title="Đơn giá">{{ item.product.price|vnd }}</div>
-                    <a href="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" class="text-muted flex-shrink-0" title="Xóa"><i class="bi bi-trash"></i></a>
+                    <form action="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" method="POST" class="flex-shrink-0">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cart_remove_' ~ item.product.id) }}" />
+                        <button type="submit" class="btn btn-link text-muted p-0" title="Xóa"><i class="bi bi-trash"></i></button>
+                    </form>
                 </div>
                 {% else %}
                 <div class="text-center text-muted py-5">
