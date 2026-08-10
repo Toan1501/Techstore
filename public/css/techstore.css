@@ -201,9 +201,51 @@ a { text-decoration: none; }
 .offcanvas-header.bg-danger { background: var(--ts-primary) !important; }
 
 /* ==========================================================================
-   Forms
+   Forms — premium
    ========================================================================== */
-.form-control:focus, .form-select:focus { border-color: var(--ts-primary); box-shadow: 0 0 0 .2rem rgba(227, 0, 25, .15); }
+.form-control, .form-select {
+    min-height: 46px;
+    border-radius: 10px;
+    border: 1px solid #dfe3e8;
+    padding: .55rem .9rem;
+    font-size: .95rem;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+textarea.form-control { min-height: auto; }
+.form-control:focus, .form-select:focus { border-color: var(--ts-primary); box-shadow: 0 0 0 .2rem rgba(227, 0, 25, .12); }
+.form-control::placeholder { color: #9aa0a6; }
+.form-label { font-weight: 500; font-size: .85rem; color: var(--ts-ink); margin-bottom: .35rem; }
+
+/* Input with leading icon */
+.ts-field { position: relative; }
+.ts-field .input-group-text {
+    background: #fff; border: 1px solid #dfe3e8; border-right: 0;
+    border-radius: 10px 0 0 10px; color: var(--ts-muted); min-width: 44px; justify-content: center;
+}
+.ts-field .form-control, .ts-field .form-select { border-left: 0; border-radius: 0 10px 10px 0; }
+.ts-field:focus-within .input-group-text { border-color: var(--ts-primary); color: var(--ts-primary); }
+
+/* Auth / form card */
+.auth-card { background: #fff; border: 1px solid var(--ts-border); border-radius: 14px; box-shadow: var(--ts-shadow-lg); overflow: hidden; }
+.auth-card__head { background: linear-gradient(135deg, var(--ts-primary), #ff4a3d); color: #fff; padding: 22px 26px; text-align: center; }
+.auth-card__head h1 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+.auth-card__head p { margin: 4px 0 0; opacity: .9; font-size: .85rem; }
+.auth-card__body { padding: 26px; }
+.btn-lg-cta { padding: .7rem 1rem; font-weight: 600; font-size: 1rem; border-radius: 10px; }
+
+/* Payment method tiles */
+.ts-payments .form-check { border: 1px solid var(--ts-border); border-radius: 10px; padding: .75rem 1rem .75rem 2.6rem; margin-bottom: 10px; cursor: pointer; transition: border-color .15s, background .15s; }
+.ts-payments .form-check:hover { border-color: #f2c2c6; }
+.ts-payments .form-check-input:checked ~ .form-check-label { color: var(--ts-primary); font-weight: 500; }
+.ts-payments .form-check:has(.form-check-input:checked) { border-color: var(--ts-primary); background: #fff5f5; }
+.ts-payments .form-check-input { margin-left: -1.9rem; margin-top: .25rem; }
+
+/* Checkout card sections */
+.checkout-card { background: #fff; border: 1px solid var(--ts-border); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+.checkout-card__head { padding: 14px 18px; font-weight: 600; border-bottom: 1px solid var(--ts-border); display: flex; align-items: center; gap: 8px; }
+.checkout-card__head i { color: var(--ts-primary); }
+.checkout-card__body { padding: 18px; }
+.checkout-summary { position: sticky; top: 120px; }
 
 /* ==========================================================================
    FOOTER (GearVN style)

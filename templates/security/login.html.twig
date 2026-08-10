@@ -3,35 +3,47 @@
 {% block title %}Đăng nhập — TECHSTORE{% endblock %}
 
 {% block body %}
-<div class="container py-5" style="max-width:440px">
-    <div class="gv-section">
-        <h1 class="h4 text-center mb-4">Đăng nhập</h1>
+<div class="container py-5" style="max-width:460px">
+    <div class="auth-card">
+        <div class="auth-card__head">
+            <h1><i class="bi bi-person-circle me-1"></i> Đăng nhập</h1>
+            <p>Chào mừng bạn quay lại TECHSTORE</p>
+        </div>
+        <div class="auth-card__body">
+            {% if error %}
+                <div class="alert alert-danger py-2"><i class="bi bi-exclamation-circle me-1"></i>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+            {% if app.user %}
+                <div class="alert alert-info py-2">Bạn đang đăng nhập với tên {{ app.user.userIdentifier }}. <a href="{{ path('app_logout') }}">Đăng xuất</a></div>
+            {% endif %}
 
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
-        {% if app.user %}
-            <div class="alert alert-info">Bạn đang đăng nhập với tên {{ app.user.userIdentifier }}. <a href="{{ path('app_logout') }}">Đăng xuất</a></div>
-        {% endif %}
+            <form method="post">
+                <div class="mb-3">
+                    <label for="inputUsername" class="form-label">Tên đăng nhập</label>
+                    <div class="input-group ts-field">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" autocomplete="username" required autofocus>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="inputPassword" class="form-label">Mật khẩu</label>
+                    <div class="input-group ts-field">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+                    </div>
+                </div>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="form-check mb-0">
+                        <input type="checkbox" name="_remember_me" id="remember" class="form-check-input">
+                        <label class="form-check-label small" for="remember">Ghi nhớ đăng nhập</label>
+                    </div>
+                </div>
+                <button class="btn btn-danger btn-lg-cta w-100" type="submit">ĐĂNG NHẬP</button>
+            </form>
 
-        <form method="post">
-            <div class="mb-3">
-                <label for="inputUsername" class="form-label">Tên đăng nhập</label>
-                <input type="text" value="{{ last_username }}" name="username" id="inputUsername" class="form-control" autocomplete="username" required autofocus>
-            </div>
-            <div class="mb-3">
-                <label for="inputPassword" class="form-label">Mật khẩu</label>
-                <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-            </div>
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-            <div class="form-check mb-3">
-                <input type="checkbox" name="_remember_me" id="remember" class="form-check-input">
-                <label class="form-check-label" for="remember">Ghi nhớ đăng nhập</label>
-            </div>
-            <button class="btn btn-danger w-100" type="submit">Đăng nhập</button>
-        </form>
-
-        <p class="text-center mt-3 mb-0">Chưa có tài khoản? <a href="{{ path('app_register') }}">Đăng ký ngay</a></p>
+            <p class="text-center mt-3 mb-0 small">Chưa có tài khoản? <a href="{{ path('app_register') }}" class="fw-semibold text-danger">Đăng ký ngay</a></p>
+        </div>
     </div>
 </div>
 {% endblock %}

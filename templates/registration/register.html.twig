@@ -3,26 +3,40 @@
 
 {% block title %}Đăng ký — TECHSTORE{% endblock %}
 
+{% macro field(f, icon, label) %}
+    {{ form_label(f, label) }}
+    <div class="input-group ts-field">
+        <span class="input-group-text"><i class="bi bi-{{ icon }}"></i></span>
+        {{ form_widget(f, {attr: {class: 'form-control'}}) }}
+    </div>
+    {{ form_errors(f) }}
+{% endmacro %}
+
 {% block body %}
+{% import _self as ui %}
 <div class="container py-5" style="max-width:560px">
-    <div class="gv-section">
-        <h1 class="h4 text-center mb-4">Đăng ký tài khoản</h1>
+    <div class="auth-card">
+        <div class="auth-card__head">
+            <h1><i class="bi bi-person-plus me-1"></i> Đăng ký tài khoản</h1>
+            <p>Tạo tài khoản để mua sắm nhanh hơn</p>
+        </div>
+        <div class="auth-card__body">
+            {{ form_errors(registrationForm) }}
+            {{ form_start(registrationForm) }}
+                <div class="row g-3">
+                    <div class="col-12">{{ ui.field(registrationForm.username, 'person', 'Tên đăng nhập') }}</div>
+                    <div class="col-md-6">{{ ui.field(registrationForm.first_name, 'person-badge', 'Họ') }}</div>
+                    <div class="col-md-6">{{ ui.field(registrationForm.last_name, 'person-badge', 'Tên') }}</div>
+                    <div class="col-12">{{ ui.field(registrationForm.address, 'geo-alt', 'Địa chỉ') }}</div>
+                    <div class="col-12">{{ ui.field(registrationForm.phonenumber, 'telephone', 'Số điện thoại') }}</div>
+                    <div class="col-12">{{ ui.field(registrationForm.plainPassword, 'lock', 'Mật khẩu') }}</div>
+                    <div class="col-12">{{ form_row(registrationForm.agreeTerms, {label: 'Tôi đồng ý với điều khoản sử dụng'}) }}</div>
+                </div>
+                <button type="submit" class="btn btn-danger btn-lg-cta w-100 mt-2">ĐĂNG KÝ</button>
+            {{ form_end(registrationForm) }}
 
-        {{ form_errors(registrationForm) }}
-        {{ form_start(registrationForm) }}
-            <div class="row g-3">
-                <div class="col-12">{{ form_row(registrationForm.username, {label: 'Tên đăng nhập'}) }}</div>
-                <div class="col-md-6">{{ form_row(registrationForm.first_name, {label: 'Họ'}) }}</div>
-                <div class="col-md-6">{{ form_row(registrationForm.last_name, {label: 'Tên'}) }}</div>
-                <div class="col-12">{{ form_row(registrationForm.address, {label: 'Địa chỉ'}) }}</div>
-                <div class="col-12">{{ form_row(registrationForm.phonenumber, {label: 'Số điện thoại'}) }}</div>
-                <div class="col-12">{{ form_row(registrationForm.plainPassword, {label: 'Mật khẩu'}) }}</div>
-                <div class="col-12">{{ form_row(registrationForm.agreeTerms, {label: 'Tôi đồng ý với điều khoản sử dụng'}) }}</div>
-            </div>
-            <button type="submit" class="btn btn-danger w-100 mt-2">Đăng ký</button>
-        {{ form_end(registrationForm) }}
-
-        <p class="text-center mt-3 mb-0">Đã có tài khoản? <a href="{{ path('app_login') }}">Đăng nhập</a></p>
+            <p class="text-center mt-3 mb-0 small">Đã có tài khoản? <a href="{{ path('app_login') }}" class="fw-semibold text-danger">Đăng nhập</a></p>
+        </div>
     </div>
 </div>
 {% endblock %}

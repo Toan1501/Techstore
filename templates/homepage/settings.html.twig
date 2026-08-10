@@ -17,22 +17,26 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label for="first_name" class="form-label">Họ</label>
-                    <input type="text" id="first_name" name="first_name" value="{{ user.firstName }}" class="form-control" required>
+                    <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <input type="text" id="first_name" name="first_name" value="{{ user.firstName }}" class="form-control" required></div>
                 </div>
                 <div class="col-md-6">
                     <label for="last_name" class="form-label">Tên</label>
-                    <input type="text" id="last_name" name="last_name" value="{{ user.lastName }}" class="form-control" required>
+                    <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                        <input type="text" id="last_name" name="last_name" value="{{ user.lastName }}" class="form-control" required></div>
                 </div>
                 <div class="col-12">
                     <label for="address" class="form-label">Địa chỉ</label>
-                    <input type="text" id="address" name="address" value="{{ user.address }}" class="form-control" required>
+                    <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                        <input type="text" id="address" name="address" value="{{ user.address }}" class="form-control" required></div>
                 </div>
                 <div class="col-12">
                     <label for="phone_number" class="form-label">Số điện thoại</label>
-                    <input type="text" id="phone_number" name="phone_number" value="{{ user.phoneNumber }}" class="form-control" required>
+                    <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                        <input type="text" id="phone_number" name="phone_number" value="{{ user.phoneNumber }}" class="form-control" required></div>
                 </div>
             </div>
-            <button class="btn btn-danger mt-3" type="submit">Lưu thay đổi</button>
+            <button class="btn btn-danger btn-lg-cta mt-3" type="submit"><i class="bi bi-check2-circle"></i> Lưu thay đổi</button>
         </form>
     </div>
 </div>

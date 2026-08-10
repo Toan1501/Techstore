@@ -15,30 +15,49 @@
     {{ form_start(order_form) }}
     <div class="row g-4">
         <div class="col-lg-7">
-            <div class="card">
-                <div class="card-header fw-semibold">Thông tin giao hàng</div>
-                <div class="card-body">
+            <div class="checkout-card">
+                <div class="checkout-card__head"><i class="bi bi-truck"></i> Thông tin giao hàng</div>
+                <div class="checkout-card__body">
                     <div class="row g-3">
-                        <div class="col-md-6">{{ form_row(order_form.customer_name) }}</div>
-                        <div class="col-md-6">{{ form_row(order_form.customer_phone) }}</div>
-                        <div class="col-12">{{ form_row(order_form.customer_email) }}</div>
+                        <div class="col-md-6">
+                            {{ form_label(order_form.customer_name) }}
+                            <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-person"></i></span>{{ form_widget(order_form.customer_name, {attr: {class: 'form-control'}}) }}</div>
+                            {{ form_errors(order_form.customer_name) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_label(order_form.customer_phone) }}
+                            <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-telephone"></i></span>{{ form_widget(order_form.customer_phone, {attr: {class: 'form-control'}}) }}</div>
+                            {{ form_errors(order_form.customer_phone) }}
+                        </div>
+                        <div class="col-12">
+                            {{ form_label(order_form.customer_email) }}
+                            <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-envelope"></i></span>{{ form_widget(order_form.customer_email, {attr: {class: 'form-control'}}) }}</div>
+                            {{ form_errors(order_form.customer_email) }}
+                        </div>
                         <div class="col-md-4">{{ form_row(order_form.shipping_province) }}</div>
                         <div class="col-md-4">{{ form_row(order_form.shipping_district) }}</div>
                         <div class="col-md-4">{{ form_row(order_form.shipping_ward) }}</div>
-                        <div class="col-12">{{ form_row(order_form.customer_address) }}</div>
+                        <div class="col-12">
+                            {{ form_label(order_form.customer_address) }}
+                            <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-geo-alt"></i></span>{{ form_widget(order_form.customer_address, {attr: {class: 'form-control'}}) }}</div>
+                            {{ form_errors(order_form.customer_address) }}
+                        </div>
                         <div class="col-12">{{ form_row(order_form.note) }}</div>
                     </div>
                 </div>
             </div>
 
-            <div class="card mt-3">
-                <div class="card-header fw-semibold">Phương thức thanh toán</div>
-                <div class="card-body">{{ form_row(order_form.payment_method) }}</div>
+            <div class="checkout-card">
+                <div class="checkout-card__head"><i class="bi bi-credit-card"></i> Phương thức thanh toán</div>
+                <div class="checkout-card__body">
+                    <div class="ts-payments">{{ form_widget(order_form.payment_method) }}</div>
+                    {{ form_errors(order_form.payment_method) }}
+                </div>
             </div>
         </div>
 
         <div class="col-lg-5">
-            <div class="card position-sticky" style="top:120px">
+            <div class="card checkout-summary">
                 <div class="card-header fw-semibold">Đơn hàng của bạn ({{ cart_manager.totalItems }})</div>
                 <div class="card-body">
                     <div style="max-height:240px;overflow:auto">
@@ -74,7 +93,7 @@
                         <span>Tổng cộng</span><span id="sum-total" class="text-danger">{{ (cart_manager.amount - discount)|vnd }}</span>
                     </div>
                     <p class="text-muted small mt-2 mb-0">Miễn phí vận chuyển cho đơn từ {{ free_ship_threshold|vnd }}.</p>
-                    <button type="submit" class="btn btn-danger w-100 mt-3">ĐẶT HÀNG</button>
+                    <button type="submit" class="btn btn-danger btn-lg-cta w-100 mt-3"><i class="bi bi-bag-check"></i> ĐẶT HÀNG</button>
                 </div>
             </div>
         </div>
