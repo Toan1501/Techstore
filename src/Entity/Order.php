@@ -81,6 +81,12 @@ class Order
     #[ORM\Column(length: 30, nullable: true)]
     private ?string $payment_method = 'cod';
 
+    #[ORM\Column(options: ['default' => false])]
+    private ?bool $paid = false;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $paidAt = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\Length(max: 500)]
     private ?string $note = null;
@@ -345,8 +351,33 @@ class Order
     {
         return match ($this->payment_method) {
             'bank_transfer' => 'Chuyển khoản ngân hàng',
+            'vnpay' => 'Thanh toán online qua VNPay',
             default => 'Thanh toán khi nhận hàng (COD)',
         };
+    }
+
+    public function isPaid(): ?bool
+    {
+        return $this->paid;
+    }
+
+    public function setPaid(bool $paid): static
+    {
+        $this->paid = $paid;
+
+        return $this;
+    }
+
+    public function getPaidAt(): ?\DateTimeInterface
+    {
+        return $this->paidAt;
+    }
+
+    public function setPaidAt(?\DateTimeInterface $paidAt): static
+    {
+        $this->paidAt = $paidAt;
+
+        return $this;
     }
 
     public function getNote(): ?string

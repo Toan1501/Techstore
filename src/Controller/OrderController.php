@@ -78,7 +78,7 @@ class OrderController extends AbstractController
     }
 
     #[Route('/order', name: 'app_order')]
-    public function index(EntityManagerInterface $em, Request $req, ShippingCalculator $shipping, OrderMailer $mailer, \App\Repository\CouponRepository $couponRepo): Response
+    public function index(EntityManagerInterface $em, Request $req, ShippingCalculator $shipping, OrderMailer $mailer, \App\Repository\CouponRepository $couponRepo, \App\Service\VnpayService $vnpay): Response
     {
         $order = new Order();
         $form = $this->createForm(OrderFormType::class, $order);
@@ -151,6 +151,11 @@ class OrderController extends AbstractController
             }
 
             $mailer->sendConfirmation($order);
+
+            // Online payment: hand off to the VNPay gateway (if configured).
+            if ($order->getPaymentMethod() === 'vnpay' && $vnpay->isConfigured()) {
+                return new RedirectResponse($vnpay->createPaymentUrl($order, $req));
+            }
 
             return new RedirectResponse($this->urlGenerator->generate('app_order_confirmation', ['id' => $order->getId()]));
         }

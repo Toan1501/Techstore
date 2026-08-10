@@ -45,7 +45,12 @@
 
             <div class="gv-section">
                 <div class="gv-section__head"><h2 style="font-size:1rem">Thanh toán</h2></div>
-                <p class="mb-2">{{ order.paymentMethodLabel }} — <span class="badge bg-{{ order.statusColor }}">{{ order.statusLabel }}</span></p>
+                <p class="mb-2">{{ order.paymentMethodLabel }}
+                    {% if order.paid %}<span class="badge bg-success">Đã thanh toán</span>{% elseif order.paymentMethod == 'vnpay' %}<span class="badge bg-warning text-dark">Chờ thanh toán</span>{% endif %}
+                </p>
+                {% if order.paymentMethod == 'vnpay' and not order.paid %}
+                    <a href="{{ path('app_payment_vnpay_start', {'id': order.id}) }}" class="btn btn-danger w-100 mb-2"><i class="bi bi-credit-card"></i> Thanh toán qua VNPay</a>
+                {% endif %}
                 {% if order.paymentMethod == 'bank_transfer' %}
                     <div class="alert alert-info small mb-0">
                         Vui lòng chuyển khoản <strong>{{ order.totalPrice|vnd }}</strong> tới:<br>

@@ -34,6 +34,7 @@ class OrderFormType extends AbstractType
                 'choices' => [
                     'Thanh toán khi nhận hàng (COD)' => 'cod',
                     'Chuyển khoản ngân hàng' => 'bank_transfer',
+                    'Thanh toán online qua VNPay' => 'vnpay',
                 ],
                 'data' => 'cod',
             ])
