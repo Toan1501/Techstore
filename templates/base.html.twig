@@ -284,7 +284,7 @@
 
     {# Floating compare bar #}
     {% set _compare = app.session.get('compare')|default([]) %}
-    <div id="compare-bar" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 bg-dark text-white rounded-pill px-3 py-2 shadow d-flex align-items-center gap-3" style="z-index:1070; {{ _compare|length == 0 ? 'display:none' : '' }}">
+    <div id="compare-bar" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 bg-dark text-white rounded-pill px-3 py-2 shadow align-items-center gap-3 {{ _compare|length == 0 ? 'd-none' : 'd-flex' }}" style="z-index:1070;">
         <span><i class="bi bi-arrow-left-right"></i> So sánh (<span id="compare-count">{{ _compare|length }}</span>)</span>
         <a href="{{ path('app_compare') }}" class="btn btn-sm btn-danger">Xem so sánh</a>
         <a href="{{ path('app_compare_clear') }}" class="text-white-50" aria-label="Xóa"><i class="bi bi-x-lg"></i></a>
@@ -357,7 +357,7 @@
                 if (!d.ok) return;
                 var btn = form.querySelector('.gv-wish-btn'); if (btn) btn.classList.toggle('active', d.active);
                 var cc = document.getElementById('compare-count'); if (cc) cc.textContent = d.count;
-                var bar = document.getElementById('compare-bar'); if (bar) bar.style.display = d.count > 0 ? '' : 'none';
+                var bar = document.getElementById('compare-bar'); if (bar) { bar.classList.toggle('d-none', d.count == 0); bar.classList.toggle('d-flex', d.count > 0); }
             })
             .catch(function () { window.location.href = form.action; });
     });

@@ -84,9 +84,15 @@ a { text-decoration: none; }
 .gv-menu-btn { color: #fff; font-size: 1.4rem; padding: 2px 8px; }
 
 .gv-search { position: relative; }
-.gv-search .input-group { background: #fff; border-radius: 999px; overflow: hidden; }
+.gv-search .input-group { background: #fff; border-radius: 999px; overflow: hidden; align-items: stretch; min-height: 44px; }
 .gv-search input, .gv-search .select2-container { border: 0 !important; }
-.gv-search .btn { border: 0; border-radius: 0; color: var(--ts-primary); background: #fff; }
+.gv-search .btn { border: 0; border-radius: 0; color: var(--ts-primary); background: #fff; min-width: 46px; }
+/* Make the Select2 search box fill the pill height and center its text */
+.gv-search .select2-container { display: flex; align-items: center; height: 44px; }
+.gv-search .select2-container--default .select2-selection--single { height: 44px; border: 0; background: transparent; display: flex; align-items: center; width: 100%; }
+.gv-search .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: normal; padding-left: 16px; padding-right: 8px; color: var(--ts-ink); }
+.gv-search .select2-container--default .select2-selection--single .select2-selection__placeholder { color: #9aa2ab; }
+.gv-search .select2-container--default .select2-selection--single .select2-selection__arrow { height: 42px; }
 
 .gv-icons { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .gv-icon-btn { display: flex; align-items: center; gap: 8px; color: #fff; padding: 6px 10px; border-radius: var(--ts-radius-sm); background: transparent; border: 0; }
