@@ -81,9 +81,9 @@
 
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <div class="input-group" style="width:130px">
-                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=Math.max(1,parseInt(q.value||1)-1)">−</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=Math.max(1,parseInt(q.value||1)-1); q.dispatchEvent(new Event('change'))" aria-label="Giảm">−</button>
                         <input type="number" id="qty" value="1" min="1" class="form-control text-center" aria-label="Số lượng">
-                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=parseInt(q.value||1)+1">+</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=parseInt(q.value||1)+1; q.dispatchEvent(new Event('change'))" aria-label="Tăng">+</button>
                     </div>
 
                     <form method="post" class="buynow-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
@@ -111,6 +111,7 @@
                 {% endif %}
                 {% if data.getSpecList() is not empty %}
                     <div class="gv-section__head mt-3"><h2>Thông số kỹ thuật</h2></div>
+                    <div class="table-responsive">
                     <table class="table table-sm table-bordered mb-0">
                         <tbody>
                             {% for spec in data.getSpecList() %}
@@ -118,6 +119,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                 {% endif %}
             </div>
 

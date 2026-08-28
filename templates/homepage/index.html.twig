@@ -45,14 +45,14 @@
         <div class="gv-benefit"><i class="bi bi-truck"></i><div><strong>Miễn phí vận chuyển</strong><small>Đơn từ 5 triệu</small></div></div>
         <div class="gv-benefit"><i class="bi bi-shield-check"></i><div><strong>Bảo hành chính hãng</strong><small>1 đổi 1 trong 7 ngày</small></div></div>
         <div class="gv-benefit"><i class="bi bi-credit-card"></i><div><strong>Trả góp 0%</strong><small>Qua thẻ tín dụng</small></div></div>
-        <div class="gv-benefit"><i class="bi bi-headset"></i><div><strong>Hỗ trợ 24/7</strong><small>Hotline 1900 5301</small></div></div>
+        <div class="gv-benefit"><i class="bi bi-headset"></i><div><strong>Hỗ trợ 24/7</strong><small>Hotline {{ store_settings().hotline }}</small></div></div>
     </div>
 
     {# ===== Category quick tiles ===== #}
     <div class="gv-cats mb-4">
         {% for c in category %}
             <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="gv-cat-tile">
-                <img src="{{ asset('uploads/sanpham/' ~ c.getPhoto()) }}" alt="{{ c.name }}">
+                <img src="{{ asset('uploads/sanpham/' ~ c.getPhoto()) }}" alt="{{ c.name }}" loading="lazy">
                 <span>{{ c.name }}</span>
             </a>
         {% endfor %}

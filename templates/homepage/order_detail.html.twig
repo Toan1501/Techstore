@@ -14,7 +14,7 @@
 
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <h1 class="h4 mb-0">Đơn hàng #{{ order.id }}</h1>
-        <span class="badge bg-{{ order.statusColor }} fs-6">{{ order.statusLabel }}</span>
+        <span class="badge bg-{{ order.statusColor }} {{ order.statusColor in ['warning','light','info'] ? 'text-dark' : '' }} fs-6">{{ order.statusLabel }}</span>
     </div>
 
     <div class="gv-section">
@@ -25,6 +25,7 @@
         <div class="col-lg-7">
             <div class="gv-section">
                 <div class="gv-section__head"><h2 style="font-size:1rem">Sản phẩm</h2></div>
+                <div class="table-responsive">
                 <table class="table align-middle mb-0">
                     <tbody>
                         {% for item in order.items %}
@@ -42,6 +43,7 @@
                         <tr class="fw-bold"><td colspan="2" class="text-end">Tổng cộng</td><td class="text-end text-danger">{{ order.totalPrice|vnd }}</td></tr>
                     </tfoot>
                 </table>
+                </div>
             </div>
         </div>
         <div class="col-lg-5">

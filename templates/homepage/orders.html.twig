@@ -42,7 +42,7 @@
                                 </ul>
                             </td>
                             <td class="text-danger fw-semibold">{{ order.totalPrice|vnd }}</td>
-                            <td><span class="badge bg-{{ order.statusColor }}">{{ order.statusLabel }}</span></td>
+                            <td><span class="badge bg-{{ order.statusColor }} {{ order.statusColor in ['warning','light','info'] ? 'text-dark' : '' }}">{{ order.statusLabel }}</span></td>
                             <td><a href="{{ path('app_order_detail_customer', {'id': order.id}) }}" class="btn btn-sm btn-outline-danger">Chi tiết</a></td>
                         </tr>
                         {% endfor %}

@@ -32,7 +32,8 @@
                         <input type="hidden" name="_token" value="{{ csrf_token('cart_update') }}" />
                         <input type="number" onchange="this.form.submit()" value="{{ item.quantity }}" min="1" name="qty" class="form-control cart-qty rounded-3" title="Số lượng"/>
                     </form>
-                    <div class="text-end d-none d-md-block fw-semibold" style="min-width:120px" title="Đơn giá">{{ item.product.price|vnd }}</div>
+                    <div class="text-end d-none d-md-block text-muted" style="min-width:110px" title="Đơn giá">{{ item.product.price|vnd }}</div>
+                    <div class="text-end fw-bold text-danger flex-shrink-0" style="min-width:120px" title="Thành tiền">{{ item.getAmount()|vnd }}</div>
                     <form action="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" method="POST" class="flex-shrink-0">
                         <input type="hidden" name="_token" value="{{ csrf_token('cart_remove_' ~ item.product.id) }}" />
                         <button type="submit" class="btn btn-link text-muted p-0" title="Xóa"><i class="bi bi-trash"></i></button>
