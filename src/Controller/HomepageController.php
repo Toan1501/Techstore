@@ -38,8 +38,9 @@ class HomepageController extends AbstractController
     #[Route('/feature', name: 'feature_product')]
     public function viewdetail(PaginatorInterface $paginator, Request $request): Response
     {
+        $sort = $request->query->get('sort', 'newest');
         $pagination = $paginator->paginate(
-            $this->sanPhamRepository->queryFiltered(['sort' => 'newest']),
+            $this->sanPhamRepository->queryFiltered(['sort' => $sort]),
             $request->query->getInt('page', 1),
             12
         );
@@ -47,7 +48,8 @@ class HomepageController extends AbstractController
         return $this->render('homepage/sanpham.html.twig', [
             'data' => $pagination,
             'ratings' => $this->ratingsFor($pagination),
-            'heading' => 'All products',
+            'heading' => 'Tất cả sản phẩm',
+            'sort' => $sort,
         ]);
     }
 
@@ -147,8 +149,9 @@ class HomepageController extends AbstractController
     #[Route('/category/{id}', name: 'app_productofcate', requirements: ['id' => '\d+'])]
     public function viewCategoryProducts(Category $category, PaginatorInterface $paginator, Request $request): Response
     {
+        $sort = $request->query->get('sort', 'newest');
         $pagination = $paginator->paginate(
-            $this->sanPhamRepository->queryFiltered(['category' => $category, 'sort' => 'newest']),
+            $this->sanPhamRepository->queryFiltered(['category' => $category, 'sort' => $sort]),
             $request->query->getInt('page', 1),
             12
         );
@@ -156,7 +159,8 @@ class HomepageController extends AbstractController
         return $this->render('homepage/sanpham.html.twig', [
             'data' => $pagination,
             'ratings' => $this->ratingsFor($pagination),
-            'heading' => 'Category: ' . $category->getName(),
+            'heading' => $category->getName(),
+            'sort' => $sort,
         ]);
     }
 
@@ -222,7 +226,8 @@ class HomepageController extends AbstractController
         return $this->render('homepage/sanpham.html.twig', [
             'data' => $pagination,
             'ratings' => $this->ratingsFor($pagination),
-            'heading' => 'Search: "' . $keyword . '"',
+            'heading' => 'Kết quả cho "' . $keyword . '"',
+            'keyword' => $keyword,
         ]);
     }
 

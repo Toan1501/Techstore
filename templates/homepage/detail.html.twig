@@ -26,18 +26,21 @@
     {% if rating.count > 0 %}{% set ld = ld|merge({'aggregateRating': {'@type': 'AggregateRating', 'ratingValue': rating.average, 'reviewCount': rating.count}}) %}{% endif %}
     <script type="application/ld+json">{{ ld|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
 
+    {% set inWish = data.id in (app.session.get('wishlist')|default([])) %}
     <div class="gv-section">
         <div class="row g-4">
             {# Gallery #}
             <div class="col-md-5">
-                <div class="bg-white border rounded-3 p-3 text-center">
-                    <img id="mainImg" src="{{ asset('uploads/sanpham/' ~ data.getPhoto()) }}" alt="{{ data.getName() }}" class="img-fluid" style="max-height:400px;object-fit:contain">
+                <div class="gv-gallery__main">
+                    {% if data.hasDiscount() %}<span class="gv-gallery__badge">-{{ data.getDiscountPercent() }}%</span>{% endif %}
+                    <img id="mainImg" src="{{ asset('uploads/sanpham/' ~ data.getPhoto()) }}" alt="{{ data.getName() }}">
+                    <span class="gv-gallery__zoom"><i class="bi bi-zoom-in"></i></span>
                 </div>
                 {% set photos = data.getAllPhotos() %}
                 {% if photos|length > 1 %}
-                <div class="d-flex gap-2 mt-2 flex-wrap">
+                <div class="gv-gallery__thumbs">
                     {% for p in photos %}
-                        <img src="{{ asset('uploads/sanpham/' ~ p) }}" alt="thumbnail" class="thumb-img border rounded {{ loop.first ? 'active' : '' }}" data-full="{{ asset('uploads/sanpham/' ~ p) }}" style="width:64px;height:64px;object-fit:contain;cursor:pointer">
+                        <img src="{{ asset('uploads/sanpham/' ~ p) }}" alt="thumbnail" class="thumb-img {{ loop.first ? 'active' : '' }}" data-full="{{ asset('uploads/sanpham/' ~ p) }}">
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -45,42 +48,50 @@
 
             {# Info + buy #}
             <div class="col-md-7">
-                <h1 class="h4 mb-2">{{ data.getName() }}</h1>
-                <div class="d-flex align-items-center gap-3 mb-2 small">
+                <h1 class="gv-pd-title">{{ data.getName() }}</h1>
+                <div class="d-flex align-items-center gap-3 mb-3 small flex-wrap">
                     <span>{% include 'partials/_rating_stars.html.twig' with {avg: rating.average ?? 0, count: rating.count} %}</span>
                     {% if data.brand %}<span class="text-muted">Thương hiệu: <strong>{{ data.brand }}</strong></span>{% endif %}
                     {% if data.sku %}<span class="text-muted">SKU: {{ data.sku }}</span>{% endif %}
                 </div>
 
-                <div class="bg-light rounded p-3 mb-3">
+                <div class="gv-pd-price">
                     <div class="d-flex align-items-baseline gap-2 flex-wrap">
-                        <span class="fs-3 fw-bold text-danger">{{ data.getPrice()|vnd }}</span>
+                        <span class="gv-pd-price__now">{{ data.getPrice()|vnd }}</span>
                         {% if data.hasDiscount() %}
-                            <span class="text-muted text-decoration-line-through">{{ data.getPriceOld()|vnd }}</span>
-                            <span class="badge bg-danger">-{{ data.getDiscountPercent() }}%</span>
+                            <span class="gv-pd-price__old">{{ data.getPriceOld()|vnd }}</span>
+                            <span class="gv-pd-price__off">-{{ data.getDiscountPercent() }}%</span>
                         {% endif %}
                     </div>
-                    <div class="mt-1">
-                        {% if data.isInStock() %}
-                            <span class="badge bg-success">Còn hàng ({{ data.stock }})</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Tạm hết hàng</span>
-                        {% endif %}
-                        {% if data.warranty %}<span class="text-muted small ms-2">Bảo hành: {{ data.warranty }}</span>{% endif %}
-                    </div>
+                    {% if data.hasDiscount() %}<div class="gv-pd-save"><i class="bi bi-piggy-bank"></i> Tiết kiệm {{ (data.getPriceOld() - data.getPrice())|vnd }}</div>{% endif %}
                 </div>
 
-                <div class="border rounded p-3 mb-3">
-                    <div class="fw-semibold text-danger mb-2"><i class="bi bi-gift"></i> Khuyến mãi</div>
-                    <ul class="small mb-0 ps-3">
-                        <li>Tặng phiếu mua hàng 200.000₫ cho đơn từ 10 triệu.</li>
-                        <li>Hỗ trợ trả góp 0% qua thẻ tín dụng.</li>
-                        <li>Giao hàng miễn phí cho đơn từ 5 triệu.</li>
+                <div class="gv-pd-chips">
+                    <span><i class="bi bi-patch-check-fill"></i> Chính hãng</span>
+                    <span><i class="bi bi-shield-check"></i> BH {{ data.warranty ?: '12 tháng' }}</span>
+                    <span><i class="bi bi-truck"></i> Giao nhanh</span>
+                    <span><i class="bi bi-arrow-repeat"></i> Đổi trả 7 ngày</span>
+                </div>
+
+                <div class="mb-3">
+                    {% if data.isInStock() %}
+                        <span class="badge bg-success">Còn hàng ({{ data.stock }})</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Tạm hết hàng</span>
+                    {% endif %}
+                </div>
+
+                <div class="gv-pd-promo">
+                    <div class="gv-pd-promo__head"><i class="bi bi-gift-fill"></i> Ưu đãi thêm</div>
+                    <ul>
+                        <li><i class="bi bi-check2-circle"></i> Tặng phiếu mua hàng 200.000₫ cho đơn từ 10 triệu.</li>
+                        <li><i class="bi bi-check2-circle"></i> Hỗ trợ trả góp 0% qua thẻ tín dụng.</li>
+                        <li><i class="bi bi-check2-circle"></i> Giao hàng miễn phí cho đơn từ 5 triệu.</li>
                     </ul>
                 </div>
 
                 <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <div class="input-group" style="width:130px">
+                    <div class="input-group gv-qty" style="width:140px">
                         <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=Math.max(1,parseInt(q.value||1)-1); q.dispatchEvent(new Event('change'))" aria-label="Giảm">−</button>
                         <input type="number" id="qty" value="1" min="1" class="form-control text-center" aria-label="Số lượng">
                         <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=parseInt(q.value||1)+1; q.dispatchEvent(new Event('change'))" aria-label="Tăng">+</button>
@@ -89,12 +100,16 @@
                     <form method="post" class="buynow-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
                         <input type="hidden" name="qty" class="qty-mirror" value="1">
                         <input type="hidden" name="buynow" value="1">
-                        <button class="btn btn-danger px-4" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><strong>MUA NGAY</strong></button>
+                        <button class="btn btn-danger btn-lg-cta px-4" type="submit" {{ data.isInStock() ? '' : 'disabled' }}>MUA NGAY</button>
                     </form>
 
                     <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
                         <input type="hidden" name="qty" class="qty-mirror" value="1">
-                        <button class="btn btn-outline-danger" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><i class="bi bi-cart-plus"></i> Thêm vào giỏ</button>
+                        <button class="btn btn-outline-danger btn-lg-cta" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><i class="bi bi-cart-plus"></i> Thêm vào giỏ</button>
+                    </form>
+
+                    <form method="post" class="wishlist-form" action="{{ path('app_wishlist_toggle', {'id': data.getId()}) }}">
+                        <button type="submit" class="gv-wish-btn gv-wish-pd {{ inWish ? 'active' : '' }}" aria-label="Yêu thích" title="Thêm vào yêu thích"><i class="bi {{ inWish ? 'bi-heart-fill' : 'bi-heart' }}"></i></button>
                     </form>
                 </div>
             </div>

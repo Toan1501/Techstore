@@ -5,11 +5,23 @@
 {% block body %}
 <div class="container-fluid px-3 px-xl-5 py-3">
 
-    {# ===== Hero + side banners ===== #}
+    {# ===== Category rail + hero + side banners ===== #}
+    {% set catIcons = {'Desktop PC':'pc-display','Graphics Card':'gpu-card','Laptop':'laptop','Monitor':'display','Mouse':'mouse2','RAM':'memory','Keyboard':'keyboard'} %}
     <div class="row g-3 mb-3">
-        <div class="col-lg-9">
+        <div class="col-lg-2 d-none d-lg-block">
+            <nav class="gv-rail">
+                {% for c in category %}
+                    <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="gv-rail__item">
+                        <i class="bi bi-{{ catIcons[c.name]|default('tag') }}"></i>
+                        <span class="line-clamp-1">{{ c.name }}</span>
+                        <i class="bi bi-chevron-right gv-rail__chev"></i>
+                    </a>
+                {% endfor %}
+            </nav>
+        </div>
+        <div class="col-lg-7">
             {% set slides = banners is not empty ? banners : null %}
-            <div id="heroCarousel" class="carousel slide rounded overflow-hidden" data-bs-ride="carousel">
+            <div id="heroCarousel" class="carousel slide rounded-4 overflow-hidden shadow-sm" data-bs-ride="carousel">
                 <div class="carousel-indicators">
                     {% if slides %}
                         {% for b in slides %}<button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{{ loop.first ? 'active' : '' }}"></button>{% endfor %}
@@ -35,8 +47,8 @@
             </div>
         </div>
         <div class="col-lg-3 d-none d-lg-flex flex-column gap-3">
-            <img src="{{ asset('images/offer-4.png') }}" class="w-100 rounded" style="flex:1 1 0;min-height:0;object-fit:cover" alt="Ưu đãi">
-            <img src="{{ asset('images/offer-5.png') }}" class="w-100 rounded" style="flex:1 1 0;min-height:0;object-fit:cover" alt="Ưu đãi">
+            <img src="{{ asset('images/offer-4.png') }}" class="w-100 rounded-4 shadow-sm" style="flex:1 1 0;min-height:0;object-fit:cover" alt="Ưu đãi" loading="lazy">
+            <img src="{{ asset('images/offer-5.png') }}" class="w-100 rounded-4 shadow-sm" style="flex:1 1 0;min-height:0;object-fit:cover" alt="Ưu đãi" loading="lazy">
         </div>
     </div>
 
@@ -63,9 +75,12 @@
     <div class="gv-flashsale">
         <div class="gv-flashsale__head">
             <div class="gv-flashsale__title"><i class="bi bi-lightning-charge-fill"></i> FLASH SALE</div>
-            <div class="gv-countdown">
-                <span class="text-white me-1 fw-normal">Kết thúc sau</span>
-                <span id="cd-h">00</span>:<span id="cd-m">00</span>:<span id="cd-s">00</span>
+            <div class="d-flex align-items-center gap-3">
+                <div class="gv-countdown">
+                    <span class="text-white me-1 fw-normal">Kết thúc sau</span>
+                    <span id="cd-h">00</span>:<span id="cd-m">00</span>:<span id="cd-s">00</span>
+                </div>
+                <a href="{{ path('feature_product') }}" class="text-white fw-semibold text-nowrap d-none d-sm-inline">Xem tất cả <i class="bi bi-chevron-right"></i></a>
             </div>
         </div>
         <div class="row g-3">
