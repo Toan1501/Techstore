@@ -12,7 +12,7 @@
     </nav>
 
     <div class="gv-section">
-        <div class="gv-section__head"><h2>Sản phẩm yêu thích</h2></div>
+        <div class="gv-section__head"><h2>Sản phẩm yêu thích{% if products is not empty %} ({{ products|length }}){% endif %}</h2></div>
         <div class="row g-3">
             {% for sp in products %}
                 <div class="col-6 col-md-4 col-lg-3">

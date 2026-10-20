@@ -25,17 +25,17 @@
             </div>
         {% else %}
         <div class="table-responsive">
-            <table class="table table-bordered align-middle" style="min-width:640px">
+            <table class="table table-bordered align-middle gv-compare" style="min-width:640px">
                 <tbody>
                     <tr>
                         <th style="width:150px">Sản phẩm</th>
                         {% for p in products %}
-                        <td class="text-center">
-                            <a href="{{ path('app_detailsp', {'id': p.id}) }}">
-                                <img src="{{ asset('uploads/sanpham/' ~ p.getPhoto()) }}" alt="{{ p.getName() }}" style="height:90px;object-fit:contain">
-                                <div class="small mt-1">{{ p.getName() }}</div>
+                        <td class="text-center" style="min-width:180px">
+                            <a href="{{ path('app_product', {'slug': p.slug, 'id': p.id}) }}" class="text-body">
+                                <img src="{{ asset('uploads/sanpham/' ~ p.getPhoto()) }}" alt="{{ p.getName() }}" style="height:96px;object-fit:contain" loading="lazy">
+                                <div class="small mt-2 line-clamp-2">{{ p.getName() }}</div>
                             </a>
-                            <form method="post" action="{{ path('app_compare_toggle', {'id': p.id}) }}" class="mt-1"><button class="btn btn-sm btn-outline-danger">Bỏ</button></form>
+                            <form method="post" action="{{ path('app_compare_toggle', {'id': p.id}) }}" class="mt-2"><button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-lg"></i> Bỏ</button></form>
                         </td>
                         {% endfor %}
                     </tr>

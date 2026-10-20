@@ -25,21 +25,30 @@
         <div class="row g-3">
             <div class="col-md-6">
                 <div class="text-muted small">Họ và tên</div>
-                <div>{{ user.firstname }} {{ user.lastname }}</div>
+                <div class="fw-medium">{{ user.firstname }} {{ user.lastname }}</div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-muted small">Email</div>
+                <div class="fw-medium">{{ user.email ?: '—' }}</div>
             </div>
             <div class="col-md-6">
                 <div class="text-muted small">Số điện thoại</div>
-                <div>{{ user.phonenumber }}</div>
+                <div class="fw-medium">{{ user.phonenumber }}</div>
+            </div>
+            <div class="col-md-6">
+                <div class="text-muted small">Tài khoản</div>
+                <div class="fw-medium">@{{ user.username }}</div>
             </div>
             <div class="col-12">
                 <div class="text-muted small">Địa chỉ</div>
-                <div>{{ user.address }}</div>
+                <div class="fw-medium">{{ user.address }}</div>
             </div>
         </div>
 
-        <div class="mt-4 d-flex gap-2">
+        <div class="mt-4 d-flex gap-2 flex-wrap">
             <a href="{{ path('edit_profile') }}" class="btn btn-danger"><i class="bi bi-pencil me-1"></i>Chỉnh sửa thông tin</a>
-            <a href="{{ path('app_my_orders') }}" class="btn btn-outline-danger">Đơn hàng của tôi</a>
+            <a href="{{ path('app_my_orders') }}" class="btn btn-outline-danger"><i class="bi bi-bag me-1"></i>Đơn hàng của tôi</a>
+            <a href="{{ path('app_forgot_password_request') }}" class="btn btn-outline-secondary"><i class="bi bi-key me-1"></i>Đổi mật khẩu</a>
         </div>
     </div>
 </div>
