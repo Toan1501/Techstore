@@ -3,10 +3,10 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}TECHSTORE{% endblock %}</title>
-        <meta name="description" content="{% block meta_description %}TECHSTORE — Cửa hàng máy tính, laptop, PC gaming & linh kiện chính hãng, giá tốt, trả góp 0%.{% endblock %}">
+        <title>{% block title %}TOÀN STORE{% endblock %}</title>
+        <meta name="description" content="{% block meta_description %}TOÀN STORE — Cửa hàng máy tính, laptop, PC gaming & linh kiện chính hãng, giá tốt, trả góp 0%.{% endblock %}">
         <meta property="og:type" content="website">
-        <meta property="og:site_name" content="TECHSTORE">
+        <meta property="og:site_name" content="TOÀN STORE">
         <meta property="og:title" content="{{ block('title') }}">
         <meta property="og:description" content="{{ block('meta_description') }}">
         <meta property="og:image" content="{{ absolute_url(asset('images/logo.jpg')) }}">
@@ -46,7 +46,7 @@
                     <a href="{{ path('homepage') }}" class="gv-logo">
                         <span class="gv-logo__icon"><i class="bi bi-pc-display"></i></span>
                         <span class="gv-logo__text">
-                            <span class="gv-logo__name">TECH<b>STORE</b></span>
+                            <span class="gv-logo__name">TOÀN <b>STORE</b></span>
                             <span class="gv-logo__tag d-none d-lg-block">Máy tính &amp; Linh kiện</span>
                         </span>
                     </a>
@@ -217,7 +217,7 @@
         <div class="container-fluid px-3 px-xl-5">
             <div class="row g-4">
                 <div class="col-6 col-lg-3">
-                    <h6>VỀ TECHSTORE</h6>
+                    <h6>VỀ TOÀN STORE</h6>
                     <a href="#">Giới thiệu</a>
                     <a href="{{ path('app_contact') }}">Liên hệ</a>
                     <a href="#">Tuyển dụng</a>
@@ -253,7 +253,7 @@
                     </div>
                 </div>
             </div>
-            <div class="gv-footer__bottom text-center">© {{ "now"|date("Y") }} TECHSTORE — Cửa hàng máy tính &amp; linh kiện chính hãng.</div>
+            <div class="gv-footer__bottom text-center">© {{ "now"|date("Y") }} TOÀN STORE — Cửa hàng máy tính &amp; linh kiện chính hãng.</div>
         </div>
     </footer>
 

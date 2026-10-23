@@ -16,7 +16,7 @@ class OrderMailer
     public function __construct(
         private MailerInterface $mailer,
         private LoggerInterface $logger,
-        private string $fromAddress = 'no-reply@techstore.local',
+        private string $fromAddress = 'no-reply@toanstore.local',
     ) {
     }
 
@@ -30,7 +30,7 @@ class OrderMailer
             $email = (new TemplatedEmail())
                 ->from($this->fromAddress)
                 ->to($order->getCustomerEmail())
-                ->subject('Techstore — Order #' . $order->getId() . ' confirmation')
+                ->subject('Toàn Store — Order #' . $order->getId() . ' confirmation')
                 ->htmlTemplate('email/order_confirmation.html.twig')
                 ->context(['order' => $order]);
 

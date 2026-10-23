@@ -1,4 +1,4 @@
-# 🛒 TECHSTORE — Website bán máy tính & linh kiện
+# 🛒 TOÀN STORE — Website bán máy tính & linh kiện
 
 Website thương mại điện tử (e-commerce) bán máy tính, laptop, PC gaming & linh kiện, xây dựng bằng **Symfony 6.4 (PHP 8.1+) + MySQL**, giao diện tiếng Việt phong cách GearVN.
 

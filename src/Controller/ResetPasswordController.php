@@ -156,9 +156,9 @@ class ResetPasswordController extends AbstractController
         }
 
         $email = (new TemplatedEmail())
-            ->from(new Address('no-reply@techstore.vn', 'TECHSTORE'))
+            ->from(new Address('no-reply@toanstore.vn', 'TOÀN STORE'))
             ->to((string) $user->getEmail())
-            ->subject('Yêu cầu đặt lại mật khẩu — TECHSTORE')
+            ->subject('Yêu cầu đặt lại mật khẩu — TOÀN STORE')
             ->htmlTemplate('reset_password/email.html.twig')
             ->context([
                 'resetToken' => $resetToken,

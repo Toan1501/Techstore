@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ data.getName() }} — TECHSTORE{% endblock %}
-{% block meta_description %}{{ data.getName() }}{% if data.brand %} chính hãng {{ data.brand }}{% endif %} — giá {{ data.getPrice()|vnd }}, bảo hành {{ data.warranty ?? '12 tháng' }}. Mua ngay tại TECHSTORE.{% endblock %}
+{% block title %}{{ data.getName() }} — TOÀN STORE{% endblock %}
+{% block meta_description %}{{ data.getName() }}{% if data.brand %} chính hãng {{ data.brand }}{% endif %} — giá {{ data.getPrice()|vnd }}, bảo hành {{ data.warranty ?? '12 tháng' }}. Mua ngay tại TOÀN STORE.{% endblock %}
 
 {% block body %}
 <div class="container-fluid px-3 px-xl-5 py-3">
@@ -18,7 +18,7 @@
         'name': data.getName(),
         'image': absolute_url(asset('uploads/sanpham/' ~ data.getPhoto())),
         'description': data.getDescription() ?: data.getName(),
-        'sku': data.sku ?: '', 'brand': {'@type': 'Brand', 'name': data.brand ?: 'TECHSTORE'},
+        'sku': data.sku ?: '', 'brand': {'@type': 'Brand', 'name': data.brand ?: 'TOÀN STORE'},
         'offers': {'@type': 'Offer', 'priceCurrency': 'VND', 'price': data.getPrice(),
             'availability': data.isInStock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
             'url': app.request.uri}
@@ -193,7 +193,7 @@
                         <div><i class="bi bi-question-circle text-danger"></i> <strong>{{ q.authorName }}</strong> <small class="text-muted">{{ q.createdAt|date('d/m/Y') }}</small></div>
                         <p class="mb-1">{{ q.content }}</p>
                         {% if q.isAnswered %}
-                            <div class="ms-3 ps-2 border-start"><i class="bi bi-reply text-success"></i> <strong>TECHSTORE:</strong> {{ q.answer }}</div>
+                            <div class="ms-3 ps-2 border-start"><i class="bi bi-reply text-success"></i> <strong>TOÀN STORE:</strong> {{ q.answer }}</div>
                         {% else %}
                             <span class="badge bg-secondary">Chờ trả lời</span>
                         {% endif %}

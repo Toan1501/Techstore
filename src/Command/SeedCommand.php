@@ -48,16 +48,16 @@ class SeedCommand extends Command
         // 2) Users
         $admin = (new User())
             ->setUsername('admin')
-            ->setEmail('admin@techstore.vn')
+            ->setEmail('admin@toanstore.vn')
             ->setRoles(['ROLE_ADMIN'])
             ->setFirstName('Store')->setLastName('Admin')
-            ->setAddress('Techstore HQ')->setPhonenumber('0900000000');
+            ->setAddress('Toàn Store HQ')->setPhonenumber('0900000000');
         $admin->setPassword($this->hasher->hashPassword($admin, 'admin123'));
         $this->em->persist($admin);
 
         $customer = (new User())
             ->setUsername('customer')
-            ->setEmail('customer@techstore.vn')
+            ->setEmail('customer@toanstore.vn')
             ->setRoles(['ROLE_USER'])
             ->setFirstName('Nguyen')->setLastName('Van A')
             ->setAddress('123 Lê Lợi')->setPhonenumber('0911111111');
@@ -242,8 +242,8 @@ class SeedCommand extends Command
 
             // Desktop PC
             ['name' => 'PC Gaming GVN Phantom i5 RTX 4070', 'price' => 35990000, 'stock' => 4, 'brand' => 'GVN', 'sku' => 'PC-GVN-PHAN', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-1.png', 'gallery' => ['pc-2.jpg', 'pc-3.png'], 'specs' => "CPU: Intel Core i5-13400F\nRAM: 32GB DDR5\nStorage: 1TB SSD\nGPU: RTX 4070 12GB\nNguồn: 750W 80+"],
-            ['name' => 'PC Văn phòng Core i3 SSD 256GB', 'price' => 7990000, 'stock' => 14, 'brand' => 'Techstore', 'sku' => 'PC-OFFICE-I3', 'warranty' => '24 tháng', 'cat' => 'pc', 'photo' => 'pc-2.jpg', 'specs' => "CPU: Intel Core i3-12100\nRAM: 8GB DDR4\nStorage: 256GB SSD"],
-            ['name' => 'PC Streaming Ryzen 7 RTX 3060', 'price' => 24990000, 'stock' => 6, 'brand' => 'Techstore', 'sku' => 'PC-STREAM-R7', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-3.png', 'specs' => "CPU: Ryzen 7 5700X\nRAM: 16GB DDR4\nStorage: 512GB SSD\nGPU: RTX 3060 12GB"],
+            ['name' => 'PC Văn phòng Core i3 SSD 256GB', 'price' => 7990000, 'stock' => 14, 'brand' => 'Toàn Store', 'sku' => 'PC-OFFICE-I3', 'warranty' => '24 tháng', 'cat' => 'pc', 'photo' => 'pc-2.jpg', 'specs' => "CPU: Intel Core i3-12100\nRAM: 8GB DDR4\nStorage: 256GB SSD"],
+            ['name' => 'PC Streaming Ryzen 7 RTX 3060', 'price' => 24990000, 'stock' => 6, 'brand' => 'Toàn Store', 'sku' => 'PC-STREAM-R7', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-3.png', 'specs' => "CPU: Ryzen 7 5700X\nRAM: 16GB DDR4\nStorage: 512GB SSD\nGPU: RTX 3060 12GB"],
 
             // RAM
             ['name' => 'RAM Corsair Dominator RGB 32GB DDR5', 'price' => 3490000, 'stock' => 30, 'brand' => 'Corsair', 'sku' => 'RAM-COR-DOM32', 'warranty' => '36 tháng', 'cat' => 'ram', 'photo' => 'ram-1.webp', 'specs' => "Dung lượng: 32GB (2x16GB)\nBus: 6000MHz\nLoại: DDR5\nTản nhiệt: RGB"],
@@ -306,12 +306,12 @@ class SeedCommand extends Command
 
             // -- Desktop PC (7) --
             ['name' => 'PC Gaming GVN Dragon i7 RTX 4070 Ti', 'price' => 45990000, 'stock' => 4, 'brand' => 'GVN', 'sku' => 'PC-GVN-DRAG', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-1.png', 'specs' => "CPU: Intel Core i7-14700F\nRAM: 32GB DDR5\nStorage: 1TB SSD\nGPU: RTX 4070 Ti 12GB\nNguồn: 850W 80+ Gold"],
-            ['name' => 'PC Gaming Ryzen 5 RTX 4060', 'price' => 21990000, 'stock' => 8, 'brand' => 'Techstore', 'sku' => 'PC-GAM-R5', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-2.jpg', 'specs' => "CPU: Ryzen 5 5600\nRAM: 16GB DDR4\nStorage: 512GB SSD\nGPU: RTX 4060 8GB\nNguồn: 650W"],
-            ['name' => 'PC Đồ họa Core i7 RTX 4070 32GB', 'price' => 38990000, 'stock' => 5, 'brand' => 'Techstore', 'sku' => 'PC-GFX-I7', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-3.png', 'specs' => "CPU: Intel Core i7-14700\nRAM: 32GB DDR5\nStorage: 1TB SSD\nGPU: RTX 4070 12GB\nNguồn: 750W Gold"],
-            ['name' => 'PC Văn phòng Ryzen 3 SSD 512GB', 'price' => 8990000, 'stock' => 16, 'brand' => 'Techstore', 'sku' => 'PC-OFF-R3', 'warranty' => '24 tháng', 'cat' => 'pc', 'photo' => 'pc-1.png', 'specs' => "CPU: Ryzen 3 4100\nRAM: 8GB DDR4\nStorage: 512GB SSD"],
-            ['name' => 'PC Mini ITX i5 RTX 4060', 'price' => 27990000, 'stock' => 6, 'brand' => 'Techstore', 'sku' => 'PC-ITX-I5', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-2.jpg', 'specs' => "CPU: Intel Core i5-13400F\nRAM: 16GB DDR5\nStorage: 1TB SSD\nGPU: RTX 4060 8GB\nCase: Mini ITX"],
+            ['name' => 'PC Gaming Ryzen 5 RTX 4060', 'price' => 21990000, 'stock' => 8, 'brand' => 'Toàn Store', 'sku' => 'PC-GAM-R5', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-2.jpg', 'specs' => "CPU: Ryzen 5 5600\nRAM: 16GB DDR4\nStorage: 512GB SSD\nGPU: RTX 4060 8GB\nNguồn: 650W"],
+            ['name' => 'PC Đồ họa Core i7 RTX 4070 32GB', 'price' => 38990000, 'stock' => 5, 'brand' => 'Toàn Store', 'sku' => 'PC-GFX-I7', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-3.png', 'specs' => "CPU: Intel Core i7-14700\nRAM: 32GB DDR5\nStorage: 1TB SSD\nGPU: RTX 4070 12GB\nNguồn: 750W Gold"],
+            ['name' => 'PC Văn phòng Ryzen 3 SSD 512GB', 'price' => 8990000, 'stock' => 16, 'brand' => 'Toàn Store', 'sku' => 'PC-OFF-R3', 'warranty' => '24 tháng', 'cat' => 'pc', 'photo' => 'pc-1.png', 'specs' => "CPU: Ryzen 3 4100\nRAM: 8GB DDR4\nStorage: 512GB SSD"],
+            ['name' => 'PC Mini ITX i5 RTX 4060', 'price' => 27990000, 'stock' => 6, 'brand' => 'Toàn Store', 'sku' => 'PC-ITX-I5', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-2.jpg', 'specs' => "CPU: Intel Core i5-13400F\nRAM: 16GB DDR5\nStorage: 1TB SSD\nGPU: RTX 4060 8GB\nCase: Mini ITX"],
             ['name' => 'PC Gaming i9 RTX 4080 Super', 'price' => 59990000, 'stock' => 3, 'brand' => 'GVN', 'sku' => 'PC-GVN-I9', 'warranty' => '36 tháng', 'cat' => 'pc', 'photo' => 'pc-3.png', 'specs' => "CPU: Intel Core i9-14900F\nRAM: 64GB DDR5\nStorage: 2TB SSD\nGPU: RTX 4080 Super 16GB\nNguồn: 1000W Gold"],
-            ['name' => 'PC Học tập - Làm việc Core i5 16GB', 'price' => 11990000, 'stock' => 18, 'brand' => 'Techstore', 'sku' => 'PC-STU-I5', 'warranty' => '24 tháng', 'cat' => 'pc', 'photo' => 'pc-1.png', 'specs' => "CPU: Intel Core i5-12400\nRAM: 16GB DDR4\nStorage: 512GB SSD\nGPU: Intel UHD 730"],
+            ['name' => 'PC Học tập - Làm việc Core i5 16GB', 'price' => 11990000, 'stock' => 18, 'brand' => 'Toàn Store', 'sku' => 'PC-STU-I5', 'warranty' => '24 tháng', 'cat' => 'pc', 'photo' => 'pc-1.png', 'specs' => "CPU: Intel Core i5-12400\nRAM: 16GB DDR4\nStorage: 512GB SSD\nGPU: Intel UHD 730"],
         ];
     }
 
@@ -321,7 +321,7 @@ class SeedCommand extends Command
         return [
             ['slug' => 'rtx-40-series-giam-gia', 'days' => 0, 'title' => 'Loạt card RTX 40 Series giảm giá sốc cuối năm', 'image' => 'images/best1.webp',
              'excerpt' => 'Nhiều mẫu card đồ họa RTX 40 series được điều chỉnh giá tốt, cơ hội nâng cấp cấu hình gaming.',
-             'content' => '<p>Bước vào mùa mua sắm cuối năm, hàng loạt card đồ họa NVIDIA RTX 40 Series được điều chỉnh mức giá hấp dẫn. Đây là thời điểm lý tưởng để game thủ nâng cấp dàn máy của mình.</p><p>Các mẫu RTX 4070, 4070 Ti mang lại hiệu năng ấn tượng ở độ phân giải 2K, trong khi RTX 4060 phù hợp cho anh em chơi game Full HD mượt mà với công nghệ DLSS 3.</p><p>Techstore cam kết hàng chính hãng, bảo hành 36 tháng và hỗ trợ trả góp 0%.</p>'],
+             'content' => '<p>Bước vào mùa mua sắm cuối năm, hàng loạt card đồ họa NVIDIA RTX 40 Series được điều chỉnh mức giá hấp dẫn. Đây là thời điểm lý tưởng để game thủ nâng cấp dàn máy của mình.</p><p>Các mẫu RTX 4070, 4070 Ti mang lại hiệu năng ấn tượng ở độ phân giải 2K, trong khi RTX 4060 phù hợp cho anh em chơi game Full HD mượt mà với công nghệ DLSS 3.</p><p>Toàn Store cam kết hàng chính hãng, bảo hành 36 tháng và hỗ trợ trả góp 0%.</p>'],
             ['slug' => 'huong-dan-build-pc-gaming', 'days' => 2, 'title' => 'Hướng dẫn build PC gaming 20 triệu đáng mua nhất', 'image' => 'images/pc-1.png',
              'excerpt' => 'Gợi ý cấu hình PC gaming tầm giá 20 triệu cân mọi tựa game phổ biến hiện nay.',
              'content' => '<p>Với ngân sách 20 triệu đồng, bạn hoàn toàn có thể sở hữu một dàn PC gaming mạnh mẽ. Dưới đây là gợi ý cấu hình cân bằng giữa CPU và GPU.</p><ul><li>CPU: Intel Core i5-13400F</li><li>Card: RTX 4060 8GB</li><li>RAM: 16GB DDR4 3200MHz</li><li>SSD: 512GB NVMe</li><li>Nguồn: 650W 80+ Bronze</li></ul><p>Cấu hình này chiến tốt các tựa game AAA ở thiết lập cao.</p>'],

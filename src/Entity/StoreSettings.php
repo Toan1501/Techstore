@@ -15,13 +15,13 @@ class StoreSettings
     private ?int $id = null;
 
     #[ORM\Column(length: 120)]
-    private ?string $storeName = 'TECHSTORE';
+    private ?string $storeName = 'TOÀN STORE';
 
     #[ORM\Column(length: 40, nullable: true)]
     private ?string $hotline = '1900 5301';
 
     #[ORM\Column(length: 120, nullable: true)]
-    private ?string $email = 'support@techstore.vn';
+    private ?string $email = 'support@toanstore.vn';
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $address = '123 Lê Lợi, Quận 1, TP. Hồ Chí Minh';
@@ -33,7 +33,7 @@ class StoreSettings
     private ?string $bankAccount = '0123456789';
 
     #[ORM\Column(length: 120, nullable: true)]
-    private ?string $bankOwner = 'TECHSTORE';
+    private ?string $bankOwner = 'TOÀN STORE';
 
     #[ORM\Column(options: ['default' => 5000000])]
     private ?int $freeShipThreshold = 5000000;
