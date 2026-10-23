@@ -24,6 +24,12 @@ class SitemapController extends AbstractController
         $urls[] = $this->generateUrl('app_news', [], $abs);
         $urls[] = $this->generateUrl('app_contact', [], $abs);
 
+        // Static SEO content pages (about, policies, guides, FAQ).
+        foreach (PageController::pages() as $p) {
+            $urls[] = $this->generateUrl($p['route'], [], $abs);
+        }
+        $urls[] = $this->generateUrl('page_faq', [], $abs);
+
         foreach ($categories->findAllOrdered() as $c) {
             $urls[] = $this->generateUrl('app_productofcate', ['id' => $c->getId()], $abs);
         }

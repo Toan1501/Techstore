@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page.title }} — TOÀN STORE{% endblock %}
+{% block meta_description %}{{ page.meta }}{% endblock %}
+
+{% block body %}
+{% set st = store_settings() %}
+<script type="application/ld+json">{{ {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    'itemListElement': [
+        {'@type': 'ListItem', 'position': 1, 'name': 'Trang chủ', 'item': url('homepage')},
+        {'@type': 'ListItem', 'position': 2, 'name': page.title, 'item': url(page.route)}
+    ]
+}|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
+
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ page.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="gv-section">
+                <h1 class="h4 mb-3">{{ page.title }}</h1>
+                <div class="page-content">{{ page.body|raw }}</div>
+
+                <div class="alert alert-light border mt-4 mb-0">
+                    <strong>Cần hỗ trợ?</strong> Hotline <a href="tel:{{ st.hotline }}" class="text-danger fw-semibold">{{ st.hotline }}</a>
+                    · <a href="{{ path('app_contact') }}" class="text-danger">Gửi liên hệ</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="gv-section">
+                <div class="gv-section__head"><h2 style="font-size:1rem">Thông tin &amp; chính sách</h2></div>
+                <div class="list-group list-group-flush">
+                    {% for key, p in pages %}
+                        <a href="{{ path(p.route) }}" class="list-group-item list-group-item-action {{ current == key ? 'active' : '' }}">{{ p.nav }}</a>
+                    {% endfor %}
+                    <a href="{{ path('page_faq') }}" class="list-group-item list-group-item-action {{ current == 'faq' ? 'active' : '' }}">Câu hỏi thường gặp</a>
+                    <a href="{{ path('app_contact') }}" class="list-group-item list-group-item-action">Liên hệ</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -24,7 +24,11 @@
             'url': app.request.uri}
     } %}
     {% if rating.count > 0 %}{% set ld = ld|merge({'aggregateRating': {'@type': 'AggregateRating', 'ratingValue': rating.average, 'reviewCount': rating.count}}) %}{% endif %}
-    <script type="application/ld+json">{{ ld|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
+    <script type="application/ld+json">{{ ld|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG'))|raw }}</script>
+    {% set crumbs = [{'@type': 'ListItem', 'position': 1, 'name': 'Trang chủ', 'item': url('homepage')}] %}
+    {% if data.getCate() %}{% set crumbs = crumbs|merge([{'@type': 'ListItem', 'position': 2, 'name': data.getCate().name, 'item': url('app_productofcate', {'id': data.getCate().id})}]) %}{% endif %}
+    {% set crumbs = crumbs|merge([{'@type': 'ListItem', 'position': crumbs|length + 1, 'name': data.getName(), 'item': url('app_product', {'slug': data.slug, 'id': data.id})}]) %}
+    <script type="application/ld+json">{{ {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': crumbs}|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG'))|raw }}</script>
 
     {% set inWish = data.id in (app.session.get('wishlist')|default([])) %}
     <div class="gv-section">

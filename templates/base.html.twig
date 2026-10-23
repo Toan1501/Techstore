@@ -11,6 +11,31 @@
         <meta property="og:description" content="{{ block('meta_description') }}">
         <meta property="og:image" content="{{ absolute_url(asset('images/logo.jpg')) }}">
         <link rel="canonical" href="{{ app.request.uri|split('?')|first }}">
+        <meta name="robots" content="index, follow">
+        <meta name="theme-color" content="#e30019">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ block('title') }}">
+        <meta name="twitter:description" content="{{ block('meta_description') }}">
+        <meta name="twitter:image" content="{{ absolute_url(asset('images/logo.jpg')) }}">
+        {% set _st = store_settings() %}
+        <script type="application/ld+json">{{ {
+            '@context': 'https://schema.org', '@type': 'ElectronicsStore',
+            'name': _st.storeName, 'url': url('homepage'),
+            'logo': absolute_url(asset('images/logo.jpg')),
+            'image': absolute_url(asset('images/logo.jpg')),
+            'telephone': _st.hotline, 'email': _st.email,
+            'address': {'@type': 'PostalAddress', 'streetAddress': _st.address, 'addressCountry': 'VN'},
+            'priceRange': '$$'
+        }|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
+        <script type="application/ld+json">{{ {
+            '@context': 'https://schema.org', '@type': 'WebSite',
+            'name': _st.storeName, 'url': url('homepage'),
+            'potentialAction': {
+                '@type': 'SearchAction',
+                'target': {'@type': 'EntryPoint', 'urlTemplate': url('search_products') ~ '?keyword={search_term_string}'},
+                'query-input': 'required name=search_term_string'
+            }
+        }|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}</script>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🛒</text></svg>">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -218,23 +243,24 @@
             <div class="row g-4">
                 <div class="col-6 col-lg-3">
                     <h6>VỀ TOÀN STORE</h6>
-                    <a href="#">Giới thiệu</a>
+                    <a href="{{ path('page_about') }}">Giới thiệu</a>
                     <a href="{{ path('app_contact') }}">Liên hệ</a>
-                    <a href="#">Tuyển dụng</a>
+                    <a href="{{ path('page_careers') }}">Tuyển dụng</a>
                     <a href="{{ path('app_news') }}">Tin công nghệ</a>
                 </div>
                 <div class="col-6 col-lg-3">
                     <h6>CHÍNH SÁCH</h6>
-                    <a href="#">Chính sách bảo hành</a>
-                    <a href="#">Chính sách đổi trả</a>
-                    <a href="#">Chính sách giao hàng</a>
-                    <a href="#">Bảo mật thông tin</a>
+                    <a href="{{ path('page_warranty') }}">Chính sách bảo hành</a>
+                    <a href="{{ path('page_return') }}">Chính sách đổi trả</a>
+                    <a href="{{ path('page_shipping') }}">Chính sách giao hàng</a>
+                    <a href="{{ path('page_privacy') }}">Bảo mật thông tin</a>
                 </div>
                 <div class="col-6 col-lg-3">
                     <h6>HỖ TRỢ</h6>
-                    <a href="#">Hướng dẫn mua hàng</a>
-                    <a href="#">Hướng dẫn thanh toán</a>
-                    <a href="#">Hướng dẫn trả góp</a>
+                    <a href="{{ path('page_buyguide') }}">Hướng dẫn mua hàng</a>
+                    <a href="{{ path('page_payguide') }}">Hướng dẫn thanh toán</a>
+                    <a href="{{ path('page_installment') }}">Hướng dẫn trả góp</a>
+                    <a href="{{ path('page_faq') }}">Câu hỏi thường gặp</a>
                     <a href="{{ path('app_my_orders') }}">Tra cứu đơn hàng</a>
                 </div>
                 <div class="col-6 col-lg-3">

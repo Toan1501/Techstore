@@ -444,3 +444,12 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
 @media (hover: none) {
   .gv-wish-btn { width: 38px; height: 38px; }
 }
+
+/* Static content pages (policies, guides, FAQ) */
+.page-content { line-height: 1.75; }
+.page-content h2 { font-size: 1.1rem; font-weight: 700; margin: 1.4rem 0 .6rem; }
+.page-content ul, .page-content ol { padding-left: 1.25rem; }
+.page-content li { margin-bottom: .3rem; }
+.list-group-item.active { background: var(--ts-primary); border-color: var(--ts-primary); }
+.accordion-button:not(.collapsed) { color: var(--ts-primary); background: var(--ts-primary-050); box-shadow: none; }
+.accordion-button:focus { box-shadow: 0 0 0 .2rem rgba(227, 0, 25, .15); }
