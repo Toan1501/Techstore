@@ -9,14 +9,18 @@
         <meta property="og:site_name" content="TOÀN STORE">
         <meta property="og:title" content="{{ block('title') }}">
         <meta property="og:description" content="{{ block('meta_description') }}">
-        <meta property="og:image" content="{{ absolute_url(asset('images/logo.jpg')) }}">
-        <link rel="canonical" href="{{ app.request.uri|split('?')|first }}">
-        <meta name="robots" content="index, follow">
+        <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('images/logo.jpg')) }}{% endblock %}">
+        {# Canonical keeps ?page=N (N>1) so paginated listings stay indexable; other params are dropped. #}
+        {% set _pg = app.request.query.getInt('page', 1) %}
+        <link rel="canonical" href="{{ app.request.schemeAndHttpHost ~ app.request.baseUrl ~ app.request.pathInfo }}{{ _pg > 1 ? '?page=' ~ _pg : '' }}">
+        {# Private / thin pages must not be indexed (cart, checkout, account, search, auth). #}
+        {% set _noindex = app.request.attributes.get('_route') in ['app_cart', 'app_order', 'app_order_confirmation', 'app_login', 'app_register', 'profile', 'edit_profile', 'app_my_orders', 'app_order_detail_customer', 'app_wishlist', 'app_compare', 'search_products', 'app_forgot_password_request', 'app_check_email', 'app_reset_password'] %}
+        <meta name="robots" content="{{ _noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large' }}">
         <meta name="theme-color" content="#e30019">
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ block('title') }}">
         <meta name="twitter:description" content="{{ block('meta_description') }}">
-        <meta name="twitter:image" content="{{ absolute_url(asset('images/logo.jpg')) }}">
+        <meta name="twitter:image" content="{{ block('og_image') }}">
         {% set _st = store_settings() %}
         <script type="application/ld+json">{{ {
             '@context': 'https://schema.org', '@type': 'ElectronicsStore',

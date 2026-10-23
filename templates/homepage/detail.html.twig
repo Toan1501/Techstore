@@ -3,6 +3,8 @@
 {% block title %}{{ data.getName() }} — TOÀN STORE{% endblock %}
 {% block meta_description %}{{ data.getName() }}{% if data.brand %} chính hãng {{ data.brand }}{% endif %} — giá {{ data.getPrice()|vnd }}, bảo hành {{ data.warranty ?? '12 tháng' }}. Mua ngay tại TOÀN STORE.{% endblock %}
 
+{% block og_image %}{{ absolute_url(asset('uploads/sanpham/' ~ data.getPhoto())) }}{% endblock %}
+
 {% block body %}
 <div class="container-fluid px-3 px-xl-5 py-3">
     <nav aria-label="breadcrumb">

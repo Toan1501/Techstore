@@ -12,6 +12,26 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class SitemapController extends AbstractController
 {
+    /** robots.txt is generated so the Sitemap directive is an absolute URL (required by the spec). */
+    #[Route('/robots.txt', name: 'app_robots', defaults: ['_format' => 'txt'])]
+    public function robots(): Response
+    {
+        $body = "User-agent: *\n"
+            . "Allow: /\n"
+            . "Disallow: /admin\n"
+            . "Disallow: /login\n"
+            . "Disallow: /register\n"
+            . "Disallow: /order\n"
+            . "Disallow: /cart\n"
+            . "Disallow: /my-orders\n"
+            . "Disallow: /profile\n"
+            . "Disallow: /reset-password\n"
+            . "Disallow: /payment\n"
+            . "\nSitemap: " . $this->generateUrl('app_sitemap', [], UrlGeneratorInterface::ABSOLUTE_URL) . "\n";
+
+        return new Response($body, 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    }
+
     #[Route('/sitemap.xml', name: 'app_sitemap', defaults: ['_format' => 'xml'])]
     public function index(SanPhamRepository $products, CategoryRepository $categories, NewsRepository $news): Response
     {
