@@ -482,7 +482,7 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
 @keyframes ts-glowpulse  { 0%, 100% { box-shadow: 0 0 0 0 rgba(227, 0, 25, .45); } 60% { box-shadow: 0 0 0 10px rgba(227, 0, 25, 0); } }
 
 /* Page entrance */
-html.js body { animation: ts-fadein .45s ease both; }
+/* No whole-page body fade-in on purpose: a page-level opacity animation can leave content blank if animations are throttled (background tab, bfcache). Per-element reveals cover the entrance effect. */
 
 /* Stronger scroll-reveal (overrides the earlier subtle version) */
 .js .reveal { opacity: 0; transform: translateY(26px) scale(.97); }
