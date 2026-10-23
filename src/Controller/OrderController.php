@@ -137,13 +137,27 @@ class OrderController extends AbstractController
                     $itemsSubtotal += (float) $product->getPrice() * $qty;
                 }
 
+                // Re-validate the coupon under a row lock and consume one use atomically,
+                // so a usage-limited code can't be over-redeemed under concurrency.
+                $discount = 0.0;
+                $couponCode = null;
+                if ($appliedCoupon) {
+                    $coupon = $em->find(\App\Entity\Coupon::class, $appliedCoupon->getId(), LockMode::PESSIMISTIC_WRITE);
+                    if ($coupon && $coupon->isValidNow() && $itemsSubtotal >= (float) $coupon->getMinOrder()) {
+                        $discount = $coupon->computeDiscount($itemsSubtotal);
+                        if ($discount > 0) {
+                            $couponCode = $coupon->getCode();
+                            $coupon->setUsageCount($coupon->getUsageCount() + 1);
+                        }
+                    }
+                }
+
                 // Totals are derived from the DB-authoritative subtotal — never from
                 // session/client prices — so admin price changes can't be exploited.
                 $fee = $shipping->calculate($order->getShippingProvince(), $itemsSubtotal);
-                $discount = $appliedCoupon ? $appliedCoupon->computeDiscount($itemsSubtotal) : 0.0;
                 $order->setShippingFee($fee);
                 $order->setDiscount($discount);
-                $order->setCouponCode($appliedCoupon ? $appliedCoupon->getCode() : null);
+                $order->setCouponCode($couponCode);
                 $order->setTotalPrice($itemsSubtotal - $discount + $fee);
 
                 $em->flush();

@@ -169,13 +169,14 @@ class SeedCommand extends Command
 
         // 9) Coupons
         $coupons = [
-            ['GIAM10', 'percent', 10, 0],
-            ['GIAM100K', 'fixed', 100000, 2000000],
-            ['SALE15', 'percent', 15, 10000000],
+            ['GIAM10', 'percent', 10, 0, null],      // không giới hạn lượt
+            ['GIAM100K', 'fixed', 100000, 2000000, 50],
+            ['SALE15', 'percent', 15, 10000000, 100],
         ];
-        foreach ($coupons as [$code, $type, $value, $min]) {
+        foreach ($coupons as [$code, $type, $value, $min, $maxUses]) {
             $this->em->persist((new Coupon())
-                ->setCode($code)->setType($type)->setValue($value)->setMinOrder($min)->setActive(true));
+                ->setCode($code)->setType($type)->setValue($value)->setMinOrder($min)
+                ->setMaxUses($maxUses)->setActive(true));
         }
 
         $this->em->flush();
