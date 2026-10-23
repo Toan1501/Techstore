@@ -116,7 +116,11 @@
   }, true);
 
   /* ---------- Lazy image fade-in ---------- */
-  function markLoaded(img) { img.classList.add('is-loaded'); }
+  function markLoaded(img) {
+    img.classList.add('is-loaded');
+    var wrap = img.closest && img.closest('.gv-card__imgwrap');
+    if (wrap) wrap.classList.add('loaded'); // stops the skeleton shimmer
+  }
   var lazyImgs = document.querySelectorAll('img[loading="lazy"]');
   Array.prototype.forEach.call(lazyImgs, function (img) {
     if (img.complete && img.naturalWidth > 0) markLoaded(img);
@@ -164,4 +168,107 @@
       setTimeout(function () { span.remove(); }, 600);
     });
   }
+
+  /* ================= MOTION LAYER ================= */
+
+  /* Re-trigger a CSS animation class on an element */
+  function replay(el, cls) {
+    el.classList.remove(cls);
+    void el.offsetWidth; // force reflow so the animation restarts
+    el.classList.add(cls);
+  }
+
+  /* Badge bump whenever a counter's text changes (cart / wishlist / compare) */
+  if ('MutationObserver' in window) {
+    ['cart-count', 'wish-count', 'compare-count'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      new MutationObserver(function () { replay(el, 'bump'); })
+        .observe(el, { childList: true, characterData: true, subtree: true });
+    });
+    /* Flip-clock tick on the flash-sale countdown */
+    ['cd-h', 'cd-m', 'cd-s'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      new MutationObserver(function () { if (!reduce) replay(el, 'tick'); })
+        .observe(el, { childList: true, characterData: true, subtree: true });
+    });
+  }
+
+  /* Fly-to-cart ghost image + "Đã thêm" button state (optimistic, visual only) */
+  document.addEventListener('submit', function (e) {
+    var form = e.target.closest && e.target.closest('.add-to-cart-form');
+    if (!form) return;
+    var btn = e.submitter || form.querySelector('button');
+    if (btn && !btn.classList.contains('is-added') && !btn.disabled) {
+      var orig = btn.innerHTML;
+      btn.classList.add('is-added');
+      btn.innerHTML = '<i class="bi bi-check2"></i> Đã thêm';
+      setTimeout(function () { btn.classList.remove('is-added'); btn.innerHTML = orig; }, 1500);
+    }
+    if (reduce) return;
+    var cartBtn = document.querySelector('[data-bs-target="#miniCart"]');
+    var card = form.closest('.gv-card');
+    var img = (card && card.querySelector('.gv-card__imgwrap img')) || document.getElementById('mainImg');
+    if (!cartBtn || !img) return;
+    var r = img.getBoundingClientRect(), c = cartBtn.getBoundingClientRect();
+    if (!r.width || !c.width) return;
+    var ghost = document.createElement('img');
+    ghost.src = img.currentSrc || img.src;
+    ghost.alt = '';
+    ghost.className = 'ts-fly';
+    ghost.style.cssText = 'left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height + 'px;';
+    document.body.appendChild(ghost);
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      ghost.style.left = (c.left + c.width / 2 - 16) + 'px';
+      ghost.style.top = (c.top + c.height / 2 - 16) + 'px';
+      ghost.style.width = '32px';
+      ghost.style.height = '32px';
+      ghost.style.opacity = '.25';
+      ghost.style.transform = 'rotate(25deg) scale(.6)';
+    }); });
+    setTimeout(function () { ghost.remove(); }, 900);
+  }, true);
+
+  /* Gallery: quick crossfade when a thumbnail is clicked (detail page) */
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest || !e.target.closest('.thumb-img')) return;
+    var m = document.getElementById('mainImg');
+    if (!m || reduce) return;
+    m.style.opacity = '0';
+    setTimeout(function () { m.style.opacity = '1'; }, 160);
+  });
+
+  /* Mega menu: click/keyboard toggle (hover alone excludes touch + keyboard users) */
+  Array.prototype.forEach.call(document.querySelectorAll('.gv-mega'), function (m) {
+    var trigger = m.querySelector(':scope > a');
+    if (!trigger) return;
+    trigger.addEventListener('click', function (e) {
+      var touch = window.matchMedia('(hover: none)').matches;
+      if (touch || e.detail === 0) { e.preventDefault(); m.classList.toggle('open'); }
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('.gv-mega')) return;
+    Array.prototype.forEach.call(document.querySelectorAll('.gv-mega.open'), function (m) { m.classList.remove('open'); });
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    Array.prototype.forEach.call(document.querySelectorAll('.gv-mega.open'), function (m) { m.classList.remove('open'); });
+  });
+
+  /* Count-up numbers: <span data-countup="70">70</span> */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-countup]'), function (el) {
+    var end = parseInt(el.getAttribute('data-countup'), 10) || 0;
+    if (reduce || end <= 0) { el.textContent = end; return; }
+    var start = null, dur = 900;
+    function step(t) {
+      if (start === null) start = t;
+      var p = Math.min(1, (t - start) / dur);
+      p = 1 - Math.pow(1 - p, 3); // ease-out cubic
+      el.textContent = Math.round(end * p);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
 })();

@@ -22,7 +22,7 @@
         </div>
         <div class="col-lg-7">
             {% set slides = banners is not empty ? banners : null %}
-            <div id="heroCarousel" class="carousel slide rounded-4 overflow-hidden shadow-sm" data-bs-ride="carousel">
+            <div id="heroCarousel" class="carousel slide gv-hero rounded-4 overflow-hidden shadow-sm" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="false">
                 <div class="carousel-indicators">
                     {% if slides %}
                         {% for b in slides %}<button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{{ loop.first ? 'active' : '' }}"></button>{% endfor %}
@@ -87,7 +87,7 @@
         <div class="row g-3">
             {% for sp in deals %}
                 <div class="col-6 col-md-4 col-lg-2">
-                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: deals_ratings} %}
+                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: deals_ratings, flash: true} %}
                 </div>
             {% endfor %}
         </div>

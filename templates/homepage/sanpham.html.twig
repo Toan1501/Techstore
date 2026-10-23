@@ -16,7 +16,7 @@
             <div>
                 <h2 class="gv-listing-title">{{ heading|default('Sản phẩm') }}</h2>
                 {% if data.getTotalItemCount is defined %}
-                    <span class="text-muted small">{{ data.getTotalItemCount }} sản phẩm</span>
+                    <span class="text-muted small"><span data-countup="{{ data.getTotalItemCount }}">{{ data.getTotalItemCount }}</span> sản phẩm</span>
                 {% endif %}
             </div>
             {% if sort is defined %}

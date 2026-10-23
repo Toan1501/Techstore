@@ -65,7 +65,20 @@
                         <a href="{{ path('app_wishlist') }}">Yêu thích</a>
                         <a href="{{ path('app_contact') }}">Liên hệ</a>
                     </div>
-                    <div><i class="bi bi-headset me-1"></i> Hỗ trợ: <strong>{{ st.hotline }}</strong> &nbsp;|&nbsp; 08:00 – 21:00</div>
+                    {# Promo ticker (duplicated once for a seamless loop) #}
+                    {% set _tick = [
+                        ['truck', 'Miễn phí vận chuyển đơn từ 5 triệu'],
+                        ['lightning-charge-fill', 'Flash Sale mỗi ngày — giảm tới 25%'],
+                        ['credit-card', 'Trả góp 0% qua thẻ tín dụng'],
+                        ['shield-check', 'Bảo hành chính hãng · 1 đổi 1 trong 7 ngày'],
+                        ['headset', 'Tư vấn cấu hình miễn phí 08:00 – 21:00']
+                    ] %}
+                    <div class="gv-ticker d-none d-lg-block" aria-hidden="true">
+                        <div class="gv-ticker__track">
+                            {% for i in 0..1 %}{% for t in _tick %}<span><i class="bi bi-{{ t[0] }}"></i>{{ t[1] }}</span>{% endfor %}{% endfor %}
+                        </div>
+                    </div>
+                    <div class="text-nowrap"><i class="bi bi-headset me-1"></i> Hỗ trợ: <strong>{{ st.hotline }}</strong></div>
                 </div>
             </div>
         </div>
@@ -289,6 +302,8 @@
 
     {# Back-to-top button (behavior in ui.js) #}
     <button id="ts-totop" type="button" aria-label="Lên đầu trang"><i class="bi bi-arrow-up"></i></button>
+    {# Floating hotline button with pulse ring #}
+    <a href="tel:{{ st.hotline|replace({' ': ''}) }}" id="ts-hotline" aria-label="Gọi hotline {{ st.hotline }}" title="Hotline {{ st.hotline }}"><i class="bi bi-telephone-fill"></i></a>
 
     <!-- jQuery (Select2) -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
