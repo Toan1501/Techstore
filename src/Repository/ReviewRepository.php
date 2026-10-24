@@ -76,9 +76,18 @@ class ReviewRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleResult();
 
+        // Star distribution 5..1 for the summary bars.
+        $dist = [5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0];
+        foreach ($this->createQueryBuilder('r')->select('r.rating AS star', 'COUNT(r.id) AS n')
+            ->andWhere('r.product = :product')->setParameter('product', $product)
+            ->groupBy('r.rating')->getQuery()->getScalarResult() as $d) {
+            $dist[(int) $d['star']] = (int) $d['n'];
+        }
+
         return [
             'average' => $row['average'] !== null ? round((float) $row['average'], 1) : null,
             'count' => (int) $row['count'],
+            'dist' => $dist,
         ];
     }
 }

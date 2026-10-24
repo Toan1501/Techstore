@@ -19,9 +19,17 @@ class Review
     #[ORM\JoinColumn(nullable: false)]
     private ?SanPham $product = null;
 
+    /** Null for imported/demo reviews, which carry authorName instead. */
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
+
+    #[ORM\Column(length: 80, nullable: true)]
+    private ?string $authorName = null;
+
+    /** Sample data for the demo store: removable in one go with `app:demo-reviews --purge`. */
+    #[ORM\Column(options: ['default' => false])]
+    private bool $demo = false;
 
     #[ORM\Column]
     #[Assert\NotNull]
@@ -98,5 +106,39 @@ class Review
         $this->createdAt = $createdAt;
 
         return $this;
+    }
+
+    public function getAuthorName(): ?string
+    {
+        return $this->authorName;
+    }
+
+    public function setAuthorName(?string $authorName): static
+    {
+        $this->authorName = $authorName;
+
+        return $this;
+    }
+
+    public function isDemo(): bool
+    {
+        return $this->demo;
+    }
+
+    public function setDemo(bool $demo): static
+    {
+        $this->demo = $demo;
+
+        return $this;
+    }
+
+    /** Name shown on the product page. */
+    public function getDisplayName(): string
+    {
+        if ($this->user) {
+            return trim(($this->user->getFirstName() ?? '') . ' ' . ($this->user->getLastName() ? mb_substr($this->user->getLastName(), 0, 1) . '.' : '')) ?: (string) $this->user->getUserIdentifier();
+        }
+
+        return $this->authorName ?: 'Khách hàng';
     }
 }

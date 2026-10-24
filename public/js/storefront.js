@@ -244,3 +244,13 @@
     });
   });
 })();
+
+/* Reviews: reveal the rest on demand. */
+(function () {
+  var btn = document.querySelector('[data-show-reviews]');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    Array.prototype.forEach.call(document.querySelectorAll('[data-more-review]'), function (el) { el.hidden = false; });
+    btn.remove();
+  });
+})();

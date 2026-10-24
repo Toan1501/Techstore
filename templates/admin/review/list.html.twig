@@ -20,7 +20,7 @@
                                 </div>
                             {% else %}<span class="ad-muted">(sản phẩm đã xóa)</span>{% endif %}
                         </td>
-                        <td>{{ rv.user ? '@' ~ rv.user.username : '—' }}</td>
+                        <td><div class="ad-strong">{{ rv.displayName }}</div>{% if rv.demo %}<span class="ad-pill ad-pill--muted ad-pill--nodot" title="Đánh giá mẫu cho bản demo — gỡ bằng app:demo-reviews --purge">Mẫu</span>{% elseif rv.user %}<span class="ad-muted small">@{{ rv.user.username }}</span>{% endif %}</td>
                         <td><span class="ad-stars">{% for i in 1..5 %}<i class="bi bi-star-fill{{ i > rv.rating ? ' off' : '' }}"></i>{% endfor %}</span></td>
                         <td style="max-width:420px">{{ rv.comment ?: '—' }}</td>
                         <td class="ad-muted">{{ rv.createdAt ? rv.createdAt|date('d/m/Y') : '' }}</td>

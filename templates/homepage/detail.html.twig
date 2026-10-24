@@ -198,6 +198,13 @@
                     <b>{{ rating.count > 0 ? rating.average|number_format(1, ',') : '–' }}</b><span>/5</span>
                     <div>{% include 'partials/_rating_stars.html.twig' with {avg: rating.average ?? 0, count: rating.count} %}</div>
                 </div>
+                {% if rating.count > 0 %}
+                <div class="pd-reviews__dist" aria-label="Phân bố số sao">
+                    {% for star, n in rating.dist %}
+                        <div class="pd-dist"><span>{{ star }} <i class="bi bi-star-fill"></i></span><span class="pd-dist__bar"><span style="width: {{ (n / rating.count * 100)|round }}%"></span></span><em>{{ n }}</em></div>
+                    {% endfor %}
+                </div>
+                {% endif %}
                 <div class="pd-reviews__form">
                     {% if app.user %}
                         <form method="post" action="{{ path('app_review_add', {'id': data.getId()}) }}">
@@ -220,10 +227,10 @@
                 </div>
             </div>
             {% for review in reviews %}
-                <div class="pd-review">
-                    <span class="pd-review__avatar">{{ (review.user ? review.user.firstName : 'K')|first|upper }}</span>
+                <div class="pd-review"{{ loop.index > 6 ? ' hidden data-more-review' : '' }}>
+                    <span class="pd-review__avatar">{{ review.displayName|first|upper }}</span>
                     <div>
-                        <div><b>{{ review.user ? review.user.firstName : 'Khách' }}</b> <small class="text-muted">{{ review.createdAt|date('d/m/Y') }}</small></div>
+                        <div><b>{{ review.displayName }}</b> <small class="text-muted">{{ review.createdAt|date('d/m/Y') }}</small></div>
                         <div class="text-warning small">{% for i in 1..5 %}<i class="bi {{ i <= review.rating ? 'bi-star-fill' : 'bi-star' }}"></i>{% endfor %}</div>
                         {% if review.comment %}<p class="mb-0 mt-1">{{ review.comment }}</p>{% endif %}
                     </div>
@@ -231,6 +238,9 @@
             {% else %}
                 <p class="text-muted mb-0">Chưa có đánh giá nào cho sản phẩm này.</p>
             {% endfor %}
+            {% if reviews|length > 6 %}
+                <button type="button" class="btn btn-outline-secondary w-100 mt-2" data-show-reviews>Xem thêm {{ reviews|length - 6 }} đánh giá <i class="bi bi-chevron-down"></i></button>
+            {% endif %}
         </div>
 
         <div class="pd-tabs__panel" id="tab-qa" role="tabpanel" data-panel="qa" hidden>

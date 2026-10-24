@@ -653,3 +653,12 @@ body.has-pd-sticky .gv-header { transform: translateY(-100%); }
 @media (max-width: 991.98px) {
     input, select, textarea, .form-control, .form-select, .gv-search__input { font-size: 16px !important; }
 }
+
+/* Review star distribution */
+.pd-reviews__dist { flex: 1 1 220px; max-width: 320px; display: grid; gap: 5px; }
+.pd-dist { display: flex; align-items: center; gap: 8px; font-size: .8rem; color: var(--ts-muted); }
+.pd-dist > span:first-child { width: 30px; white-space: nowrap; }
+.pd-dist > span:first-child i { color: #f59e0b; font-size: .7rem; }
+.pd-dist__bar { flex: 1 1 auto; height: 7px; border-radius: 999px; background: var(--sf-soft); overflow: hidden; }
+.pd-dist__bar span { display: block; height: 100%; border-radius: 999px; background: #f59e0b; }
+.pd-dist em { font-style: normal; width: 26px; text-align: right; }
