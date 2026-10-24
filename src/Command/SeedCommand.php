@@ -55,6 +55,8 @@ class SeedCommand extends Command
     public function __construct(
         private EntityManagerInterface $em,
         private UserPasswordHasherInterface $hasher,
+        #[\Symfony\Component\DependencyInjection\Attribute\Autowire('%kernel.project_dir%/public/uploads/sanpham')]
+        private string $uploadDir = '',
     ) {
         parent::__construct();
     }
@@ -123,18 +125,16 @@ class SeedCommand extends Command
                 ->setPrice($p['price'])
                 ->setPriceOld($priceOld)
                 ->setStock($p['stock'])
-                ->setPhoto(self::AI_PHOTOS[$p['sku']] ?? $p['photo'])
+                ->setPhoto($this->photoFor($p))
                 ->setBrand($p['brand'])
                 ->setSku($p['sku'])
                 ->setWarranty($p['warranty'])
                 ->setSpecifications($p['specs'])
                 ->setDescription($p['name'] . ' — chính hãng, bảo hành ' . $p['warranty'] . '.')
                 ->setCate($cats[$p['cat']]);
-            // one gallery image for a few products to showcase the gallery
-            if (!empty($p['gallery'])) {
-                foreach ($p['gallery'] as $i => $g) {
-                    $sp->addImage((new ProductImage())->setFilename($g)->setPosition($i));
-                }
+            // Extra angles generated for the product: p-<sku>-2.webp, p-<sku>-3.webp ...
+            foreach ($this->galleryFor($p) as $i => $g) {
+                $sp->addImage((new ProductImage())->setFilename($g)->setPosition($i));
             }
             $this->em->persist($sp);
             $products[] = $sp;
@@ -370,5 +370,30 @@ class SeedCommand extends Command
              'excerpt' => 'Hướng dẫn vệ sinh bụi bẩn, tra keo tản nhiệt giúp máy mát và bền hơn.',
              'content' => '<p>Bụi bẩn tích tụ là nguyên nhân khiến máy tính nóng lên và giảm tuổi thọ linh kiện. Bạn nên vệ sinh định kỳ 3–6 tháng một lần.</p><p>Sử dụng bình khí nén để thổi bụi quạt và khe tản nhiệt, đồng thời tra lại keo tản nhiệt CPU sau 1–2 năm sử dụng.</p>'],
         ];
+    }    /** Own photo p-<sku>.webp when generated, else the shared AI photo, else the seed default. */
+    private function photoFor(array $p): string
+    {
+        $own = 'p-' . strtolower($p['sku']) . '.webp';
+        if (is_file($this->uploadDir . '/' . $own)) {
+            return $own;
+        }
+
+        return self::AI_PHOTOS[$p['sku']] ?? $p['photo'];
     }
+
+    /** @return string[] additional generated angles for the gallery */
+    private function galleryFor(array $p): array
+    {
+        $out = [];
+        for ($n = 2; $n <= 6; $n++) {
+            $file = 'p-' . strtolower($p['sku']) . '-' . $n . '.webp';
+            if (is_file($this->uploadDir . '/' . $file)) {
+                $out[] = $file;
+            }
+        }
+
+        return $out;
+    }
+
+
 }
