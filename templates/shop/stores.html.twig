@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hệ thống cửa hàng — TOÀN STORE{% endblock %}
+{% block meta_description %}Địa chỉ, giờ mở cửa và số điện thoại các showroom Toàn Store. Đến trực tiếp để trải nghiệm laptop, PC gaming và linh kiện chính hãng.{% endblock %}
+
+{% block body %}
+{% set st = store_settings() %}
+<script type="application/ld+json">{{ stores|map(s => {
+    '@context': 'https://schema.org', '@type': 'ElectronicsStore',
+    'name': s.name, 'telephone': s.phone, 'openingHours': s.hours,
+    'address': {'@type': 'PostalAddress', 'streetAddress': s.address, 'addressCountry': 'VN'},
+    'parentOrganization': {'@type': 'Organization', 'name': st.storeName}
+})|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG'))|raw }}</script>
+
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Hệ thống cửa hàng</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <div class="gv-listing-bar">
+            <div>
+                <h1 class="gv-listing-title">Hệ thống cửa hàng</h1>
+                <span class="text-muted small">{{ stores|length }} showroom · Hotline chung <a href="tel:{{ st.hotline|replace({' ': ''}) }}" class="text-danger fw-semibold">{{ st.hotline }}</a></span>
+            </div>
+        </div>
+        <div class="row g-3">
+            {% for s in stores %}
+            <div class="col-lg-6 col-xl-4">
+                <div class="gv-store">
+                    <div class="gv-store__map">
+                        <iframe loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Bản đồ {{ s.name }}" src="https://www.google.com/maps?q={{ s.address|url_encode }}&output=embed"></iframe>
+                    </div>
+                    <div class="gv-store__body">
+                        <h2>{{ s.name }}</h2>
+                        <p><i class="bi bi-geo-alt-fill"></i> {{ s.address }}</p>
+                        <p><i class="bi bi-clock-fill"></i> {{ s.hours }}</p>
+                        <p><i class="bi bi-telephone-fill"></i> <a href="tel:{{ s.phone|replace({' ': ''}) }}" class="text-body">{{ s.phone }}</a></p>
+                        <a class="btn btn-outline-danger btn-sm mt-1" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query={{ s.address|url_encode }}"><i class="bi bi-signpost-2"></i> Chỉ đường</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

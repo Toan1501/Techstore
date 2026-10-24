@@ -1,0 +1,118 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Xây dựng cấu hình PC — TOÀN STORE{% endblock %}
+{% block meta_description %}Tự chọn máy tính, card đồ họa, RAM, màn hình, chuột và xem tổng chi phí ngay. Thêm cả bộ cấu hình vào giỏ chỉ với một nút bấm tại Toàn Store.{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Xây dựng cấu hình</li>
+        </ol>
+    </nav>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="gv-section">
+                <div class="gv-listing-bar">
+                    <div>
+                        <h1 class="gv-listing-title"><i class="bi bi-tools text-danger"></i> Xây dựng cấu hình PC</h1>
+                        <span class="text-muted small">Chọn linh kiện cho từng vị trí — tổng tiền cập nhật ngay bên cạnh</span>
+                    </div>
+                    <button type="button" id="b-reset" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise"></i> Làm mới</button>
+                </div>
+
+                {% for slot in slots %}
+                <div class="gv-slot" data-slot="{{ slot.key }}">
+                    <div class="gv-slot__icon"><i class="bi bi-{{ slot.icon }}"></i></div>
+                    <div class="gv-slot__body">
+                        <label class="gv-slot__label" for="slot-{{ slot.key }}">{{ slot.label }}
+                            {% if slot.required %}<span class="badge bg-danger">Bắt buộc</span>{% else %}<span class="badge bg-light text-muted border">Tuỳ chọn</span>{% endif %}
+                        </label>
+                        <select id="slot-{{ slot.key }}" class="form-select gv-slot__select">
+                            <option value="">— Chọn {{ slot.label|lower }} —</option>
+                            {% for p in slot.products %}
+                                <option value="{{ p.id }}" data-price="{{ p.price }}" data-old="{{ p.priceOld ?: '' }}" data-img="{{ asset('uploads/sanpham/' ~ p.photo) }}">{{ p.name }} — {{ p.price|vnd }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if slot.hint %}<div class="small text-muted mt-1">{{ slot.hint }}</div>{% endif %}
+                    </div>
+                    <div class="gv-slot__preview">
+                        <img src="" alt="">
+                        <div class="gv-slot__price"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="gv-section gv-build-summary">
+                <h2 class="h6 fw-bold mb-3"><i class="bi bi-receipt text-danger"></i> Cấu hình của bạn</h2>
+                <div class="d-flex justify-content-between mb-1"><span>Số linh kiện</span><strong id="b-count">0</strong></div>
+                <div class="d-flex justify-content-between align-items-center mb-1"><span>Tổng cộng</span><span class="gv-build-total" id="b-total">0 ₫</span></div>
+                <div class="text-success small fw-semibold mb-3" id="b-save"></div>
+                <button type="button" id="b-add" class="btn btn-danger btn-lg-cta w-100" disabled
+                        data-add-url="{{ path('app_cart_add', {'product_id': '__ID__'}) }}" data-cart-url="{{ path('app_cart') }}">
+                    <i class="bi bi-cart-plus"></i> Thêm cả bộ vào giỏ
+                </button>
+                <p class="text-muted small mt-3 mb-0"><i class="bi bi-shield-check text-danger"></i> Linh kiện chính hãng, bảo hành theo từng sản phẩm. Cần tư vấn tương thích? Gọi <strong>{{ store_settings().hotline }}</strong>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function () {
+    var slots = [].slice.call(document.querySelectorAll('.gv-slot'));
+    var totalEl = document.getElementById('b-total'), saveEl = document.getElementById('b-save'),
+        countEl = document.getElementById('b-count'), btn = document.getElementById('b-add'),
+        resetBtn = document.getElementById('b-reset');
+    var addUrl = btn.getAttribute('data-add-url'), cartUrl = btn.getAttribute('data-cart-url');
+    function vnd(n) { return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' ₫'; }
+
+    function update() {
+        var total = 0, save = 0, count = 0;
+        slots.forEach(function (s) {
+            var sel = s.querySelector('select'), o = sel.options[sel.selectedIndex];
+            var pv = s.querySelector('.gv-slot__preview'), img = pv.querySelector('img'), pr = pv.querySelector('.gv-slot__price');
+            if (o && o.value) {
+                var p = +o.getAttribute('data-price'), old = +o.getAttribute('data-old') || 0;
+                total += p; if (old > p) save += old - p; count++;
+                img.src = o.getAttribute('data-img'); pv.classList.add('show'); pr.textContent = vnd(p); s.classList.add('has-item');
+            } else { pv.classList.remove('show'); pr.textContent = ''; s.classList.remove('has-item'); }
+        });
+        totalEl.textContent = vnd(total);
+        saveEl.textContent = save > 0 ? ('Tiết kiệm ' + vnd(save) + ' so với giá gốc') : '';
+        countEl.textContent = count;
+        btn.disabled = count === 0;
+    }
+    slots.forEach(function (s) { s.querySelector('select').addEventListener('change', update); });
+    resetBtn.addEventListener('click', function () { slots.forEach(function (s) { s.querySelector('select').value = ''; }); update(); });
+
+    btn.addEventListener('click', function () {
+        var ids = slots.map(function (s) { return s.querySelector('select').value; }).filter(Boolean);
+        if (!ids.length) return;
+        btn.disabled = true; btn.classList.add('is-loading');
+        var chain = Promise.resolve(), last = null;
+        ids.forEach(function (id) {
+            chain = chain.then(function () {
+                var fd = new FormData(); fd.append('qty', '1');
+                return fetch(addUrl.replace('__ID__', id), { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+                    .then(function (r) { return r.json(); }).then(function (d) { last = d; });
+            });
+        });
+        chain.then(function () {
+            var cc = document.getElementById('cart-count'); if (cc && last && last.count != null) cc.textContent = last.count;
+            var t = document.getElementById('cart-toast');
+            if (t) { document.getElementById('cart-toast-body').textContent = 'Đã thêm ' + ids.length + ' sản phẩm vào giỏ.'; t.classList.remove('bg-danger'); t.classList.add('bg-success'); bootstrap.Toast.getOrCreateInstance(t, { delay: 1500 }).show(); }
+            setTimeout(function () { window.location.href = cartUrl; }, 900);
+        }).catch(function () { window.location.href = cartUrl; });
+    });
+    update();
+})();
+</script>
+{% endblock %}

@@ -45,6 +45,15 @@ class CouponTest extends TestCase
         $this->assertFalse($c->isValidNow());
     }
 
+    public function testLabelKeepsTrailingZeroOfWholePercents(): void
+    {
+        // Regression: 10% used to render as "1%" because trailing zeros were stripped blindly.
+        $this->assertSame('10%', $this->coupon()->setValue(10)->getLabel());
+        $this->assertSame('20%', $this->coupon()->setValue(20)->getLabel());
+        $this->assertSame('12.5%', $this->coupon()->setValue(12.5)->getLabel());
+        $this->assertSame('100.000 ₫', $this->coupon()->setType('fixed')->setValue(100000)->getLabel());
+    }
+
     public function testComputeDiscountRespectsMinOrder(): void
     {
         $c = $this->coupon()->setValue(10)->setMinOrder(1000000);

@@ -83,8 +83,24 @@ class SanPhamRepository extends ServiceEntityRepository
             $qb->andWhere('(SELECT AVG(rv.rating) FROM App\Entity\Review rv WHERE rv.product = sp) >= :minRating')
                 ->setParameter('minRating', (float) $filters['min_rating']);
         }
+        // Keyword(s) matched against the product name (string or array → OR).
+        if (!empty($filters['q'])) {
+            $ors = [];
+            foreach (array_values((array) $filters['q']) as $i => $term) {
+                $ors[] = "sp.name LIKE :q$i";
+                $qb->setParameter("q$i", '%' . $term . '%');
+            }
+            $qb->andWhere('(' . implode(' OR ', $ors) . ')');
+        }
+        // Only products that currently have a strike-through price.
+        if (!empty($filters['discount_only'])) {
+            $qb->andWhere('sp.priceOld IS NOT NULL')->andWhere('sp.priceOld > sp.price');
+        }
 
         switch ($filters['sort'] ?? 'newest') {
+            case 'discount':
+                $qb->addSelect('((sp.priceOld - sp.price) / sp.priceOld) AS HIDDEN pct')->orderBy('pct', 'DESC');
+                break;
             case 'price_asc':
                 $qb->orderBy('sp.price', 'ASC');
                 break;
@@ -111,6 +127,23 @@ class SanPhamRepository extends ServiceEntityRepository
             ->getQuery()->getScalarResult();
 
         return array_column($rows, 'brand');
+    }
+
+    /** @return array<string,int> brand => product count, most products first. */
+    public function brandCounts(): array
+    {
+        $rows = $this->createQueryBuilder('sp')
+            ->select('sp.brand AS brand', 'COUNT(sp.id) AS n')
+            ->andWhere('sp.brand IS NOT NULL')->andWhere("sp.brand != ''")
+            ->groupBy('sp.brand')->orderBy('n', 'DESC')->addOrderBy('sp.brand', 'ASC')
+            ->getQuery()->getScalarResult();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[$r['brand']] = (int) $r['n'];
+        }
+
+        return $out;
     }
 
     /** @return array{min: float, max: float} Lowest and highest product price. */

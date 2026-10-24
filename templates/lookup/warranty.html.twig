@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tra cứu bảo hành — TOÀN STORE{% endblock %}
+{% block meta_description %}Kiểm tra thời hạn bảo hành của sản phẩm đã mua tại Toàn Store bằng mã đơn hàng và số điện thoại hoặc email.{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tra cứu bảo hành</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <h1 class="h4 mb-1"><i class="bi bi-shield-check text-danger"></i> Tra cứu bảo hành</h1>
+        <p class="text-muted">Thời hạn bảo hành được tính từ ngày đặt hàng theo chính sách của từng sản phẩm.</p>
+        <form method="post" class="gv-lookup-form" data-no-loading>
+            <input type="hidden" name="_token" value="{{ csrf_token('lookup') }}">
+            <div class="row g-2">
+                <div class="col-sm-4">
+                    <label class="form-label" for="order_id">Mã đơn hàng</label>
+                    <div class="input-group ts-field"><span class="input-group-text">#</span><input type="text" id="order_id" name="order_id" class="form-control" value="{{ app.request.request.get('order_id') }}" placeholder="VD: 12" required inputmode="numeric"></div>
+                </div>
+                <div class="col-sm-8">
+                    <label class="form-label" for="contact">Số điện thoại hoặc email</label>
+                    <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-person"></i></span><input type="text" id="contact" name="contact" class="form-control" value="{{ app.request.request.get('contact') }}" placeholder="0912… hoặc email@…" required></div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-danger btn-lg-cta mt-3"><i class="bi bi-search"></i> Kiểm tra</button>
+        </form>
+        {% if error %}<div class="alert alert-danger mt-3 mb-0 py-2"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endif %}
+    </div>
+
+    {% if order %}
+    <div class="gv-section">
+        <div class="gv-section__head"><h2>Đơn hàng #{{ order.id }} — đặt ngày {{ order.createdAt ? order.createdAt|date('d/m/Y') : '—' }}</h2></div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead class="table-light"><tr><th>Sản phẩm</th><th>Thời hạn</th><th>Hết hạn</th><th>Trạng thái</th></tr></thead>
+                <tbody>
+                    {% for w in items %}
+                    <tr>
+                        <td>{{ w.name }}<div class="text-muted small">SL: {{ w.qty }}</div></td>
+                        <td class="text-nowrap">{{ w.months ? w.months ~ ' tháng' : '—' }}</td>
+                        <td class="text-nowrap">{{ w.end ? w.end|date('d/m/Y') : '—' }}</td>
+                        <td>
+                            {% if w.end is null %}<span class="badge bg-secondary">Không có thông tin</span>
+                            {% elseif w.daysLeft >= 0 %}<span class="badge bg-success">Còn hạn</span> <span class="small text-muted">còn {{ w.daysLeft }} ngày</span>
+                            {% else %}<span class="badge bg-danger">Hết hạn</span> <span class="small text-muted">{{ -w.daysLeft }} ngày trước</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted small mt-3 mb-0">Cần gửi bảo hành? Xem <a href="{{ path('page_warranty') }}" class="text-danger">chính sách bảo hành</a> hoặc mang sản phẩm tới <a href="{{ path('shop_stores') }}" class="text-danger">cửa hàng gần nhất</a>.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

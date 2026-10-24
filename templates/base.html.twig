@@ -14,7 +14,7 @@
         {% set _pg = app.request.query.getInt('page', 1) %}
         <link rel="canonical" href="{{ app.request.schemeAndHttpHost ~ app.request.baseUrl ~ app.request.pathInfo }}{{ _pg > 1 ? '?page=' ~ _pg : '' }}">
         {# Private / thin pages must not be indexed (cart, checkout, account, search, auth). #}
-        {% set _noindex = app.request.attributes.get('_route') in ['app_cart', 'app_order', 'app_order_confirmation', 'app_login', 'app_register', 'profile', 'edit_profile', 'app_my_orders', 'app_order_detail_customer', 'app_wishlist', 'app_compare', 'search_products', 'app_forgot_password_request', 'app_check_email', 'app_reset_password'] %}
+        {% set _noindex = app.request.attributes.get('_route') in ['app_cart', 'app_order', 'app_order_confirmation', 'app_login', 'app_register', 'profile', 'edit_profile', 'app_my_orders', 'app_order_detail_customer', 'app_wishlist', 'app_compare', 'search_products', 'app_forgot_password_request', 'app_check_email', 'app_reset_password', 'change_password'] %}
         <meta name="robots" content="{{ _noindex ? 'noindex, follow' : 'index, follow, max-image-preview:large' }}">
         <meta name="theme-color" content="#e30019">
         <meta name="twitter:card" content="summary_large_image">
@@ -170,9 +170,10 @@
                     {% for c in all_categories()|slice(0, 7) %}
                         <li><a href="{{ path('app_productofcate', {'id': c.id}) }}">{{ c.name }}</a></li>
                     {% endfor %}
-                    <li><a href="{{ path('feature_product') }}">Tất cả sản phẩm</a></li>
+                    <li><a href="{{ path('shop_builder') }}"><i class="bi bi-tools"></i> Xây dựng PC</a></li>
+                    <li><a href="{{ path('shop_promotions') }}" class="gv-catbar__hot"><i class="bi bi-fire"></i> Khuyến mãi</a></li>
+                    <li><a href="{{ path('shop_brands') }}">Thương hiệu</a></li>
                     <li><a href="{{ path('app_news') }}">Tin tức</a></li>
-                    <li><a href="{{ path('app_contact') }}">Liên hệ</a></li>
                 </ul>
             </div>
         </div>
@@ -195,6 +196,10 @@
                     <span class="list-group-item text-muted">Chưa có danh mục</span>
                 {% endfor %}
                 <div class="list-group-item bg-light fw-semibold text-uppercase small text-muted">Tiện ích</div>
+                <a href="{{ path('shop_builder') }}" class="list-group-item list-group-item-action"><i class="bi bi-tools me-2"></i>Xây dựng cấu hình PC</a>
+                <a href="{{ path('shop_promotions') }}" class="list-group-item list-group-item-action"><i class="bi bi-tag me-2"></i>Khuyến mãi</a>
+                <a href="{{ path('shop_brands') }}" class="list-group-item list-group-item-action"><i class="bi bi-award me-2"></i>Thương hiệu</a>
+                <a href="{{ path('lookup_order') }}" class="list-group-item list-group-item-action"><i class="bi bi-search me-2"></i>Tra cứu đơn hàng</a>
                 <a href="{{ path('app_wishlist') }}" class="list-group-item list-group-item-action"><i class="bi bi-heart me-2"></i>Yêu thích</a>
                 <a href="{{ path('app_compare') }}" class="list-group-item list-group-item-action"><i class="bi bi-arrow-left-right me-2"></i>So sánh</a>
                 {% if app.user %}<a href="{{ path('app_my_orders') }}" class="list-group-item list-group-item-action"><i class="bi bi-bag me-2"></i>Đơn hàng của tôi</a>{% endif %}
@@ -261,6 +266,7 @@
                 <div class="col-6 col-lg-3">
                     <h6>VỀ TOÀN STORE</h6>
                     <a href="{{ path('page_about') }}">Giới thiệu</a>
+                    <a href="{{ path('shop_stores') }}">Hệ thống cửa hàng</a>
                     <a href="{{ path('app_contact') }}">Liên hệ</a>
                     <a href="{{ path('page_careers') }}">Tuyển dụng</a>
                     <a href="{{ path('app_news') }}">Tin công nghệ</a>
@@ -278,7 +284,9 @@
                     <a href="{{ path('page_payguide') }}">Hướng dẫn thanh toán</a>
                     <a href="{{ path('page_installment') }}">Hướng dẫn trả góp</a>
                     <a href="{{ path('page_faq') }}">Câu hỏi thường gặp</a>
-                    <a href="{{ path('app_my_orders') }}">Tra cứu đơn hàng</a>
+                    <a href="{{ path('lookup_order') }}">Tra cứu đơn hàng</a>
+                    <a href="{{ path('lookup_warranty') }}">Tra cứu bảo hành</a>
+                    <a href="{{ path('shop_builder') }}">Xây dựng cấu hình PC</a>
                 </div>
                 <div class="col-6 col-lg-3">
                     <h6>KẾT NỐI</h6>

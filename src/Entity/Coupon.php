@@ -85,8 +85,10 @@ class Coupon
 
     public function getLabel(): string
     {
-        return $this->type === 'fixed'
-            ? number_format((float) $this->value, 0, ',', '.') . ' ₫'
-            : rtrim(rtrim((string) $this->value, '0'), '.') . '%';
+        if ($this->type === 'fixed') {
+            return number_format((float) $this->value, 0, ',', '.') . ' ₫';
+        }
+        // Trim only decimal zeros ("12.50" → "12.5"); a plain rtrim('10', '0') would turn 10% into 1%.
+        return rtrim(rtrim(number_format((float) $this->value, 2, '.', ''), '0'), '.') . '%';
     }
 }

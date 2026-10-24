@@ -1,0 +1,10 @@
+# Our listings use ?sort=price_asc etc. with their own ORDER BY. Knp Paginator
+# also reads a "sort" query parameter by default and tries to ORDER BY its value,
+# which breaks every sorted listing ("no component field [price_asc]").
+# Give Knp's own sorting/filtering parameters names we never use.
+knp_paginator:
+    default_options:
+        sort_field_name: _sort
+        sort_direction_name: _dir
+        filter_field_name: _ffield
+        filter_value_name: _fvalue

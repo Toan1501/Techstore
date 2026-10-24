@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Thương hiệu — TOÀN STORE{% endblock %}
+{% block meta_description %}Mua sắm theo thương hiệu tại Toàn Store: Asus, MSI, Gigabyte, Acer, Dell, Logitech, Corsair, Kingston, G.Skill và nhiều hãng máy tính, linh kiện chính hãng khác.{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Thương hiệu</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <div class="gv-listing-bar">
+            <div>
+                <h1 class="gv-listing-title">Thương hiệu</h1>
+                <span class="text-muted small">{{ brands|length }} thương hiệu chính hãng</span>
+            </div>
+        </div>
+        <div class="gv-brandgrid">
+            {% for b in brands %}
+                <a href="{{ path('shop_brand', {'slug': b.slug}) }}" class="gv-brandtile">
+                    <span class="gv-brandtile__initial">{{ b.name|first|upper }}</span>
+                    <strong>{{ b.name }}</strong>
+                    <small>{{ b.count }} sản phẩm</small>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

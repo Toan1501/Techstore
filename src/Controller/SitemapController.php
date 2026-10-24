@@ -50,6 +50,17 @@ class SitemapController extends AbstractController
         }
         $urls[] = $this->generateUrl('page_faq', [], $abs);
 
+        // Discovery pages, lookups, need-based landing pages and brand pages.
+        foreach (['shop_promotions', 'shop_brands', 'shop_stores', 'shop_builder', 'lookup_order', 'lookup_warranty'] as $r) {
+            $urls[] = $this->generateUrl($r, [], $abs);
+        }
+        foreach (array_keys(ShopPagesController::LANDING) as $slug) {
+            $urls[] = $this->generateUrl('shop_landing', ['slug' => $slug], $abs);
+        }
+        foreach (array_keys($products->brandCounts()) as $brand) {
+            $urls[] = $this->generateUrl('shop_brand', ['slug' => \App\Entity\SanPham::slugify($brand)], $abs);
+        }
+
         foreach ($categories->findAllOrdered() as $c) {
             $urls[] = $this->generateUrl('app_productofcate', ['id' => $c->getId()], $abs);
         }

@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tra cứu đơn hàng — TOÀN STORE{% endblock %}
+{% block meta_description %}Tra cứu trạng thái đơn hàng Toàn Store bằng mã đơn và số điện thoại hoặc email — không cần tài khoản.{% endblock %}
+
+{% block body %}
+<div class="container-fluid px-3 px-xl-5 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Tra cứu đơn hàng</li>
+        </ol>
+    </nav>
+
+    <div class="gv-section">
+        <h1 class="h4 mb-1"><i class="bi bi-search text-danger"></i> Tra cứu đơn hàng</h1>
+        <p class="text-muted">Nhập mã đơn và số điện thoại (hoặc email) đã dùng khi đặt hàng.</p>
+        <form method="post" class="gv-lookup-form" data-no-loading>
+            <input type="hidden" name="_token" value="{{ csrf_token('lookup') }}">
+            <div class="row g-2">
+                <div class="col-sm-4">
+                    <label class="form-label" for="order_id">Mã đơn hàng</label>
+                    <div class="input-group ts-field"><span class="input-group-text">#</span><input type="text" id="order_id" name="order_id" class="form-control" value="{{ app.request.request.get('order_id') }}" placeholder="VD: 12" required inputmode="numeric"></div>
+                </div>
+                <div class="col-sm-8">
+                    <label class="form-label" for="contact">Số điện thoại hoặc email</label>
+                    <div class="input-group ts-field"><span class="input-group-text"><i class="bi bi-person"></i></span><input type="text" id="contact" name="contact" class="form-control" value="{{ app.request.request.get('contact') }}" placeholder="0912… hoặc email@…" required></div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-danger btn-lg-cta mt-3"><i class="bi bi-search"></i> Tra cứu</button>
+            {% if app.user %}<a href="{{ path('app_my_orders') }}" class="btn btn-link text-danger mt-3">Xem tất cả đơn của tôi</a>{% endif %}
+        </form>
+        {% if error %}<div class="alert alert-danger mt-3 mb-0 py-2"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>{% endif %}
+    </div>
+
+    {% if order %}
+    <div class="gv-section">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h2 class="h5 mb-0">Đơn hàng #{{ order.id }}
+                <span class="badge bg-{{ order.statusColor }} {{ order.statusColor in ['warning','light','info'] ? 'text-dark' : '' }} ms-1">{{ order.statusLabel }}</span>
+                {% if order.paid %}<span class="badge bg-success">Đã thanh toán</span>{% endif %}
+            </h2>
+            <span class="text-muted small">Đặt lúc {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '—' }}</span>
+        </div>
+        {% include 'partials/_order_timeline.html.twig' with {status: order.status} %}
+
+        <div class="row g-3 mt-1">
+            <div class="col-lg-7">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <tbody>
+                            {% for item in order.items %}
+                            <tr>
+                                <td>{{ item.product ? item.product.name : '(sản phẩm đã xóa)' }}</td>
+                                <td class="text-muted text-nowrap">&times; {{ item.quantity }}</td>
+                                <td class="text-end text-nowrap">{{ item.total|vnd }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr><td colspan="2">Tạm tính</td><td class="text-end">{{ order.subtotal|vnd }}</td></tr>
+                            {% if order.discount > 0 %}<tr class="text-success"><td colspan="2">Giảm giá{{ order.couponCode ? ' (' ~ order.couponCode ~ ')' : '' }}</td><td class="text-end">-{{ order.discount|vnd }}</td></tr>{% endif %}
+                            <tr><td colspan="2">Phí vận chuyển</td><td class="text-end">{{ order.shippingFee == 0 ? 'Miễn phí' : order.shippingFee|vnd }}</td></tr>
+                            <tr class="fw-bold"><td colspan="2">Tổng cộng</td><td class="text-end text-danger">{{ order.totalPrice|vnd }}</td></tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="border rounded-3 p-3 h-100">
+                    <div class="fw-semibold mb-2"><i class="bi bi-truck text-danger"></i> Giao đến</div>
+                    <div>{{ order.customerName }} · {{ order.customerPhone }}</div>
+                    <div class="text-muted small">{{ order.fullAddress }}</div>
+                    <hr>
+                    <div class="fw-semibold mb-1"><i class="bi bi-credit-card text-danger"></i> Thanh toán</div>
+                    <div>{{ order.paymentMethodLabel }}</div>
+                    <a href="{{ path('lookup_warranty') }}" class="btn btn-outline-danger btn-sm mt-3"><i class="bi bi-shield-check"></i> Tra cứu bảo hành đơn này</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}{{ heading|default('Sản phẩm') }} — TOÀN STORE{% endblock %}
+{% block meta_description %}{{ meta_description is defined ? meta_description : (intro is defined and intro ? intro : parent()) }}{% endblock %}
 
 {% block body %}
 <div class="container-fluid px-3 px-xl-5 py-3">
@@ -32,6 +33,7 @@
             </form>
             {% endif %}
         </div>
+        {% if intro is defined and intro %}<p class="text-muted mb-3">{{ intro }}</p>{% endif %}
 
         <div class="row g-3">
             {% for sp in data %}
