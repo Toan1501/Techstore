@@ -1,19 +1,41 @@
 {% extends 'adbase.html.twig' %}
 {% form_theme category_form 'bootstrap_5_layout.html.twig' %}
 
-{% block title %}Thêm / Sửa danh mục{% endblock %}
+{% set cat = category_form.vars.value %}
+{% set isEdit = cat and cat.id %}
+{% block title %}{{ isEdit ? 'Sửa danh mục' : 'Thêm danh mục' }}{% endblock %}
+{% block crumbs %}<div class="ad-crumb"><a href="{{ path('app_ds_category') }}">Danh mục</a><i class="bi bi-chevron-right"></i><span>{{ isEdit ? cat.name : 'Thêm mới' }}</span></div>{% endblock %}
+{% block subtitle %}Danh mục hiển thị trên menu, trang chủ và bộ lọc sản phẩm.{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4" style="max-width:640px">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Thông tin danh mục</h6></div>
-        <div class="card-body">
-            {{ form_start(category_form) }}
-            {{ form_widget(category_form) }}
-            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu danh mục</button>
-            <a href="{{ path('app_ds_category') }}" class="btn btn-secondary mt-2">Hủy</a>
-            {{ form_end(category_form) }}
+{{ form_start(category_form) }}
+<div class="ad-form-grid">
+    <section class="ad-card">
+        <div class="ad-card__body">
+            <h2 class="ad-section-title"><i class="bi bi-diagram-3"></i> Thông tin danh mục</h2>
+            {{ form_row(category_form.name, {'attr': {'placeholder': 'VD: Laptop'}}) }}
+            <div class="form-text">Tên dùng nội bộ; tên hiển thị tiếng Việt và icon được gán tự động cho các danh mục chuẩn.</div>
         </div>
-    </div>
+    </section>
+    <aside class="ad-form-side">
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-image"></i> Ảnh đại diện</h2>
+                {% if isEdit and cat.photo %}<img class="ad-current-img" src="{{ asset('uploads/sanpham/' ~ cat.photo) }}" alt="">{% endif %}
+                <div class="ad-drop">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <span data-drop-label="Kéo thả hoặc bấm để chọn ảnh">Kéo thả hoặc bấm để chọn ảnh</span>
+                    {{ form_widget(category_form.photo) }}
+                    <div class="ad-drop__preview"></div>
+                </div>
+            </div>
+        </section>
+    </aside>
 </div>
+{{ form_rest(category_form) }}
+<div class="ad-savebar">
+    <a href="{{ path('app_ds_category') }}" class="btn ad-btn ad-btn--ghost">Hủy</a>
+    <button type="submit" class="btn ad-btn ad-btn--red"><i class="bi bi-check2"></i> Lưu danh mục</button>
+</div>
+{{ form_end(category_form) }}
 {% endblock %}

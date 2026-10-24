@@ -1,44 +1,42 @@
 {% extends 'adbase.html.twig' %}
 
-{% block title %}Danh sách danh mục{% endblock %}
+{% block title %}Danh mục{% endblock %}
+{% block subtitle %}{{ data|length }} danh mục · hiển thị theo thứ tự ưu tiên trên cửa hàng{% endblock %}
+{% block actions %}<a href="{{ path('ad_category') }}" class="btn ad-btn ad-btn--red"><i class="bi bi-plus-lg"></i> Thêm danh mục</a>{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Danh mục ({{ data|length }})</h6>
-            <a href="{{ path('ad_category') }}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Thêm danh mục</a>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr><th>STT</th><th>Mã</th><th>Tên danh mục</th><th>Ảnh</th><th>Thao tác</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for cg in data %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ cg.getId() }}</td>
-                            <td>{{ cg.getName() }}</td>
-                            <td><img src="{{ asset('uploads/sanpham/' ~ cg.getPhoto()) }}" height="56" alt=""></td>
-                            <td class="text-nowrap">
-                                <a href="{{ path('app_edit_category', {'id': cg.getId()}) }}" class="btn btn-sm btn-warning">Sửa</a>
-                                <form method="post" action="{{ path('app_delete_category', {'id': cg.getId()}) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa danh mục này?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_category_' ~ cg.getId()) }}">
-                                    <button class="btn btn-sm btn-danger">Xóa</button>
+<section class="ad-card">
+    <div class="ad-table-wrap">
+        <table class="ad-table">
+            <thead><tr><th>Danh mục</th><th>Tên nội bộ</th><th class="num">Số sản phẩm</th><th class="actions"></th></tr></thead>
+            <tbody>
+                {% for cg in data %}
+                    {% set edit = path('app_edit_category', {'id': cg.id}) %}
+                    <tr data-href="{{ edit }}">
+                        <td>
+                            <div class="ad-prod">
+                                <img class="ad-thumb" src="{{ asset('uploads/sanpham/' ~ cg.photo) }}" alt="">
+                                <div><a href="{{ edit }}" class="ad-prod__name"><i class="bi bi-{{ cg.name|cat_icon }} me-1 text-danger"></i>{{ cg.name|cat_label }}</a><div class="ad-prod__meta">#{{ cg.id }}</div></div>
+                            </div>
+                        </td>
+                        <td class="ad-muted ad-mono">{{ cg.name }}</td>
+                        <td class="num"><a href="{{ path('app_ds_san_pham', {'cate': cg.id}) }}" class="ad-strong">{{ cg.sanPhams|length }}</a></td>
+                        <td class="actions">
+                            <div class="ad-row-actions">
+                                <a href="{{ path('app_productofcate', {'id': cg.id}) }}" target="_blank" rel="noopener" class="ad-icon-btn" title="Xem trên cửa hàng" aria-label="Xem trên cửa hàng"><i class="bi bi-eye"></i></a>
+                                <a href="{{ edit }}" class="ad-icon-btn" title="Sửa" aria-label="Sửa"><i class="bi bi-pencil"></i></a>
+                                <form method="post" action="{{ path('app_delete_category', {'id': cg.id}) }}" data-confirm="Xóa danh mục “{{ cg.name|cat_label }}”? Chỉ xóa được khi danh mục không còn sản phẩm." data-confirm-ok="Xóa danh mục">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_category_' ~ cg.id) }}">
+                                    <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" aria-label="Xóa"><i class="bi bi-trash3"></i></button>
                                 </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4"><div class="ad-empty"><i class="bi bi-diagram-3"></i><b>Chưa có danh mục</b><a href="{{ path('ad_category') }}">Tạo danh mục đầu tiên</a></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</div>
-{% endblock %}
-
-{% block javascripts %}
-<script>function deletect(url){ if(confirm("Bạn có chắc muốn xóa danh mục này?")){ window.location.href = url; } }</script>
+</section>
 {% endblock %}

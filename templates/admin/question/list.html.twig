@@ -1,37 +1,31 @@
 {% extends 'adbase.html.twig' %}
 
 {% block title %}Hỏi đáp sản phẩm{% endblock %}
+{% set open = items|filter(q => not q.isAnswered)|length %}
+{% block subtitle %}{{ items|length }} câu hỏi · <b style="color:var(--ad-red)">{{ open }}</b> chưa trả lời{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Câu hỏi ({{ items|length }})</h6></div>
-        <div class="card-body">
-            {% for q in items %}
-            <div class="border rounded p-3 mb-3">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <span class="text-muted small">{{ q.product ? q.product.name : '(đã xóa)' }} · {{ q.authorName }} · {{ q.createdAt|date('d/m/Y H:i') }}</span>
-                        {% if q.isAnswered %}<span class="badge badge-success">Đã trả lời</span>{% else %}<span class="badge badge-warning">Chờ trả lời</span>{% endif %}
-                        <p class="mb-2 mt-1"><i class="fas fa-question-circle text-primary"></i> {{ q.content }}</p>
-                    </div>
-                    <form method="post" action="{{ path('admin_question_delete', {'id': q.id}) }}" onsubmit="return confirm('Xóa câu hỏi này?')">
-                        <input type="hidden" name="_token" value="{{ csrf_token('delete_question_' ~ q.id) }}">
-                        <button class="btn btn-sm btn-outline-danger">Xóa</button>
-                    </form>
-                </div>
-                <form method="post" action="{{ path('admin_question_answer', {'id': q.id}) }}">
-                    <input type="hidden" name="_token" value="{{ csrf_token('answer_question_' ~ q.id) }}">
-                    <div class="input-group">
-                        <input type="text" name="answer" class="form-control" value="{{ q.answer }}" placeholder="Nhập câu trả lời...">
-                        <button class="btn btn-primary">Lưu</button>
-                    </div>
+<section class="ad-card">
+    {% for q in items %}
+        <article class="ad-qa">
+            <div class="ad-qa__meta">
+                {% if q.isAnswered %}<span class="ad-pill ad-pill--success">Đã trả lời</span>{% else %}<span class="ad-pill ad-pill--warning">Chờ trả lời</span>{% endif %}
+                <b class="text-body">{{ q.authorName }}</b><span>·</span><span>{{ q.createdAt|date('H:i d/m/Y') }}</span>
+                {% if q.product %}<span>·</span><a href="{{ path('app_product', {'slug': q.product.slug, 'id': q.product.id}) }}" target="_blank" rel="noopener">{{ q.product.name }}</a>{% endif %}
+                <form method="post" action="{{ path('admin_question_delete', {'id': q.id}) }}" class="ms-auto" data-confirm="Xóa câu hỏi này?" data-confirm-ok="Xóa">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete_question_' ~ q.id) }}">
+                    <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" aria-label="Xóa câu hỏi"><i class="bi bi-trash3"></i></button>
                 </form>
             </div>
-            {% else %}
-            <p class="text-center text-muted mb-0">Chưa có câu hỏi nào.</p>
-            {% endfor %}
-        </div>
-    </div>
-</div>
+            <div class="ad-qa__q"><i class="bi bi-chat-left-quote" style="color:var(--ad-sand)"></i> {{ q.content }}</div>
+            <form method="post" action="{{ path('admin_question_answer', {'id': q.id}) }}" class="d-flex gap-2">
+                <input type="hidden" name="_token" value="{{ csrf_token('answer_question_' ~ q.id) }}">
+                <input type="text" name="answer" class="form-control" value="{{ q.answer }}" placeholder="Nhập câu trả lời hiển thị dưới tên TOÀN STORE..." aria-label="Câu trả lời">
+                <button class="btn ad-btn {{ q.isAnswered ? 'ad-btn--ghost' : 'ad-btn--red' }}" style="height:44px"><i class="bi bi-send"></i> {{ q.isAnswered ? 'Cập nhật' : 'Trả lời' }}</button>
+            </form>
+        </article>
+    {% else %}
+        <div class="ad-empty"><i class="bi bi-chat-left-dots"></i><b>Chưa có câu hỏi nào</b>Câu hỏi của khách trên trang sản phẩm sẽ hiện ở đây.</div>
+    {% endfor %}
+</section>
 {% endblock %}

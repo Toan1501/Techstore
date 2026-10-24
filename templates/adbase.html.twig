@@ -1,323 +1,191 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-        {# Core admin styles — always loaded, not inside an overridable block #}
-        <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-        <link
-            href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-            rel="stylesheet">
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}Quản trị{% endblock %} · TOÀN STORE Admin</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{{ asset('css/admin.css') }}" rel="stylesheet">
+    {% block stylesheets %}{% endblock %}
+    <script>try { if (localStorage.getItem('ad-collapsed') === '1') document.documentElement.classList.add('ad-collapsed'); } catch (e) {}</script>
+</head>
+<body>
+{% set route = app.request.attributes.get('_route') %}
+{% set cnt = admin_counts() %}
+{% set nav = [
+    {'group': 'Tổng quan', 'items': [
+        {'label': 'Bảng điều khiển', 'icon': 'grid-1x2', 'route': 'app_admin', 'match': ['app_admin']},
+        {'label': 'Báo cáo bán hàng', 'icon': 'graph-up-arrow', 'fill': false, 'route': 'admin_reports', 'match': ['admin_reports']},
+    ]},
+    {'group': 'Bán hàng', 'items': [
+        {'label': 'Đơn hàng', 'icon': 'bag-check', 'route': 'admin_order_list', 'match': ['admin_order_list', 'admin_order_detail'], 'badge': cnt.pending_orders},
+        {'label': 'Mã giảm giá', 'icon': 'ticket-perforated', 'route': 'admin_coupon_list', 'match': ['admin_coupon_list', 'admin_coupon_new', 'admin_coupon_edit']},
+    ]},
+    {'group': 'Sản phẩm', 'items': [
+        {'label': 'Sản phẩm', 'icon': 'box-seam', 'route': 'app_ds_san_pham', 'match': ['app_ds_san_pham', 'app_san_pham', 'app_edit_san_pham'], 'badge': cnt.low_stock, 'badge_tone': 'amber', 'badge_title': 'sắp hết hàng'},
+        {'label': 'Danh mục', 'icon': 'diagram-3', 'route': 'app_ds_category', 'match': ['app_ds_category', 'ad_category', 'app_edit_category']},
+    ]},
+    {'group': 'Nội dung', 'items': [
+        {'label': 'Banner trang chủ', 'icon': 'images', 'fill': false, 'route': 'admin_banner_list', 'match': ['admin_banner_list', 'admin_banner_new', 'admin_banner_edit']},
+        {'label': 'Tin tức', 'icon': 'newspaper', 'fill': false, 'route': 'admin_news_list', 'match': ['admin_news_list', 'admin_news_new', 'admin_news_edit']},
+    ]},
+    {'group': 'Khách hàng', 'items': [
+        {'label': 'Người dùng', 'icon': 'people', 'route': 'admin_user_list', 'match': ['admin_user_list']},
+        {'label': 'Đánh giá', 'icon': 'star', 'route': 'admin_review_list', 'match': ['admin_review_list']},
+        {'label': 'Hỏi đáp', 'icon': 'chat-left-dots', 'route': 'admin_question_list', 'match': ['admin_question_list'], 'badge': cnt.open_questions},
+        {'label': 'Liên hệ', 'icon': 'envelope', 'route': 'admin_contact_list', 'match': ['admin_contact_list'], 'badge': cnt.contacts, 'badge_tone': 'cream'},
+    ]},
+    {'group': 'Hệ thống', 'items': [
+        {'label': 'Cài đặt cửa hàng', 'icon': 'sliders', 'fill': false, 'route': 'admin_settings', 'match': ['admin_settings']},
+    ]},
+] %}
 
-        <!-- SB Admin 2 theme (Bootstrap 4 based) -->
-        <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-        {% block stylesheets %}{% endblock %}
-    </head>
-    <body id="page-top">
-      
-        <!-- Page Wrapper -->
-        <div id="wrapper">
-    
-            <!-- Sidebar -->
-            <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-    
-                <!-- Sidebar - Brand -->
-                <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ path('app_admin')}}">
-                    {# <div class="sidebar-brand-icon rotate-n-15">
-                        <img src="" alt="">
-                    </div> #}
-                    <div class="sidebar-brand-text mx-3">TOÀN STORE</div>
-                </a>
-    
-                <!-- Divider -->
-                <hr class="sidebar-divider my-0">
-    
-                <!-- Nav Item - Adminstrator -->
-                <li class="nav-item active">
-                    <a class="nav-link" href="{{ path('app_admin')}}">
-                        <i class="fa fa-home"></i>
-                        <span>Trang quản trị</span></a>
-                </li>
-
-                <!-- Nav Item - Reports -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_reports')}}">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Báo cáo bán hàng</span></a>
-                </li>
-
-                <!-- Divider -->
-                <hr class="sidebar-divider">
-
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                  Quản lý chính
-              </div>
-    
-                <!-- Nav Item - Products Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo"
-                        aria-expanded="true" aria-controls="collapseTwo">
-                        <i class="fas fa-fw fa-cog"></i>
-                        <span>Quản lý sản phẩm</span>
-                    </a>
-                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Chức năng:</h6>
-                            <a class="collapse-item" href="{{ path('app_ds_san_pham') }}">Danh sách sản phẩm</a>
-                            <a class="collapse-item" href="{{ path('app_san_pham') }}">Thêm sản phẩm</a>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Nav Item - Categories Collapse Menu -->
-                <li class="nav-item">
-                    <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities"
-                        aria-expanded="true" aria-controls="collapseUtilities">
-                        <i class="fas fa-fw fa-wrench"></i>
-                        <span>Quản lý danh mục</span>
-                    </a>
-                    <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
-                        data-parent="#accordionSidebar">
-                        <div class="bg-white py-2 collapse-inner rounded">
-                            <h6 class="collapse-header">Chức năng:</h6>
-                            <a class="collapse-item" href="{{ path('app_ds_category') }}">Danh sách danh mục</a>
-                            <a class="collapse-item" href="{{ path('ad_category') }}">Thêm danh mục</a>
-                        </div>
-                    </div>
-                </li>
-
-                <!-- Nav Item - News -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_news_list') }}">
-                        <i class="fas fa-newspaper"></i>
-                        <span>Quản lý tin tức</span></a>
-                </li>
-
-                <!-- Nav Item - Banners -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_banner_list') }}">
-                        <i class="fas fa-images"></i>
-                        <span>Quản lý banner</span></a>
-                </li>
-
-                <!-- Nav Item - Contacts -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_contact_list') }}">
-                        <i class="fas fa-envelope"></i>
-                        <span>Tin nhắn liên hệ</span></a>
-                </li>
-
-                <!-- Nav Item - Users -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_user_list') }}">
-                        <i class="fas fa-users"></i>
-                        <span>Quản lý người dùng</span></a>
-                </li>
-
-                <!-- Nav Item - Reviews -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_review_list') }}">
-                        <i class="fas fa-star"></i>
-                        <span>Duyệt đánh giá</span></a>
-                </li>
-
-                <!-- Nav Item - Questions -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_question_list') }}">
-                        <i class="fas fa-question-circle"></i>
-                        <span>Hỏi đáp sản phẩm</span></a>
-                </li>
-
-                <!-- Nav Item - Coupons -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_coupon_list') }}">
-                        <i class="fas fa-tags"></i>
-                        <span>Mã giảm giá</span></a>
-                </li>
-
-                <!-- Nav Item - Settings -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_settings') }}">
-                        <i class="fas fa-cog"></i>
-                        <span>Cài đặt cửa hàng</span></a>
-                </li>
-
-                <!-- Divider -->
-                <hr class="sidebar-divider">
-    
-                <!-- Heading -->
-                <div class="sidebar-heading">
-                    Khác
-                </div>
-
-                <!-- Nav Item - Orders -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('admin_order_list') }}">
-                        <i class="fas fa-shopping-bag"></i>
-                        <span>Quản lý đơn hàng</span>
-                    </a>
-                </li>
-
-                <!-- Nav Item - Store front -->
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ path('homepage') }}">
-                        <i class="fas fa-store"></i>
-                        <span>Về cửa hàng</span></a>
-                </li>
-    
-                <!-- Divider -->
-                <hr class="sidebar-divider d-none d-md-block">
-    
-                <!-- Sidebar Toggler (Sidebar) -->
-                <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
-                </div>
-            </ul>
-            <!-- End of Sidebar -->
-    
-            <!-- Content Wrapper -->
-            <div id="content-wrapper" class="d-flex flex-column">
-    
-                <!-- Main Content -->
-                <div id="content">
-    
-                    <!-- Topbar -->
-                    <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-    
-                        <!-- Sidebar Toggle (Topbar) -->
-                        <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                            <i class="fa fa-bars"></i>
-                        </button>
-    
-                        <!-- Topbar Search -->
-                        <form action="{{ path('search_products') }}" method="GET"
-                            class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-                            <div class="input-group">
-                                <input type="text" name="keyword" class="form-control bg-light border-1 small" placeholder="Tìm sản phẩm..."
-                                    aria-label="Search" aria-describedby="basic-addon2">
-                                <div class="input-group-append">
-                                    <button class="btn btn-primary" type="button">
-                                        <i class="bi bi-search"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-    
-                        <!-- Topbar Navbar -->
-                        <ul class="navbar-nav ml-auto">
-    
-                            <!-- Nav Item - Search Dropdown (Visible Only XS) -->
-                            <li class="nav-item dropdown no-arrow d-sm-none">
-                                <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-search fa-fw"></i>
-                                </a>
-                                <!-- Dropdown - Messages -->
-                                <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                    aria-labelledby="searchDropdown">
-                                    <form class="form-inline mr-auto w-100 navbar-search">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control bg-light border-0 small"
-                                                placeholder="Tìm sản phẩm..." aria-label="Search"
-                                                aria-describedby="basic-addon2">
-                                            <div class="input-group-append">
-                                                <button class="btn btn-primary" type="button">
-                                                    <i class="fas fa-search fa-sm"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </li>
-    
-                            <!-- Nav Item - Messages -->
-                            <li class="nav-item dropdown no-arrow mx-1">
-                                <a class="nav-link dropdown-toggle" href="#" id="cartDropdown" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">Giỏ hàng</span>
-                                    <div type="button" class="btn btn-outline-primary rounded-3">
-                                        <i class="bi bi-cart3"></i>
-                                    </div>
-                                    <!-- Counter - Messages -->
-                                    <span class="badge badge-primary badge-counter"></span>
-                                </a>
-                            </li>
-    
-                            <div class="topbar-divider d-none d-sm-block"></div>
-    
-                            <!-- Nav Item - User Information -->
-                            <li class="nav-item dropdown no-arrow">
-                                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ app.user ? app.user.userIdentifier : 'Quản trị' }}</span>
-                                    <div type="button" class="btn btn-outline-primary rounded-3">
-                                        <i class="bi bi-person-fill"></i>
-                                    </div>
-                                </a>
-                                <!-- Dropdown - User Information -->
-                                {% if app.user %}
-                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                    aria-labelledby="userDropdown">
-                                    <a class="dropdown-item" href="{{ path('profile') }}">
-                                        <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Tài khoản
-                                    </a>
-                                    <a class="dropdown-item" href="{{ path('edit_profile') }}">
-                                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Cài đặt
-                                    </a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="{{ path('app_logout') }}">
-                                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
-                                        Đăng xuất
-                                    </a>
-                                </div>
-                                {% else %}
-                                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
-                                <a class="dropdown-item" href="{{ path('app_login') }}">
-                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Đăng nhập
-                                </a>
-                                <a class="dropdown-item" href="{{ path('app_register') }}">
-                                    <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
-                                    Đăng ký
-                                </a>
-                            </div>
-                                {% endif %}
-                            </li>
-                        </ul>
-                    </nav>
-                    {# Flash messages #}
-                    <div class="container-fluid">
-                        {% for type, messages in app.flashes %}
-                            {% for message in messages %}
-                                <div class="alert alert-{{ type == 'error' ? 'danger' : (type == 'success' ? 'success' : type) }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                </div>
-                            {% endfor %}
-                        {% endfor %}
-                    </div>
-
-                    {% block body %}{% endblock %}
-                </div>
-                <!-- End of Main Content -->
-            </div>
-            <!-- End of Content Wrapper -->
+<div class="ad-shell">
+    {# ===== Sidebar ===== #}
+    <aside class="ad-side offcanvas-lg offcanvas-start" tabindex="-1" id="adSide" aria-label="Điều hướng quản trị">
+        <div class="ad-side__brand">
+            <a href="{{ path('app_admin') }}" class="ad-side__logo" aria-label="Bảng điều khiển">
+                {% include 'partials/_logo.html.twig' with {tone: 'dark', compact: true} %}
+            </a>
+            <span class="ad-side__tag">Admin</span>
+            <button type="button" class="btn-close d-lg-none ms-auto" data-bs-dismiss="offcanvas" data-bs-target="#adSide" aria-label="Đóng"></button>
         </div>
-        <!-- End of Page Wrapper -->
+        <nav class="ad-nav">
+            {% for g in nav %}
+                <div class="ad-nav__group">{{ g.group }}</div>
+                {% for it in g.items %}
+                    {% set on = route in it.match %}
+                    <a href="{{ path(it.route) }}" class="ad-nav__link{{ on ? ' is-active' : '' }}" {{ on ? 'aria-current="page"' : '' }} title="{{ it.label }}">
+                        <i class="bi bi-{{ it.icon }}{{ on and (it.fill ?? true) ? '-fill' : '' }}"></i>
+                        <span class="ad-nav__text">{{ it.label }}</span>
+                        {% if it.badge is defined and it.badge > 0 %}
+                            <span class="ad-nav__badge ad-nav__badge--{{ it.badge_tone|default('red') }}" title="{{ it.badge }} {{ it.badge_title|default('cần xử lý') }}">{{ it.badge > 99 ? '99+' : it.badge }}</span>
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            {% endfor %}
+        </nav>
+        <div class="ad-side__foot">
+            <a href="{{ path('homepage') }}" class="ad-nav__link" target="_blank" rel="noopener" title="Xem cửa hàng">
+                <i class="bi bi-shop"></i><span class="ad-nav__text">Xem cửa hàng</span><i class="bi bi-box-arrow-up-right ms-auto ad-nav__text small"></i>
+            </a>
+            <button type="button" class="ad-collapse-btn d-none d-lg-flex" data-ad-collapse title="Thu gọn / mở rộng menu">
+                <i class="bi bi-layout-sidebar-inset"></i><span class="ad-nav__text">Thu gọn menu</span>
+            </button>
+        </div>
+    </aside>
 
-        <!-- Core scripts (always loaded) -->
-        <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
-        <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-        <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
-        <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+    {# ===== Main ===== #}
+    <div class="ad-main">
+        <header class="ad-top">
+            <button class="ad-top__icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#adSide" aria-label="Mở menu"><i class="bi bi-list"></i></button>
 
-        {% block javascripts %}{% endblock %}
-    </body>
+            <form class="ad-search" action="{{ path('app_ds_san_pham') }}" method="get" role="search">
+                <i class="bi bi-search"></i>
+                <input type="search" name="q" placeholder="Tìm sản phẩm theo tên, SKU..." value="{{ route == 'app_ds_san_pham' ? app.request.query.get('q') : '' }}" aria-label="Tìm sản phẩm">
+                <kbd class="d-none d-md-inline">/</kbd>
+            </form>
+
+            <div class="ad-top__right">
+                <div class="dropdown d-none d-sm-block">
+                    <button class="btn ad-btn ad-btn--red dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-plus-lg"></i> Tạo mới</button>
+                    <ul class="dropdown-menu dropdown-menu-end ad-menu">
+                        <li><a class="dropdown-item" href="{{ path('app_san_pham') }}"><i class="bi bi-box-seam"></i> Sản phẩm</a></li>
+                        <li><a class="dropdown-item" href="{{ path('ad_category') }}"><i class="bi bi-diagram-3"></i> Danh mục</a></li>
+                        <li><a class="dropdown-item" href="{{ path('admin_coupon_new') }}"><i class="bi bi-ticket-perforated"></i> Mã giảm giá</a></li>
+                        <li><a class="dropdown-item" href="{{ path('admin_banner_new') }}"><i class="bi bi-images"></i> Banner</a></li>
+                        <li><a class="dropdown-item" href="{{ path('admin_news_new') }}"><i class="bi bi-newspaper"></i> Bài viết</a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <button class="ad-top__icon position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Việc cần xử lý">
+                        <i class="bi bi-bell"></i>
+                        {% set todo = cnt.pending_orders + cnt.open_questions %}
+                        {% if todo > 0 %}<span class="ad-dot">{{ todo > 9 ? '9+' : todo }}</span>{% endif %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end ad-menu ad-notif">
+                        <div class="ad-notif__head">Việc cần xử lý</div>
+                        <a class="dropdown-item" href="{{ path('admin_order_list', {'status': 'pending'}) }}"><span class="ad-notif__ic ad-tone--amber"><i class="bi bi-hourglass-split"></i></span><span><b>{{ cnt.pending_orders }}</b> đơn hàng chờ xác nhận</span></a>
+                        <a class="dropdown-item" href="{{ path('admin_question_list') }}"><span class="ad-notif__ic ad-tone--blue"><i class="bi bi-chat-left-dots"></i></span><span><b>{{ cnt.open_questions }}</b> câu hỏi chưa trả lời</span></a>
+                        <a class="dropdown-item" href="{{ path('app_ds_san_pham', {'stock': 'low'}) }}"><span class="ad-notif__ic ad-tone--red"><i class="bi bi-exclamation-triangle"></i></span><span><b>{{ cnt.low_stock }}</b> sản phẩm sắp hết hàng</span></a>
+                        <a class="dropdown-item" href="{{ path('admin_contact_list') }}"><span class="ad-notif__ic ad-tone--cream"><i class="bi bi-envelope"></i></span><span><b>{{ cnt.contacts }}</b> tin nhắn liên hệ</span></a>
+                    </div>
+                </div>
+
+                <a class="ad-top__icon d-none d-md-grid" href="{{ path('homepage') }}" target="_blank" rel="noopener" title="Xem cửa hàng" aria-label="Xem cửa hàng"><i class="bi bi-shop"></i></a>
+
+                <div class="dropdown">
+                    <button class="ad-user" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="ad-user__av">{{ (app.user ? app.user.userIdentifier : 'A')|first|upper }}</span>
+                        <span class="ad-user__name d-none d-md-flex"><b>{{ app.user ? app.user.userIdentifier : 'Quản trị' }}</b><small>Quản trị viên</small></span>
+                        <i class="bi bi-chevron-down d-none d-md-inline"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end ad-menu">
+                        <li><a class="dropdown-item" href="{{ path('profile') }}"><i class="bi bi-person"></i> Tài khoản</a></li>
+                        <li><a class="dropdown-item" href="{{ path('change_password') }}"><i class="bi bi-key"></i> Đổi mật khẩu</a></li>
+                        <li><a class="dropdown-item" href="{{ path('admin_settings') }}"><i class="bi bi-sliders"></i> Cài đặt cửa hàng</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main class="ad-content" id="main">
+            {% block page_header %}
+                <div class="ad-head">
+                    {% set _sub %}{% block subtitle %}{% endblock %}{% endset %}
+                    <div class="ad-head__text">
+                        {% block crumbs %}{% endblock %}
+                        <h1>{% block heading %}{{ block('title') }}{% endblock %}</h1>
+                        {% if _sub|trim is not empty %}<p>{{ _sub }}</p>{% endif %}
+                    </div>
+                    <div class="ad-head__actions">{% block actions %}{% endblock %}</div>
+                </div>
+            {% endblock %}
+
+            {% block body %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+{# Toast flashes #}
+<div class="ad-toasts" aria-live="polite">
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            {% set tone = type == 'error' ? 'danger' : type %}
+            <div class="ad-toast ad-toast--{{ tone }}" role="status">
+                <i class="bi bi-{{ tone == 'success' ? 'check-circle-fill' : (tone == 'danger' ? 'x-octagon-fill' : 'info-circle-fill') }}"></i>
+                <span>{{ message }}</span>
+                <button type="button" aria-label="Đóng" data-toast-close><i class="bi bi-x-lg"></i></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+{# Shared confirm dialog for forms/links marked with data-confirm #}
+<div class="modal fade" id="adConfirm" tabindex="-1" aria-hidden="true" aria-labelledby="adConfirmTitle">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content ad-modal">
+            <div class="ad-modal__icon"><i class="bi bi-exclamation-triangle"></i></div>
+            <h2 class="ad-modal__title" id="adConfirmTitle">Bạn chắc chắn chứ?</h2>
+            <p class="ad-modal__text" data-confirm-text>Thao tác này không thể hoàn tác.</p>
+            <div class="ad-modal__actions">
+                <button type="button" class="btn ad-btn ad-btn--ghost" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn ad-btn ad-btn--red" data-confirm-ok>Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+<script src="{{ asset('js/admin.js') }}"></script>
+{% block javascripts %}{% endblock %}
+</body>
 </html>

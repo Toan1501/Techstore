@@ -15,7 +15,7 @@ class CategoryType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, ['label' => 'Tên danh mục'])
-            ->add('photo', FileType::class, ['label' => 'Ảnh (png, jpeg)', 'data_class' => null, 'required' => false])
+            ->add('photo', FileType::class, ['label' => 'Ảnh (png, jpeg)', 'data_class' => null, 'required' => false, 'mapped' => false])
         ;
     }
 

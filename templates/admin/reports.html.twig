@@ -1,68 +1,79 @@
 {% extends 'adbase.html.twig' %}
 
 {% block title %}Báo cáo bán hàng{% endblock %}
+{% block subtitle %}Doanh thu 30 ngày, sản phẩm bán chạy và cơ cấu theo danh mục.{% endblock %}
+{% block actions %}<a href="{{ path('admin_orders_export') }}" class="btn ad-btn ad-btn--ghost"><i class="bi bi-filetype-csv"></i> Xuất đơn hàng (CSV)</a>{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <h1 class="h3 mb-4 text-gray-800">Báo cáo bán hàng</h1>
-
-    <div class="row">
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2"><div class="card-body">
-                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Doanh thu (hoàn thành)</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ revenue|vnd }}</div>
-            </div></div>
-        </div>
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2"><div class="card-body">
-                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Đơn hoàn thành</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ completed_orders }} / {{ total_orders }}</div>
-            </div></div>
-        </div>
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2"><div class="card-body">
-                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Giá trị đơn trung bình</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ avg_order|vnd }}</div>
-            </div></div>
-        </div>
+{% set sum30 = chart_values|reduce((c, v) => c + v, 0) %}
+{% set rate = total_orders > 0 ? (completed_orders / total_orders * 100)|round : 0 %}
+<div class="ad-stats">
+    <div class="ad-stat ad-stat--hero">
+        <div class="ad-stat__ic"><i class="bi bi-cash-coin"></i></div>
+        <div><div class="ad-stat__label">Doanh thu (hoàn thành)</div><div class="ad-stat__value">{{ revenue|vnd }}</div><div class="ad-stat__meta">30 ngày: {{ sum30|vnd }}</div></div>
     </div>
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Doanh thu 30 ngày</h6>
-            <a href="{{ path('admin_orders_export') }}" class="btn btn-sm btn-outline-success"><i class="fas fa-file-csv"></i> Xuất đơn hàng (CSV)</a>
-        </div>
-        <div class="card-body"><div style="height:280px"><canvas id="repChart"></canvas></div></div>
+    <div class="ad-stat">
+        <div class="ad-stat__ic ad-tone--green"><i class="bi bi-check2-all"></i></div>
+        <div><div class="ad-stat__label">Đơn hoàn thành</div><div class="ad-stat__value">{{ completed_orders }}<span class="ad-muted fs-6"> / {{ total_orders }}</span></div><div class="ad-stat__meta">Tỉ lệ hoàn thành {{ rate }}%</div></div>
     </div>
-
-    <div class="row">
-        <div class="col-lg-7 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Sản phẩm bán chạy</h6></div>
-                <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
-                    <thead><tr><th>#</th><th>Sản phẩm</th><th>SL bán</th><th>Doanh thu</th></tr></thead>
-                    <tbody>
-                        {% for b in best_sellers %}
-                        <tr><td>{{ loop.index }}</td><td>{{ b.name }}</td><td>{{ b.qty }}</td><td class="text-danger">{{ b.revenue|vnd }}</td></tr>
-                        {% else %}<tr><td colspan="4" class="text-center text-muted">Chưa có dữ liệu.</td></tr>{% endfor %}
-                    </tbody>
-                </table></div></div>
-            </div>
-        </div>
-        <div class="col-lg-5 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Doanh thu theo danh mục</h6></div>
-                <div class="card-body p-0"><div class="table-responsive"><table class="table table-sm mb-0 align-middle">
-                    <thead><tr><th>Danh mục</th><th>Doanh thu</th></tr></thead>
-                    <tbody>
-                        {% for c in revenue_by_category %}
-                        <tr><td>{{ c.name }}</td><td class="text-danger">{{ c.revenue|vnd }}</td></tr>
-                        {% else %}<tr><td colspan="2" class="text-center text-muted">Chưa có dữ liệu.</td></tr>{% endfor %}
-                    </tbody>
-                </table></div></div>
-            </div>
-        </div>
+    <div class="ad-stat">
+        <div class="ad-stat__ic ad-tone--blue"><i class="bi bi-basket"></i></div>
+        <div><div class="ad-stat__label">Giá trị đơn trung bình</div><div class="ad-stat__value">{{ avg_order|vnd }}</div><div class="ad-stat__meta">Trên đơn đã hoàn thành</div></div>
     </div>
+    <div class="ad-stat">
+        <div class="ad-stat__ic ad-tone--cream"><i class="bi bi-trophy"></i></div>
+        <div><div class="ad-stat__label">Bán chạy nhất</div><div class="ad-stat__value fs-6 mt-1" style="line-height:1.35">{{ best_sellers|first ? (best_sellers|first).name : '—' }}</div><div class="ad-stat__meta">{{ best_sellers|first ? (best_sellers|first).qty ~ ' sản phẩm đã bán' : 'Chưa có dữ liệu' }}</div></div>
+    </div>
+</div>
+
+<section class="ad-card">
+    <div class="ad-card__head"><h2><i class="bi bi-bar-chart"></i> Doanh thu 30 ngày</h2></div>
+    <div class="ad-card__body"><div style="height:300px"><canvas id="repChart" role="img" aria-label="Biểu đồ doanh thu 30 ngày"></canvas></div></div>
+</section>
+
+<div class="ad-grid-2">
+    <section class="ad-card">
+        <div class="ad-card__head"><h2><i class="bi bi-fire"></i> Top sản phẩm bán chạy</h2></div>
+        <div class="ad-card__body ad-card__body--flush ad-table-wrap">
+            <table class="ad-table">
+                <thead><tr><th>#</th><th>Sản phẩm</th><th class="num">Đã bán</th><th class="num">Doanh thu</th></tr></thead>
+                <tbody>
+                    {% set maxRev = best_sellers|map(b => b.revenue)|reduce((c, v) => max(c, v), 0) %}
+                    {% for b in best_sellers %}
+                        <tr>
+                            <td><span class="ad-pill ad-pill--nodot {{ loop.index <= 3 ? 'ad-pill--danger' : 'ad-pill--muted' }}">{{ loop.index }}</span></td>
+                            <td>
+                                <div class="ad-strong">{{ b.name }}</div>
+                                <div class="ad-status-row p-0 border-0 mt-1"><span class="bar"><span class="bar-danger" style="width:{{ maxRev > 0 ? (b.revenue / maxRev * 100)|round : 0 }}%"></span></span></div>
+                            </td>
+                            <td class="num ad-strong">{{ b.qty }}</td>
+                            <td class="num ad-price">{{ b.revenue|vnd }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4"><div class="ad-empty"><i class="bi bi-graph-up"></i><b>Chưa có dữ liệu bán hàng</b></div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <section class="ad-card">
+        <div class="ad-card__head"><h2><i class="bi bi-pie-chart"></i> Theo danh mục</h2></div>
+        <div class="ad-card__body">
+            {% if revenue_by_category is not empty %}
+                <div style="height:220px" class="mb-3"><canvas id="catChart" role="img" aria-label="Doanh thu theo danh mục"></canvas></div>
+                {% set catTotal = revenue_by_category|map(c => c.revenue)|reduce((a, v) => a + v, 0) %}
+                {% for c in revenue_by_category %}
+                    <div class="ad-status-row">
+                        <span class="flex-grow-1">{{ c.name|cat_label }}</span>
+                        <span class="ad-muted small">{{ catTotal > 0 ? (c.revenue / catTotal * 100)|round : 0 }}%</span>
+                        <b class="ad-price" style="min-width:110px">{{ c.revenue|vnd }}</b>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="ad-empty"><i class="bi bi-pie-chart"></i><b>Chưa có dữ liệu</b></div>
+            {% endif %}
+        </div>
+    </section>
 </div>
 {% endblock %}
 
@@ -70,12 +81,22 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 (function () {
-    var el = document.getElementById('repChart');
-    if (!el || typeof Chart === 'undefined') return;
-    new Chart(el, {
+    if (typeof Chart === 'undefined') return;
+    var vnd = new Intl.NumberFormat('vi-VN');
+    Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif";
+    Chart.defaults.color = '#8a7f74';
+    var rep = document.getElementById('repChart');
+    if (rep) new Chart(rep, {
         type: 'bar',
-        data: { labels: {{ chart_labels|json_encode|raw }}, datasets: [{ label: 'Doanh thu (₫)', data: {{ chart_values|json_encode|raw }}, backgroundColor: '#e30019' }] },
-        options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return new Intl.NumberFormat('vi-VN').format(v); } } } } }
+        data: { labels: {{ chart_labels|json_encode|raw }}, datasets: [{ data: {{ chart_values|json_encode|raw }}, backgroundColor: '#d70018', hoverBackgroundColor: '#b80014', borderRadius: 6, maxBarThickness: 22 }] },
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e1a17', cornerRadius: 8, callbacks: { label: function (c) { return ' ' + vnd.format(c.parsed.y) + ' ₫'; } } } },
+            scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: '#f1e9dc' }, border: { display: false }, ticks: { callback: function (v) { return v >= 1e6 ? (v / 1e6) + 'tr' : vnd.format(v); } } } } }
+    });
+    var cat = document.getElementById('catChart');
+    if (cat) new Chart(cat, {
+        type: 'doughnut',
+        data: { labels: {{ revenue_by_category|map(c => c.name|cat_label)|json_encode|raw }}, datasets: [{ data: {{ revenue_by_category|map(c => c.revenue)|json_encode|raw }}, backgroundColor: ['#d70018', '#b08a4e', '#1e1a17', '#e9dcc7', '#ff7a6b', '#6d43c9', '#1f8a4c'], borderColor: '#fff', borderWidth: 3 }] },
+        options: { maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false }, tooltip: { callbacks: { label: function (c) { return ' ' + c.label + ': ' + vnd.format(c.parsed) + ' ₫'; } } } } }
     });
 })();
 </script>

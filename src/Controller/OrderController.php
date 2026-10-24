@@ -103,7 +103,7 @@ class OrderController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             if (empty($cart_manager->getItems())) {
-                $this->addFlash('error', 'Your cart is empty.');
+                $this->addFlash('error', 'Giỏ hàng của bạn đang trống.');
                 return new RedirectResponse($this->urlGenerator->generate('app_cart'));
             }
 
@@ -167,7 +167,7 @@ class OrderController extends AbstractController
                 $session->remove('coupon');
             } catch (Exception $e) {
                 $em->getConnection()->rollBack();
-                $this->addFlash('error', 'Unable to create order: ' . $e->getMessage());
+                $this->addFlash('error', 'Không thể tạo đơn hàng: ' . $e->getMessage());
                 return new RedirectResponse($this->urlGenerator->generate('app_cart'));
             }
 

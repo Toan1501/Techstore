@@ -36,6 +36,7 @@ class AdminOrderController extends AbstractController
             'orders' => $orders,
             'statuses' => Order::STATUSES,
             'filters' => $filters,
+            'status_counts' => $orderRepository->countByStatusMap(),
         ]);
     }
 
@@ -119,13 +120,13 @@ class AdminOrderController extends AbstractController
 
         $submittedToken = $request->request->get('_token');
         if (!$this->isCsrfTokenValid('order_status_' . $order->getId(), $submittedToken)) {
-            $this->addFlash('error', 'Invalid CSRF token.');
+            $this->addFlash('error', 'Phiên làm việc không hợp lệ, vui lòng thử lại.');
             return $this->redirectToRoute('admin_order_detail', ['id' => $order->getId()]);
         }
 
         $status = $request->request->get('status');
         if (!array_key_exists($status, Order::STATUSES)) {
-            $this->addFlash('error', 'Invalid status.');
+            $this->addFlash('error', 'Trạng thái không hợp lệ.');
             return $this->redirectToRoute('admin_order_detail', ['id' => $order->getId()]);
         }
 
@@ -133,7 +134,7 @@ class AdminOrderController extends AbstractController
         $order->setUpdatedAt(new \DateTime());
         $em->flush();
 
-        $this->addFlash('success', 'Order #' . $order->getId() . ' status updated to "' . $status . '".');
+        $this->addFlash('success', 'Đơn #' . $order->getId() . ' đã chuyển sang "' . $order->getStatusLabel() . '".');
 
         return $this->redirectToRoute('admin_order_detail', ['id' => $order->getId()]);
     }

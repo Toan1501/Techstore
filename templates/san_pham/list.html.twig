@@ -1,49 +1,92 @@
 {% extends 'adbase.html.twig' %}
 
-{% block title %}Danh sách sản phẩm{% endblock %}
-
-{% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Sản phẩm ({{ data.getTotalItemCount }})</h6>
-            <a href="{{ path('app_san_pham') }}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Thêm sản phẩm</a>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr><th>STT</th><th>Mã</th><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Kho</th><th>Thao tác</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for sp in data %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ sp.getId() }}</td>
-                            <td><img src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" height="56" alt=""></td>
-                            <td>{{ sp.getName() }}</td>
-                            <td class="text-danger fw-semibold">{{ sp.getPrice()|vnd }}</td>
-                            <td>{{ sp.getStock() }}</td>
-                            <td class="text-nowrap">
-                                <a href="{{ path('app_edit_san_pham', {'id': sp.getId()}) }}" class="btn btn-sm btn-warning">Sửa</a>
-                                <form method="post" action="{{ path('app_delete_san_pham', {'id': sp.getId()}) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa sản phẩm này?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_product_' ~ sp.getId()) }}">
-                                    <button class="btn btn-sm btn-danger">Xóa</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="7" class="text-center text-muted">Chưa có sản phẩm nào.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex justify-content-center mt-3">{{ knp_pagination_render(data) }}</div>
-        </div>
-    </div>
-</div>
+{% block title %}Sản phẩm{% endblock %}
+{% block subtitle %}{{ data.getTotalItemCount }} sản phẩm phù hợp · quản lý giá, tồn kho và hình ảnh{% endblock %}
+{% block actions %}
+    <a href="{{ path('admin_products_export') }}" class="btn ad-btn ad-btn--ghost"><i class="bi bi-filetype-csv"></i> Xuất CSV</a>
+    <a href="{{ path('app_san_pham') }}" class="btn ad-btn ad-btn--red"><i class="bi bi-plus-lg"></i> Thêm sản phẩm</a>
 {% endblock %}
 
-{% block javascripts %}
-<script>function deletesp(url){ if(confirm("Bạn có chắc muốn xóa sản phẩm này?")){ window.location.href = url; } }</script>
+{% block body %}
+{% set f = filters %}
+{% set base = {'q': f.q ?: null, 'cate': f.cate, 'sort': f.sort != 'newest' ? f.sort : null} %}
+<section class="ad-card">
+    <form method="get" class="ad-filters" data-autosubmit>
+        <div class="ad-filters__search">
+            <i class="bi bi-search"></i>
+            <input type="search" name="q" value="{{ f.q }}" class="form-control" placeholder="Tên, SKU hoặc thương hiệu..." aria-label="Tìm sản phẩm">
+        </div>
+        <select name="cate" class="form-select" style="max-width:200px" aria-label="Danh mục">
+            <option value="">Tất cả danh mục</option>
+            {% for c in categories %}<option value="{{ c.id }}" {{ f.cate == c.id ? 'selected' }}>{{ c.name|cat_label }}</option>{% endfor %}
+        </select>
+        <select name="sort" class="form-select" style="max-width:190px" aria-label="Sắp xếp">
+            {% for k, l in {'newest': 'Mới thêm', 'name': 'Tên A–Z', 'price_asc': 'Giá tăng dần', 'price_desc': 'Giá giảm dần', 'stock_asc': 'Tồn kho ít nhất'} %}
+                <option value="{{ k }}" {{ f.sort == k ? 'selected' }}>{{ l }}</option>
+            {% endfor %}
+        </select>
+        {% if f.stock %}<input type="hidden" name="stock" value="{{ f.stock }}">{% endif %}
+        <button class="btn ad-btn ad-btn--ghost" type="submit">Lọc</button>
+        {% if f.q or f.cate or f.stock or f.sort != 'newest' %}<a href="{{ path('app_ds_san_pham') }}" class="ad-muted small">Xóa bộ lọc</a>{% endif %}
+    </form>
+    <div class="ad-filters" style="border-bottom:1px solid var(--ad-line)">
+        <div class="ad-chips">
+            {% for k, l in {'': 'Tất cả', 'in': 'Còn hàng', 'low': 'Sắp hết', 'out': 'Hết hàng', 'sale': 'Đang giảm giá'} %}
+                <a href="{{ path('app_ds_san_pham', base|merge({'stock': k ?: null})|filter(v => v is not null)) }}" class="ad-chip{{ f.stock == k ? ' is-on' : '' }}">{{ l }} <b>{{ counts[k] }}</b></a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="ad-table-wrap">
+        <table class="ad-table">
+            <thead>
+                <tr><th>Sản phẩm</th><th>Danh mục</th><th>Thương hiệu</th><th class="num">Giá bán</th><th class="num">Tồn kho</th><th>Trạng thái</th><th class="actions"></th></tr>
+            </thead>
+            <tbody>
+                {% for sp in data %}
+                    {% set edit = path('app_edit_san_pham', {'id': sp.id}) %}
+                    <tr data-href="{{ edit }}">
+                        <td>
+                            <div class="ad-prod">
+                                <img class="ad-thumb" src="{{ asset('uploads/sanpham/' ~ sp.photo) }}" alt="" loading="lazy">
+                                <div class="min-w-0">
+                                    <a href="{{ edit }}" class="ad-prod__name">{{ sp.name }}</a>
+                                    <div class="ad-prod__meta"><span class="ad-mono">{{ sp.sku ?: '#' ~ sp.id }}</span>{% if sp.warranty %} · BH {{ sp.warranty }}{% endif %}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="ad-muted">{{ sp.cate ? sp.cate.name|cat_label : '—' }}</td>
+                        <td>{{ sp.brand ?: '—' }}</td>
+                        <td class="num"><span class="ad-price">{{ sp.price|vnd }}{% if sp.hasDiscount() %}<s>{{ sp.priceOld|vnd }}</s>{% endif %}</span></td>
+                        <td class="num"><span class="ad-stock" style="color:{{ sp.stock <= 0 ? 'var(--ad-red)' : (sp.stock <= 5 ? 'var(--ad-amber)' : 'inherit') }}">{{ sp.stock }}</span></td>
+                        <td>
+                            {% if sp.stock <= 0 %}<span class="ad-pill ad-pill--danger">Hết hàng</span>
+                            {% elseif sp.stock <= 5 %}<span class="ad-pill ad-pill--warning">Sắp hết</span>
+                            {% else %}<span class="ad-pill ad-pill--success">Đang bán</span>{% endif %}
+                            {% if sp.hasDiscount() %}<span class="ad-pill ad-pill--danger ad-pill--nodot ms-1">-{{ sp.getDiscountPercent() }}%</span>{% endif %}
+                        </td>
+                        <td class="actions">
+                            <div class="ad-row-actions">
+                                <a href="{{ path('app_product', {'slug': sp.slug, 'id': sp.id}) }}" target="_blank" rel="noopener" class="ad-icon-btn" title="Xem trên cửa hàng" aria-label="Xem trên cửa hàng"><i class="bi bi-eye"></i></a>
+                                <a href="{{ edit }}" class="ad-icon-btn" title="Sửa" aria-label="Sửa {{ sp.name }}"><i class="bi bi-pencil"></i></a>
+                                <form method="post" action="{{ path('app_delete_san_pham', {'id': sp.id}) }}" data-confirm="Xóa sản phẩm “{{ sp.name }}”? Thao tác này không thể hoàn tác." data-confirm-ok="Xóa sản phẩm">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_product_' ~ sp.id) }}">
+                                    <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" aria-label="Xóa {{ sp.name }}"><i class="bi bi-trash3"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7"><div class="ad-empty"><i class="bi bi-search"></i><b>Không có sản phẩm phù hợp</b>Thử bỏ bớt bộ lọc hoặc <a href="{{ path('app_san_pham') }}">thêm sản phẩm mới</a>.</div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if data.haveToPaginate is defined and data.haveToPaginate %}
+        <div class="ad-card__foot d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span class="ad-muted small">Trang {{ data.currentPageNumber }} / {{ (data.getTotalItemCount / data.itemNumberPerPage)|round(0, 'ceil') }}</span>
+            {{ knp_pagination_render(data, '@KnpPaginator/Pagination/bootstrap_v5_pagination.html.twig') }}
+        </div>
+    {% endif %}
+</section>
 {% endblock %}

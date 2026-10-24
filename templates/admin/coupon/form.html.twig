@@ -1,19 +1,48 @@
 {% extends 'adbase.html.twig' %}
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-{% block title %}{{ is_new ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá' }}{% endblock %}
+{% block title %}{{ is_new ? 'Tạo mã giảm giá' : 'Sửa mã giảm giá' }}{% endblock %}
+{% block crumbs %}<div class="ad-crumb"><a href="{{ path('admin_coupon_list') }}">Mã giảm giá</a><i class="bi bi-chevron-right"></i><span>{{ is_new ? 'Tạo mới' : form.vars.value.code }}</span></div>{% endblock %}
+{% block subtitle %}Khách nhập mã ở giỏ hàng; mã chỉ áp dụng khi đơn đạt giá trị tối thiểu.{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4" style="max-width:620px">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">{{ is_new ? 'Thêm mã giảm giá' : 'Sửa mã giảm giá' }}</h6></div>
-        <div class="card-body">
-            {{ form_start(form) }}
-            {{ form_widget(form) }}
-            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu</button>
-            <a href="{{ path('admin_coupon_list') }}" class="btn btn-secondary mt-2">Hủy</a>
-            {{ form_end(form) }}
+{{ form_start(form) }}
+<div class="ad-form-grid">
+    <section class="ad-card">
+        <div class="ad-card__body">
+            <h2 class="ad-section-title"><i class="bi bi-ticket-perforated"></i> Thiết lập mã</h2>
+            <div class="row g-3">
+                <div class="col-md-6">{{ form_row(form.code, {'attr': {'class': 'ad-mono text-uppercase', 'placeholder': 'GIAM10'}}) }}</div>
+                <div class="col-md-6">{{ form_row(form.type) }}</div>
+                <div class="col-md-6">{{ form_row(form.value) }}</div>
+                <div class="col-md-6">{{ form_row(form.minOrder, {'attr': {'data-money': ''}}) }}</div>
+                <div class="col-md-6">{{ form_row(form.maxUses) }}</div>
+                <div class="col-md-6">{{ form_row(form.expiresAt) }}</div>
+            </div>
         </div>
-    </div>
+    </section>
+    <aside class="ad-form-side">
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-toggle-on"></i> Trạng thái</h2>
+                {{ form_row(form.active, {'label_attr': {'class': 'checkbox-switch'}}) }}
+                <div class="form-text mt-2">Tắt để tạm ngưng mã mà không cần xóa.</div>
+            </div>
+        </section>
+        {% if not is_new %}
+            <section class="ad-card">
+                <div class="ad-card__body">
+                    <h2 class="ad-section-title"><i class="bi bi-bar-chart"></i> Đã sử dụng</h2>
+                    <div class="ad-stat__value">{{ form.vars.value.usageCount }}<span class="ad-muted fs-6"> / {{ form.vars.value.maxUses ?: '∞' }} lượt</span></div>
+                </div>
+            </section>
+        {% endif %}
+    </aside>
 </div>
+{{ form_rest(form) }}
+<div class="ad-savebar">
+    <a href="{{ path('admin_coupon_list') }}" class="btn ad-btn ad-btn--ghost">Hủy</a>
+    <button type="submit" class="btn ad-btn ad-btn--red"><i class="bi bi-check2"></i> Lưu mã</button>
+</div>
+{{ form_end(form) }}
 {% endblock %}

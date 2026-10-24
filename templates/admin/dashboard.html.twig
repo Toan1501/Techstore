@@ -1,143 +1,137 @@
 {% extends 'adbase.html.twig' %}
 
 {% block title %}Bảng điều khiển{% endblock %}
+{% block heading %}{% set h = "now"|date('G') %}{{ h < 11 ? 'Chào buổi sáng' : (h < 18 ? 'Chào buổi chiều' : 'Chào buổi tối') }}, {{ app.user ? app.user.userIdentifier : 'Quản trị viên' }}{% endblock %}
+{% block subtitle %}Tổng quan hoạt động cửa hàng · {{ "now"|date('d/m/Y') }}{% endblock %}
+{% block actions %}
+    <a href="{{ path('admin_reports') }}" class="btn ad-btn ad-btn--ghost"><i class="bi bi-graph-up-arrow"></i> Báo cáo chi tiết</a>
+    <a href="{{ path('app_san_pham') }}" class="btn ad-btn ad-btn--red"><i class="bi bi-plus-lg"></i> Thêm sản phẩm</a>
+{% endblock %}
 
 {% block body %}
 {% set statusLabels = {'pending':'Chờ xử lý','confirmed':'Đã xác nhận','shipping':'Đang giao','completed':'Hoàn thành','cancelled':'Đã hủy'} %}
-<div class="container-fluid mt-4">
-    <h1 class="h3 mb-4 text-gray-800">Bảng điều khiển</h1>
 
-    {# ==== Stat cards ==== #}
-    <div class="row">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body"><div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Doanh thu (hoàn thành)</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ revenue|vnd }}</div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-money-bill-wave fa-2x text-gray-300"></i></div>
-                </div></div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body"><div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Tổng đơn hàng</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_orders }}</div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-shopping-bag fa-2x text-gray-300"></i></div>
-                </div></div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body"><div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Đơn chờ xử lý</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_orders }}</div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-clock fa-2x text-gray-300"></i></div>
-                </div></div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body"><div class="row no-gutters align-items-center">
-                    <div class="col me-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Sản phẩm / Danh mục</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_products }} / {{ total_categories }}</div>
-                    </div>
-                    <div class="col-auto"><i class="fas fa-boxes fa-2x text-gray-300"></i></div>
-                </div></div>
+<div class="ad-stats">
+    <div class="ad-stat ad-stat--hero">
+        <div class="ad-stat__ic"><i class="bi bi-cash-coin"></i></div>
+        <div>
+            <div class="ad-stat__label">Doanh thu (đơn hoàn thành)</div>
+            <div class="ad-stat__value">{{ revenue|vnd }}</div>
+            <div class="ad-stat__meta">
+                14 ngày qua: {{ revenue_14|vnd }}
+                {% if revenue_trend is not null %} · <b>{{ revenue_trend >= 0 ? '▲' : '▼' }} {{ revenue_trend|abs }}%</b>{% endif %}
             </div>
         </div>
     </div>
+    <a href="{{ path('admin_order_list') }}" class="ad-stat text-reset">
+        <div class="ad-stat__ic ad-tone--blue"><i class="bi bi-bag-check"></i></div>
+        <div>
+            <div class="ad-stat__label">Tổng đơn hàng</div>
+            <div class="ad-stat__value">{{ total_orders }}</div>
+            <div class="ad-stat__meta">{{ status_map.completed ?? 0 }} hoàn thành</div>
+        </div>
+    </a>
+    <a href="{{ path('admin_order_list', {'status': 'pending'}) }}" class="ad-stat text-reset">
+        <div class="ad-stat__ic ad-tone--amber"><i class="bi bi-hourglass-split"></i></div>
+        <div>
+            <div class="ad-stat__label">Đơn chờ xử lý</div>
+            <div class="ad-stat__value">{{ pending_orders }}</div>
+            <div class="ad-stat__meta">{{ pending_orders > 0 ? 'Cần xác nhận sớm' : 'Không có đơn tồn' }}</div>
+        </div>
+    </a>
+    <a href="{{ path('app_ds_san_pham') }}" class="ad-stat text-reset">
+        <div class="ad-stat__ic ad-tone--cream"><i class="bi bi-box-seam"></i></div>
+        <div>
+            <div class="ad-stat__label">Sản phẩm · Danh mục</div>
+            <div class="ad-stat__value">{{ total_products }} <span class="ad-muted fs-6">/ {{ total_categories }}</span></div>
+            <div class="ad-stat__meta">{{ total_users }} khách hàng đã đăng ký</div>
+        </div>
+    </a>
+</div>
 
-    {# ==== Revenue chart ==== #}
-    <div class="card shadow mb-4">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Doanh thu 14 ngày gần đây</h6></div>
-        <div class="card-body"><div style="height:300px"><canvas id="revChart"></canvas></div></div>
-    </div>
+<div class="ad-grid-2 ad-mb">
+    <section class="ad-card">
+        <div class="ad-card__head">
+            <h2><i class="bi bi-activity"></i> Doanh thu 14 ngày</h2>
+            <div class="ad-legend"><span><i style="background:#d70018"></i>Doanh thu mỗi ngày</span></div>
+        </div>
+        <div class="ad-card__body"><div style="height:300px"><canvas id="revChart" aria-label="Biểu đồ doanh thu 14 ngày" role="img"></canvas></div></div>
+    </section>
 
-    <div class="row">
-        {# ==== Order status breakdown ==== #}
-        <div class="col-lg-5 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Trạng thái đơn hàng</h6></div>
-                <div class="card-body">
-                    {% for value, color in statuses %}
-                        {% set cnt = status_map[value] ?? 0 %}
-                        <div class="mb-3">
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>{{ statusLabels[value] }}</span><span class="fw-bold">{{ cnt }}</span>
-                            </div>
-                            <div class="progress" style="height:8px">
-                                <div class="progress-bar bg-{{ color }}" role="progressbar" style="width: {{ total_orders > 0 ? (cnt / total_orders * 100)|round : 0 }}%"></div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                    <div class="text-muted small mt-2">Khách hàng đã đăng ký: <strong>{{ total_users }}</strong></div>
+    <div class="d-flex flex-column gap-3">
+        <section class="ad-card mb-0">
+            <div class="ad-card__head"><h2><i class="bi bi-pie-chart"></i> Trạng thái đơn hàng</h2></div>
+            <div class="ad-card__body py-2">
+                {% for value, color in statuses %}
+                    {% set n = status_map[value] ?? 0 %}
+                    <a class="ad-status-row text-reset" href="{{ path('admin_order_list', {'status': value}) }}">
+                        <span class="ad-pill ad-pill--{{ color }}" style="min-width:108px">{{ statusLabels[value] }}</span>
+                        <span class="bar"><span class="bar-{{ color }}" style="width: {{ total_orders > 0 ? (n / total_orders * 100)|round : 0 }}%"></span></span>
+                        <b>{{ n }}</b>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+        <section class="ad-card mb-0">
+            <div class="ad-card__head"><h2><i class="bi bi-lightning-charge"></i> Thao tác nhanh</h2></div>
+            <div class="ad-card__body">
+                <div class="ad-quick">
+                    <a href="{{ path('app_san_pham') }}"><span class="ad-tone--red"><i class="bi bi-plus-square"></i></span>Thêm sản phẩm</a>
+                    <a href="{{ path('admin_coupon_new') }}"><span class="ad-tone--violet"><i class="bi bi-ticket-perforated"></i></span>Tạo mã giảm giá</a>
+                    <a href="{{ path('admin_banner_new') }}"><span class="ad-tone--blue"><i class="bi bi-images"></i></span>Đăng banner</a>
+                    <a href="{{ path('admin_orders_export') }}"><span class="ad-tone--green"><i class="bi bi-filetype-csv"></i></span>Xuất đơn CSV</a>
                 </div>
             </div>
-        </div>
-
-        {# ==== Recent orders ==== #}
-        <div class="col-lg-7 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Đơn hàng gần đây</h6>
-                    <a href="{{ path('admin_order_list') }}" class="btn btn-sm btn-primary">Xem tất cả</a>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-sm mb-0 align-middle">
-                            <thead><tr><th>Mã</th><th>Khách hàng</th><th>Tổng</th><th>Trạng thái</th><th></th></tr></thead>
-                            <tbody>
-                                {% for o in recent_orders %}
-                                <tr>
-                                    <td>#{{ o.id }}</td>
-                                    <td>{{ o.customerName }}</td>
-                                    <td class="text-danger fw-semibold">{{ o.totalPrice|vnd }}</td>
-                                    <td><span class="badge badge-{{ o.statusColor }}">{{ o.statusLabel }}</span></td>
-                                    <td><a href="{{ path('admin_order_detail', {'id': o.id}) }}" class="btn btn-sm btn-outline-primary">Xem</a></td>
-                                </tr>
-                                {% else %}
-                                <tr><td colspan="5" class="text-center text-muted">Chưa có đơn hàng.</td></tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
+</div>
 
-    {# ==== Low stock ==== #}
-    <div class="card shadow mb-4">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-warning"><i class="fas fa-exclamation-triangle"></i> Sản phẩm sắp hết hàng (≤ 5)</h6></div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-sm mb-0 align-middle">
-                    <thead><tr><th>Ảnh</th><th>Tên sản phẩm</th><th>Giá</th><th>Tồn kho</th><th></th></tr></thead>
-                    <tbody>
-                        {% for sp in low_stock %}
-                        <tr>
-                            <td><img src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" height="40" alt=""></td>
-                            <td>{{ sp.getName() }}</td>
-                            <td>{{ sp.getPrice()|vnd }}</td>
-                            <td><span class="badge badge-{{ sp.getStock() == 0 ? 'danger' : 'warning' }}">{{ sp.getStock() }}</span></td>
-                            <td><a href="{{ path('app_edit_san_pham', {'id': sp.getId()}) }}" class="btn btn-sm btn-outline-warning">Cập nhật</a></td>
+<div class="ad-grid-2">
+    <section class="ad-card">
+        <div class="ad-card__head">
+            <h2><i class="bi bi-receipt"></i> Đơn hàng gần đây</h2>
+            <a href="{{ path('admin_order_list') }}" class="btn ad-btn ad-btn--ghost ad-btn--sm">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="ad-card__body ad-card__body--flush ad-table-wrap">
+            <table class="ad-table">
+                <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th class="num">Tổng tiền</th><th>Trạng thái</th></tr></thead>
+                <tbody>
+                    {% for o in recent_orders %}
+                        <tr data-href="{{ path('admin_order_detail', {'id': o.id}) }}">
+                            <td><a href="{{ path('admin_order_detail', {'id': o.id}) }}" class="ad-strong">#{{ o.id }}</a></td>
+                            <td><div class="ad-strong">{{ o.customerName }}</div><div class="ad-muted small">{{ o.customerPhone }}</div></td>
+                            <td class="ad-muted">{{ o.createdAt ? o.createdAt|date('d/m H:i') : '—' }}</td>
+                            <td class="num ad-price">{{ o.totalPrice|vnd }}</td>
+                            <td><span class="ad-pill ad-pill--{{ o.statusColor }}">{{ o.statusLabel }}</span></td>
                         </tr>
-                        {% else %}
-                        <tr><td colspan="5" class="text-center text-muted">Tất cả sản phẩm đều còn đủ hàng.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                    {% else %}
+                        <tr><td colspan="5"><div class="ad-empty"><i class="bi bi-inbox"></i><b>Chưa có đơn hàng</b>Đơn mới sẽ xuất hiện ở đây.</div></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-    </div>
+    </section>
+
+    <section class="ad-card">
+        <div class="ad-card__head">
+            <h2><i class="bi bi-exclamation-triangle"></i> Sắp hết hàng</h2>
+            <a href="{{ path('app_ds_san_pham', {'stock': 'low'}) }}" class="btn ad-btn ad-btn--ghost ad-btn--sm">Xem tất cả</a>
+        </div>
+        <div class="ad-card__body ad-card__body--flush">
+            {% for sp in low_stock %}
+                <a href="{{ path('app_edit_san_pham', {'id': sp.id}) }}" class="ad-prod text-reset px-3 py-2 border-bottom" style="border-color:var(--ad-line)!important">
+                    <img class="ad-thumb" src="{{ asset('uploads/sanpham/' ~ sp.photo) }}" alt="">
+                    <span class="flex-grow-1 min-w-0">
+                        <span class="ad-prod__name" style="-webkit-line-clamp:1">{{ sp.name }}</span>
+                        <span class="ad-prod__meta">{{ sp.price|vnd }}</span>
+                    </span>
+                    <span class="ad-pill ad-pill--{{ sp.stock == 0 ? 'danger' : 'warning' }}">{{ sp.stock == 0 ? 'Hết hàng' : 'Còn ' ~ sp.stock }}</span>
+                </a>
+            {% else %}
+                <div class="ad-empty"><i class="bi bi-check2-circle"></i><b>Kho ổn định</b>Không có sản phẩm nào dưới 5 chiếc.</div>
+            {% endfor %}
+        </div>
+    </section>
 </div>
 {% endblock %}
 
@@ -147,24 +141,26 @@
 (function () {
     var el = document.getElementById('revChart');
     if (!el || typeof Chart === 'undefined') return;
+    var ctx = el.getContext('2d');
+    var g = ctx.createLinearGradient(0, 0, 0, 300);
+    g.addColorStop(0, 'rgba(215,0,24,.22)'); g.addColorStop(1, 'rgba(215,0,24,0)');
+    var vnd = new Intl.NumberFormat('vi-VN');
+    Chart.defaults.font.family = "'DM Sans', system-ui, sans-serif";
+    Chart.defaults.color = '#8a7f74';
     new Chart(el, {
         type: 'line',
-        data: {
-            labels: {{ chart_labels|json_encode|raw }},
-            datasets: [{
-                label: 'Doanh thu (₫)',
-                data: {{ chart_values|json_encode|raw }},
-                borderColor: '#e30019',
-                backgroundColor: 'rgba(227,0,25,.10)',
-                fill: true,
-                tension: .3,
-                pointBackgroundColor: '#e30019'
-            }]
-        },
+        data: { labels: {{ chart_labels|json_encode|raw }}, datasets: [{
+            label: 'Doanh thu', data: {{ chart_values|json_encode|raw }},
+            borderColor: '#d70018', backgroundColor: g, fill: true, tension: .35, borderWidth: 2.5,
+            pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: '#fff', pointBorderColor: '#d70018', pointBorderWidth: 2
+        }]},
         options: {
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { callback: function (v) { return new Intl.NumberFormat('vi-VN').format(v); } } } }
+            maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
+            plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1e1a17', padding: 10, cornerRadius: 8, callbacks: { label: function (c) { return ' ' + vnd.format(c.parsed.y) + ' ₫'; } } } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: true, grid: { color: '#f1e9dc' }, border: { display: false }, ticks: { callback: function (v) { return v >= 1e6 ? (v / 1e6) + 'tr' : vnd.format(v); } } }
+            }
         }
     });
 })();

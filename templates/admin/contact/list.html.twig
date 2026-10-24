@@ -1,35 +1,27 @@
 {% extends 'adbase.html.twig' %}
 
 {% block title %}Tin nhắn liên hệ{% endblock %}
+{% block subtitle %}{{ items|length }} tin nhắn từ form liên hệ{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Tin nhắn liên hệ ({{ items|length }})</h6></div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead><tr><th>Họ tên</th><th>Email</th><th>Nội dung</th><th>Thao tác</th></tr></thead>
-                    <tbody>
-                        {% for c in items %}
-                        <tr>
-                            <td>{{ c.name }}</td>
-                            <td><a href="mailto:{{ c.email }}">{{ c.email }}</a></td>
-                            <td style="max-width:520px">{{ c.message }}</td>
-                            <td class="text-nowrap">
-                                <form method="post" action="{{ path('admin_contact_delete', {'id': c.id}) }}" onsubmit="return confirm('Xóa tin nhắn này?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_contact_' ~ c.id) }}">
-                                    <button class="btn btn-sm btn-danger">Xóa</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="4" class="text-center text-muted">Chưa có tin nhắn nào.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<section class="ad-card">
+    {% for c in items %}
+        <article class="ad-qa">
+            <div class="ad-qa__meta">
+                <span class="ad-user__av" style="width:32px;height:32px;border-radius:9px;font-size:.85rem">{{ c.name|first|upper }}</span>
+                <b class="text-body">{{ c.name }}</b><span>·</span><a href="mailto:{{ c.email }}">{{ c.email }}</a>
+                <div class="ms-auto d-flex gap-2">
+                    <a href="mailto:{{ c.email }}?subject={{ ('Phản hồi từ TOÀN STORE')|url_encode }}" class="btn ad-btn ad-btn--ghost ad-btn--sm"><i class="bi bi-reply"></i> Trả lời qua email</a>
+                    <form method="post" action="{{ path('admin_contact_delete', {'id': c.id}) }}" data-confirm="Xóa tin nhắn của {{ c.name }}?" data-confirm-ok="Xóa">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_contact_' ~ c.id) }}">
+                        <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" aria-label="Xóa tin nhắn"><i class="bi bi-trash3"></i></button>
+                    </form>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
+            <div style="white-space:pre-line">{{ c.message }}</div>
+        </article>
+    {% else %}
+        <div class="ad-empty"><i class="bi bi-envelope-open"></i><b>Hộp thư trống</b>Tin nhắn từ trang Liên hệ sẽ xuất hiện ở đây.</div>
+    {% endfor %}
+</section>
 {% endblock %}

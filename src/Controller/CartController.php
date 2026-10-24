@@ -36,9 +36,9 @@ class CartController extends AbstractController
 
         if (!$product || !$product->isInStock()) {
             if ($isAjax) {
-                return new JsonResponse(['ok' => false, 'message' => 'This product is not available.'], 400);
+                return new JsonResponse(['ok' => false, 'message' => 'Sản phẩm này hiện không còn bán.'], 400);
             }
-            $this->addFlash('error', 'This product is not available.');
+            $this->addFlash('error', 'Sản phẩm này hiện không còn bán.');
             return new RedirectResponse($this->urlGenerator->generate('app_cart'));
         }
 

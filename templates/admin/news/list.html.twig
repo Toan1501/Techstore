@@ -1,45 +1,42 @@
 {% extends 'adbase.html.twig' %}
 
-{% block title %}Quản lý tin tức{% endblock %}
+{% block title %}Tin tức{% endblock %}
+{% block subtitle %}{{ items|length }} bài viết{% endblock %}
+{% block actions %}<a href="{{ path('admin_news_new') }}" class="btn ad-btn ad-btn--red"><i class="bi bi-plus-lg"></i> Viết bài mới</a>{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Tin tức ({{ items|length }})</h6>
-            <a href="{{ path('admin_news_new') }}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Thêm bài viết</a>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead><tr><th>Ảnh</th><th>Tiêu đề</th><th>Slug</th><th>Ngày</th><th>Thao tác</th></tr></thead>
-                    <tbody>
-                        {% for n in items %}
-                        <tr>
-                            <td><img src="{{ asset(n.image ?: 'images/banner1.webp') }}" height="46" alt=""></td>
-                            <td>{{ n.title }}</td>
-                            <td class="text-muted small">{{ n.slug }}</td>
-                            <td>{{ n.createdAt ? n.createdAt|date('d/m/Y') : '' }}</td>
-                            <td class="text-nowrap">
-                                <a href="{{ path('app_news_detail', {'slug': n.slug}) }}" target="_blank" class="btn btn-sm btn-outline-secondary">Xem</a>
-                                <a href="{{ path('admin_news_edit', {'id': n.id}) }}" class="btn btn-sm btn-warning">Sửa</a>
-                                <form method="post" action="{{ path('admin_news_delete', {'id': n.id}) }}" class="d-inline" onsubmit="return confirm('Bạn có chắc muốn xóa bài viết này?')">
+<section class="ad-card">
+    <div class="ad-table-wrap">
+        <table class="ad-table">
+            <thead><tr><th>Bài viết</th><th>Đường dẫn</th><th>Ngày đăng</th><th class="actions"></th></tr></thead>
+            <tbody>
+                {% for n in items %}
+                    {% set edit = path('admin_news_edit', {'id': n.id}) %}
+                    <tr data-href="{{ edit }}">
+                        <td>
+                            <div class="ad-prod">
+                                <img class="ad-thumb ad-thumb--wide" style="height:54px" src="{{ asset(n.image ?: 'images/og-image.jpg') }}" alt="">
+                                <div class="min-w-0"><a href="{{ edit }}" class="ad-prod__name">{{ n.title }}</a>{% if n.excerpt %}<div class="ad-prod__meta" style="max-width:520px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.excerpt }}</div>{% endif %}</div>
+                            </div>
+                        </td>
+                        <td class="ad-muted small ad-mono">/tin-tuc/{{ n.slug }}</td>
+                        <td class="ad-muted">{{ n.createdAt ? n.createdAt|date('d/m/Y') : '' }}</td>
+                        <td class="actions">
+                            <div class="ad-row-actions">
+                                <a href="{{ path('app_news_detail', {'slug': n.slug}) }}" target="_blank" rel="noopener" class="ad-icon-btn" title="Xem" aria-label="Xem"><i class="bi bi-eye"></i></a>
+                                <a href="{{ edit }}" class="ad-icon-btn" title="Sửa" aria-label="Sửa"><i class="bi bi-pencil"></i></a>
+                                <form method="post" action="{{ path('admin_news_delete', {'id': n.id}) }}" data-confirm="Xóa bài “{{ n.title }}”?" data-confirm-ok="Xóa bài viết">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_news_' ~ n.id) }}">
-                                    <button class="btn btn-sm btn-danger">Xóa</button>
+                                    <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" aria-label="Xóa"><i class="bi bi-trash3"></i></button>
                                 </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="5" class="text-center text-muted">Chưa có bài viết.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4"><div class="ad-empty"><i class="bi bi-newspaper"></i><b>Chưa có bài viết</b><a href="{{ path('admin_news_new') }}">Viết bài đầu tiên</a></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</div>
-{% endblock %}
-
-{% block javascripts %}
-<script>function delItem(u){ if(confirm("Bạn có chắc muốn xóa bài viết này?")){ window.location.href=u; } }</script>
+</section>
 {% endblock %}

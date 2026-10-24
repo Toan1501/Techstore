@@ -1,20 +1,44 @@
 {% extends 'adbase.html.twig' %}
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-{% block title %}{{ is_new ? 'Thêm bài viết' : 'Sửa bài viết' }}{% endblock %}
+{% block title %}{{ is_new ? 'Viết bài mới' : 'Sửa bài viết' }}{% endblock %}
+{% block crumbs %}<div class="ad-crumb"><a href="{{ path('admin_news_list') }}">Tin tức</a><i class="bi bi-chevron-right"></i><span>{{ is_new ? 'Bài mới' : news.title }}</span></div>{% endblock %}
+{% block subtitle %}Bài viết hiển thị ở mục Tin tức - Review và trang chủ.{% endblock %}
+{% block actions %}
+    {% if not is_new %}<a href="{{ path('app_news_detail', {'slug': news.slug}) }}" target="_blank" rel="noopener" class="btn ad-btn ad-btn--ghost"><i class="bi bi-eye"></i> Xem bài viết</a>{% endif %}
+{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4" style="max-width:860px">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">{{ is_new ? 'Thêm bài viết' : 'Sửa bài viết' }}</h6></div>
-        <div class="card-body">
-            {% if news.image %}<img src="{{ asset(news.image) }}" height="80" class="mb-3 rounded" alt="">{% endif %}
-            {{ form_start(form) }}
-            {{ form_widget(form) }}
-            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu</button>
-            <a href="{{ path('admin_news_list') }}" class="btn btn-secondary mt-2">Hủy</a>
-            {{ form_end(form) }}
+{{ form_start(form) }}
+<div class="ad-form-grid">
+    <section class="ad-card">
+        <div class="ad-card__body">
+            <h2 class="ad-section-title"><i class="bi bi-pencil-square"></i> Nội dung</h2>
+            {{ form_row(form.title, {'attr': {'placeholder': 'Tiêu đề hấp dẫn, rõ ý'}}) }}
+            {{ form_row(form.slug, {'attr': {'class': 'ad-mono', 'placeholder': 'tu-dong-tao-tu-tieu-de'}}) }}
+            {{ form_row(form.excerpt, {'attr': {'placeholder': 'Một đến hai câu tóm tắt hiển thị ở danh sách bài.'}}) }}
+            {{ form_row(form.content, {'attr': {'rows': 16, 'class': 'ad-mono', 'style': 'font-size:.85rem'}}) }}
         </div>
-    </div>
+    </section>
+    <aside class="ad-form-side">
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-image"></i> Ảnh đại diện</h2>
+                {% if news.image %}<img class="ad-current-img" style="aspect-ratio:16/9;object-fit:cover;padding:0" src="{{ asset(news.image) }}" alt="">{% endif %}
+                <div class="ad-drop">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <span data-drop-label="Ảnh 16:9, tối thiểu 960×540px">Ảnh 16:9, tối thiểu 960×540px</span>
+                    {{ form_widget(form.imageFile) }}
+                    <div class="ad-drop__preview" style="grid-template-columns:1fr"></div>
+                </div>
+            </div>
+        </section>
+    </aside>
 </div>
+{{ form_rest(form) }}
+<div class="ad-savebar">
+    <a href="{{ path('admin_news_list') }}" class="btn ad-btn ad-btn--ghost">Hủy</a>
+    <button type="submit" class="btn ad-btn ad-btn--red"><i class="bi bi-check2"></i> {{ is_new ? 'Đăng bài' : 'Lưu bài viết' }}</button>
+</div>
+{{ form_end(form) }}
 {% endblock %}

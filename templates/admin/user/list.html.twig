@@ -1,40 +1,53 @@
 {% extends 'adbase.html.twig' %}
 
-{% block title %}Quản lý người dùng{% endblock %}
+{% block title %}Người dùng{% endblock %}
+{% set admins = items|filter(u => 'ROLE_ADMIN' in u.roles)|length %}
+{% block subtitle %}{{ items|length }} tài khoản · {{ admins }} quản trị viên{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Người dùng ({{ items|length }})</h6></div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead><tr><th>ID</th><th>Tên đăng nhập</th><th>Họ tên</th><th>Điện thoại</th><th>Quyền</th><th>Thao tác</th></tr></thead>
-                    <tbody>
-                        {% for u in items %}
-                        {% set isAdmin = 'ROLE_ADMIN' in u.roles %}
-                        <tr>
-                            <td>{{ u.id }}</td>
-                            <td>{{ u.username }}</td>
-                            <td>{{ u.firstName }} {{ u.lastName }}</td>
-                            <td>{{ u.phonenumber }}</td>
-                            <td>{% if isAdmin %}<span class="badge badge-danger">Admin</span>{% else %}<span class="badge badge-secondary">Khách hàng</span>{% endif %}</td>
-                            <td class="text-nowrap">
-                                <form method="post" action="{{ path('admin_user_toggle', {'id': u.id}) }}" class="d-inline">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ u.id) }}">
-                                    <button class="btn btn-sm btn-outline-primary">{{ isAdmin ? 'Bỏ quyền admin' : 'Cấp quyền admin' }}</button>
-                                </form>
-                                <form method="post" action="{{ path('admin_user_delete', {'id': u.id}) }}" class="d-inline" onsubmit="return confirm('Xóa người dùng này?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
-                                    <button class="btn btn-sm btn-danger">Xóa</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+<section class="ad-card">
+    <div class="ad-filters">
+        <div class="ad-filters__search">
+            <i class="bi bi-search"></i>
+            <input type="search" class="form-control" placeholder="Lọc nhanh theo tên, tài khoản, SĐT..." data-table-filter="#userTable" aria-label="Lọc người dùng">
         </div>
     </div>
-</div>
+    <div class="ad-table-wrap">
+        <table class="ad-table" id="userTable">
+            <thead><tr><th>Tài khoản</th><th>Liên hệ</th><th>Vai trò</th><th class="actions"></th></tr></thead>
+            <tbody>
+                {% for u in items %}
+                    {% set isAdmin = 'ROLE_ADMIN' in u.roles %}
+                    {% set isMe = app.user and app.user.userIdentifier == u.username %}
+                    <tr>
+                        <td>
+                            <div class="ad-prod">
+                                <span class="ad-user__av" style="width:40px;height:40px;flex:0 0 40px;border-radius:12px;{{ isAdmin ? '' : 'background:var(--ad-cream-2);color:var(--ad-ink-2)' }}">{{ (u.firstName ?: u.username)|first|upper }}</span>
+                                <div><div class="ad-strong">{{ u.firstName }} {{ u.lastName }}{% if isMe %} <span class="ad-pill ad-pill--muted ad-pill--nodot">Bạn</span>{% endif %}</div><div class="ad-prod__meta ad-mono">@{{ u.username }} · #{{ u.id }}</div></div>
+                            </div>
+                        </td>
+                        <td><div>{{ u.email ?: '—' }}</div><div class="ad-muted small">{{ u.phonenumber ?: '—' }}</div></td>
+                        <td>{% if isAdmin %}<span class="ad-pill ad-pill--danger">Quản trị viên</span>{% else %}<span class="ad-pill ad-pill--muted">Khách hàng</span>{% endif %}</td>
+                        <td class="actions">
+                            {% if not isMe %}
+                            <div class="ad-row-actions">
+                                <form method="post" action="{{ path('admin_user_toggle', {'id': u.id}) }}" data-confirm="{{ isAdmin ? 'Thu hồi quyền quản trị của @' ~ u.username ~ '?' : 'Cấp quyền quản trị cho @' ~ u.username ~ '? Người này sẽ truy cập được toàn bộ trang admin.' }}" data-confirm-ok="{{ isAdmin ? 'Thu hồi' : 'Cấp quyền' }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle_user_' ~ u.id) }}">
+                                    <button class="btn ad-btn ad-btn--ghost ad-btn--sm"><i class="bi bi-{{ isAdmin ? 'shield-minus' : 'shield-plus' }}"></i> {{ isAdmin ? 'Bỏ quyền admin' : 'Cấp quyền admin' }}</button>
+                                </form>
+                                <form method="post" action="{{ path('admin_user_delete', {'id': u.id}) }}" data-confirm="Xóa tài khoản @{{ u.username }}? Không thể xóa nếu tài khoản còn đơn hàng." data-confirm-ok="Xóa tài khoản">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ u.id) }}">
+                                    <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" aria-label="Xóa @{{ u.username }}"><i class="bi bi-trash3"></i></button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="4"><div class="ad-empty"><i class="bi bi-people"></i><b>Chưa có người dùng</b></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

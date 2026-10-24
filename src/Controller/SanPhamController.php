@@ -52,7 +52,7 @@ class SanPhamController extends AbstractController
             $data = $form->getData();
             $file = $form->get("photo")->getData();
             if (!$file) {
-                $this->addFlash('error', 'Please choose a product photo.');
+                $this->addFlash('error', 'Vui lòng chọn ảnh chính cho sản phẩm.');
                 return $this->render('san_pham/index.html.twig', [
                     'sp_form' => $form->createView(),
                 ]);
@@ -64,7 +64,7 @@ class SanPhamController extends AbstractController
 
             $em->persist($data);
             $em->flush();
-            $this->addFlash('success', 'Product created.');
+            $this->addFlash('success', 'Đã thêm sản phẩm mới.');
             return new RedirectResponse($this->urlGenerator->generate('app_ds_san_pham'));
         }
 
@@ -90,18 +90,54 @@ class SanPhamController extends AbstractController
     }
 
     #[Route('/san/pham/ds', name: 'app_ds_san_pham')]
-    public function list_sp(\App\Repository\SanPhamRepository $sanPhamRepository, \Knp\Component\Pager\PaginatorInterface $paginator, Request $req): Response
+    public function list_sp(\App\Repository\SanPhamRepository $sanPhamRepository, \App\Repository\CategoryRepository $categoryRepository, \Knp\Component\Pager\PaginatorInterface $paginator, Request $req): Response
         {
             $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-            $pagination = $paginator->paginate(
-                $sanPhamRepository->queryBySort('newest'),
-                $req->query->getInt('page', 1),
-                20
-            );
+            $q = trim((string) $req->query->get('q', ''));
+            $cate = $req->query->getInt('cate') ?: null;
+            $stock = (string) $req->query->get('stock', '');
+            $sort = (string) $req->query->get('sort', 'newest');
+
+            $qb = $sanPhamRepository->createQueryBuilder('sp')->leftJoin('sp.cate', 'c')->addSelect('c');
+            if ($q !== '') {
+                $qb->andWhere('sp.name LIKE :q OR sp.sku LIKE :q OR sp.brand LIKE :q')->setParameter('q', '%' . $q . '%');
+            }
+            if ($cate) {
+                $qb->andWhere('c.id = :cate')->setParameter('cate', $cate);
+            }
+            match ($stock) {
+                'out' => $qb->andWhere('sp.stock <= 0'),
+                'low' => $qb->andWhere('sp.stock > 0 AND sp.stock <= 5'),
+                'in' => $qb->andWhere('sp.stock > 5'),
+                'sale' => $qb->andWhere('sp.priceOld IS NOT NULL AND sp.priceOld > sp.price'),
+                default => null,
+            };
+            match ($sort) {
+                'price_asc' => $qb->orderBy('sp.price', 'ASC'),
+                'price_desc' => $qb->orderBy('sp.price', 'DESC'),
+                'stock_asc' => $qb->orderBy('sp.stock', 'ASC'),
+                'name' => $qb->orderBy('sp.name', 'ASC'),
+                default => $qb->orderBy('sp.id', 'DESC'),
+            };
+
+            $pagination = $paginator->paginate($qb->getQuery(), $req->query->getInt('page', 1), 20);
+
+            // Counts for the stock chips (whole catalogue).
+            $countWhere = fn (string $where) => (int) $sanPhamRepository->createQueryBuilder('p')
+                ->select('COUNT(p.id)')->andWhere($where)->getQuery()->getSingleScalarResult();
 
             return $this->render('san_pham/list.html.twig', [
-                "data" => $pagination,
+                'data' => $pagination,
+                'categories' => $categoryRepository->findAllOrdered(),
+                'filters' => ['q' => $q, 'cate' => $cate, 'stock' => $stock, 'sort' => $sort],
+                'counts' => [
+                    '' => $sanPhamRepository->count([]),
+                    'in' => $countWhere('p.stock > 5'),
+                    'low' => $countWhere('p.stock > 0 AND p.stock <= 5'),
+                    'out' => $countWhere('p.stock <= 0'),
+                    'sale' => $countWhere('p.priceOld IS NOT NULL AND p.priceOld > p.price'),
+                ],
             ]);
         }
 
@@ -124,11 +160,12 @@ class SanPhamController extends AbstractController
                     $sp->setSlug(SanPham::slugify($sp->getName()));
                     $this->handleGallery($form, $sp, $fileUploader);
                     $em->flush();
-                    $this->addFlash('success', 'Product updated.');
+                    $this->addFlash('success', 'Đã lưu thay đổi sản phẩm.');
                     return new RedirectResponse($this->urlGenerator->generate('app_ds_san_pham'));
                 }
                 return $this->render('san_pham/index.html.twig', [
                     'sp_form' => $form->createView(),
+                    'product' => $sp,
                 ]);
             }
 
@@ -161,14 +198,8 @@ class SanPhamController extends AbstractController
                 if (!$cate) {
                     throw $this->createNotFoundException('Danh mục không tồn tại.');
                 }
-                $pagination = $paginator->paginate(
-                    $cate->getSanPhams()->toArray(),
-                    $req->query->getInt('page', 1),
-                    20
-                );
-                return $this->render('san_pham/list.html.twig', [
-                    "data"=>$pagination
-                ]);
+                // Legacy URL: the product list now filters by category itself.
+                return $this->redirectToRoute('app_ds_san_pham', ['cate' => $cate->getId()]);
             }
             
 }

@@ -1,76 +1,113 @@
 {% extends 'adbase.html.twig' %}
 
 {% block title %}Đơn hàng #{{ order.id }}{% endblock %}
+{% block crumbs %}<div class="ad-crumb"><a href="{{ path('admin_order_list') }}">Đơn hàng</a><i class="bi bi-chevron-right"></i><span>#{{ order.id }}</span></div>{% endblock %}
+{% block heading %}Đơn hàng #{{ order.id }} <span class="ad-pill ad-pill--{{ order.statusColor }} align-middle fs-6 ms-1">{{ order.statusLabel }}</span>{% endblock %}
+{% block subtitle %}Đặt lúc {{ order.createdAt ? order.createdAt|date('H:i · d/m/Y') : '—' }} · {{ order.items|length }} sản phẩm{% endblock %}
+{% block actions %}
+    <a href="{{ path('admin_order_invoice', {'id': order.id}) }}" target="_blank" rel="noopener" class="btn ad-btn ad-btn--ghost"><i class="bi bi-printer"></i> In hóa đơn</a>
+    <a href="{{ path('admin_order_invoice_pdf', {'id': order.id}) }}" class="btn ad-btn ad-btn--soft"><i class="bi bi-filetype-pdf"></i> Tải PDF</a>
+{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="mb-3">
-        <a href="{{ path('admin_order_list') }}" class="btn btn-sm btn-secondary">&larr; Quay lại danh sách</a>
-        <a href="{{ path('admin_order_invoice', {'id': order.id}) }}" target="_blank" class="btn btn-sm btn-outline-primary"><i class="fas fa-print"></i> In hóa đơn</a>
-        <a href="{{ path('admin_order_invoice_pdf', {'id': order.id}) }}" class="btn btn-sm btn-outline-danger"><i class="fas fa-file-pdf"></i> Tải PDF</a>
-    </div>
+{% set labels = {'pending':'Chờ xử lý','confirmed':'Đã xác nhận','shipping':'Đang giao','completed':'Hoàn thành','cancelled':'Đã hủy'} %}
+{% set icons = {'pending':'hourglass-split','confirmed':'clipboard-check','shipping':'truck','completed':'check2-all','cancelled':'x-lg'} %}
+{% set flow = ['pending', 'confirmed', 'shipping', 'completed'] %}
+{% set stepIdx = order.status in flow ? flow|filter(s => s == order.status)|keys|first : -1 %}
 
-    <div class="row">
-        <div class="col-lg-7">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Sản phẩm — Đơn #{{ order.id }}</h6></div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered align-middle">
-                            <thead>
-                                <tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr>
-                            </thead>
-                            <tbody>
-                                {% for item in order.items %}
-                                <tr>
-                                    <td>{{ item.product ? item.product.name : '(sản phẩm đã xóa)' }}</td>
-                                    <td>{{ item.price|vnd }}</td>
-                                    <td>{{ item.quantity }}</td>
-                                    <td>{{ item.total|vnd }}</td>
-                                </tr>
-                                {% endfor %}
-                                <tr><td colspan="3" class="text-end">Tạm tính</td><td>{{ order.subtotal|vnd }}</td></tr>
-                                {% if order.discount > 0 %}<tr class="text-success"><td colspan="3" class="text-end">Giảm giá{{ order.couponCode ? ' (' ~ order.couponCode ~ ')' : '' }}</td><td>-{{ order.discount|vnd }}</td></tr>{% endif %}
-                                <tr><td colspan="3" class="text-end">Phí vận chuyển</td><td>{{ order.shippingFee == 0 ? 'Miễn phí' : order.shippingFee|vnd }}</td></tr>
-                                <tr class="fw-bold"><td colspan="3" class="text-end">Tổng cộng</td><td class="text-danger">{{ order.totalPrice|vnd }}</td></tr>
-                            </tbody>
-                        </table>
+<div class="ad-form-grid">
+    <div>
+        <section class="ad-card">
+            <div class="ad-card__body">
+                {% if order.status == 'cancelled' %}
+                    <div class="ad-empty py-3"><i class="bi bi-x-octagon" style="color:var(--ad-red)"></i><b>Đơn hàng đã bị hủy</b></div>
+                {% else %}
+                    <div class="ad-steps">
+                        {% for s in flow %}
+                            <div class="ad-steps__s{{ loop.index0 <= stepIdx ? ' is-done' : '' }}">
+                                <div class="ad-steps__dot"><i class="bi bi-{{ icons[s] }}"></i></div>{{ labels[s] }}
+                            </div>
+                        {% endfor %}
                     </div>
-                </div>
+                {% endif %}
             </div>
-        </div>
+        </section>
 
-        <div class="col-lg-5">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Khách hàng & trạng thái</h6></div>
-                <div class="card-body">
-                    <p class="mb-1"><strong>Họ tên:</strong> {{ order.customerName }}</p>
-                    <p class="mb-1"><strong>Điện thoại:</strong> {{ order.customerPhone }}</p>
-                    <p class="mb-1"><strong>Email:</strong> {{ order.customerEmail }}</p>
-                    <p class="mb-1"><strong>Địa chỉ:</strong> {{ order.fullAddress }}</p>
-                    <p class="mb-1"><strong>Thanh toán:</strong> {{ order.paymentMethodLabel }}
-                        {% if order.paid %}<span class="badge badge-success">Đã thanh toán</span>{% elseif order.paymentMethod in ['momo', 'vnpay'] %}<span class="badge badge-warning">Chờ thanh toán</span>{% endif %}
-                    </p>
-                    <p class="mb-1"><strong>Ngày đặt:</strong> {{ order.createdAt ? order.createdAt|date('d/m/Y H:i') : '-' }}</p>
-                    {% if order.note %}<p class="mb-1"><strong>Ghi chú:</strong> {{ order.note }}</p>{% endif %}
-                    <p class="mb-0"><strong>Trạng thái:</strong> <span class="badge badge-{{ order.statusColor }}">{{ order.statusLabel }}</span></p>
-                    <hr>
-                    {% set statusLabels = {'pending':'Chờ xử lý','confirmed':'Đã xác nhận','shipping':'Đang giao','completed':'Hoàn thành','cancelled':'Đã hủy'} %}
-                    <form method="post" action="{{ path('admin_order_status', {'id': order.id}) }}">
-                        <input type="hidden" name="_token" value="{{ csrf_token('order_status_' ~ order.id) }}">
-                        <div class="form-group">
-                            <label for="status">Cập nhật trạng thái</label>
-                            <select name="status" id="status" class="form-control">
-                                {% for value, color in statuses %}
-                                    <option value="{{ value }}" {{ order.status == value ? 'selected' : '' }}>{{ statusLabels[value] ?? value }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-2">Lưu</button>
-                    </form>
-                </div>
+        <section class="ad-card">
+            <div class="ad-card__head"><h2><i class="bi bi-box-seam"></i> Sản phẩm trong đơn</h2></div>
+            <div class="ad-card__body ad-card__body--flush ad-table-wrap">
+                <table class="ad-table">
+                    <thead><tr><th>Sản phẩm</th><th class="num">Đơn giá</th><th class="num">SL</th><th class="num">Thành tiền</th></tr></thead>
+                    <tbody>
+                        {% for item in order.items %}
+                            <tr>
+                                <td>
+                                    <div class="ad-prod">
+                                        {% if item.product %}<img class="ad-thumb" src="{{ asset('uploads/sanpham/' ~ item.product.photo) }}" alt="">{% endif %}
+                                        <div class="min-w-0">
+                                            {% if item.product %}<a class="ad-prod__name" href="{{ path('app_edit_san_pham', {'id': item.product.id}) }}">{{ item.product.name }}</a><div class="ad-prod__meta ad-mono">{{ item.product.sku }}</div>
+                                            {% else %}<span class="ad-muted">(sản phẩm đã xóa)</span>{% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="num">{{ item.price|vnd }}</td>
+                                <td class="num">× {{ item.quantity }}</td>
+                                <td class="num ad-strong">{{ item.total|vnd }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-        </div>
+            <div class="ad-card__foot">
+                <ul class="ad-totals ms-auto" style="max-width:360px">
+                    <li><span class="ad-muted">Tạm tính</span><span>{{ order.subtotal|vnd }}</span></li>
+                    {% if order.discount > 0 %}<li style="color:var(--ad-green)"><span>Giảm giá{{ order.couponCode ? ' (' ~ order.couponCode ~ ')' : '' }}</span><span>-{{ order.discount|vnd }}</span></li>{% endif %}
+                    <li><span class="ad-muted">Phí vận chuyển</span><span>{{ order.shippingFee == 0 ? 'Miễn phí' : order.shippingFee|vnd }}</span></li>
+                    <li class="total"><span>Tổng cộng</span><span>{{ order.totalPrice|vnd }}</span></li>
+                </ul>
+            </div>
+        </section>
     </div>
+
+    <aside class="ad-form-side">
+        <section class="ad-card">
+            <div class="ad-card__head"><h2><i class="bi bi-arrow-repeat"></i> Cập nhật trạng thái</h2></div>
+            <div class="ad-card__body">
+                <form method="post" action="{{ path('admin_order_status', {'id': order.id}) }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('order_status_' ~ order.id) }}">
+                    <div class="ad-status-pick mb-3" role="radiogroup" aria-label="Trạng thái đơn">
+                        {% for value, color in statuses %}
+                            <label><input type="radio" name="status" value="{{ value }}" {{ order.status == value ? 'checked' }}><span><i class="bi bi-{{ icons[value] }}"></i>{{ labels[value] }}</span></label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn ad-btn ad-btn--red w-100"><i class="bi bi-check2"></i> Lưu trạng thái</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="ad-card">
+            <div class="ad-card__head"><h2><i class="bi bi-person"></i> Khách hàng</h2></div>
+            <div class="ad-card__body">
+                <dl class="ad-kv">
+                    <dt>Họ tên</dt><dd>{{ order.customerName }}</dd>
+                    <dt>Điện thoại</dt><dd><a href="tel:{{ order.customerPhone }}">{{ order.customerPhone }}</a></dd>
+                    <dt>Email</dt><dd>{% if order.customerEmail %}<a href="mailto:{{ order.customerEmail }}">{{ order.customerEmail }}</a>{% else %}—{% endif %}</dd>
+                    <dt>Địa chỉ</dt><dd>{{ order.fullAddress }}</dd>
+                    {% if order.note %}<dt>Ghi chú</dt><dd>{{ order.note }}</dd>{% endif %}
+                </dl>
+            </div>
+        </section>
+
+        <section class="ad-card">
+            <div class="ad-card__head"><h2><i class="bi bi-credit-card"></i> Thanh toán</h2></div>
+            <div class="ad-card__body">
+                <dl class="ad-kv">
+                    <dt>Phương thức</dt><dd>{{ order.paymentMethodLabel }}</dd>
+                    <dt>Tình trạng</dt>
+                    <dd>{% if order.paid %}<span class="ad-pill ad-pill--success">Đã thanh toán</span>{% elseif order.paymentMethod in ['momo', 'vnpay'] %}<span class="ad-pill ad-pill--warning">Chờ thanh toán</span>{% else %}<span class="ad-pill ad-pill--muted">Thu khi giao hàng</span>{% endif %}</dd>
+                </dl>
+            </div>
+        </section>
+    </aside>
 </div>
 {% endblock %}

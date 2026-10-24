@@ -1,42 +1,48 @@
 {% extends 'adbase.html.twig' %}
 
-{% block title %}Quản lý mã giảm giá{% endblock %}
+{% block title %}Mã giảm giá{% endblock %}
+{% block subtitle %}{{ items|length }} mã · theo dõi lượt dùng và hạn sử dụng{% endblock %}
+{% block actions %}<a href="{{ path('admin_coupon_new') }}" class="btn ad-btn ad-btn--red"><i class="bi bi-plus-lg"></i> Tạo mã</a>{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Mã giảm giá ({{ items|length }})</h6>
-            <a href="{{ path('admin_coupon_new') }}" class="btn btn-sm btn-success"><i class="fas fa-plus"></i> Thêm mã</a>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead><tr><th>Mã</th><th>Giảm</th><th>Đơn tối thiểu</th><th>Lượt dùng</th><th>Kích hoạt</th><th>Hết hạn</th><th>Thao tác</th></tr></thead>
-                    <tbody>
-                        {% for c in items %}
-                        <tr>
-                            <td><strong>{{ c.code }}</strong></td>
-                            <td>{{ c.label }}</td>
-                            <td>{{ c.minOrder|vnd }}</td>
-                            <td>{{ c.usageCount }}{% if c.maxUses %}<span class="text-muted">/{{ c.maxUses }}</span>{% if not c.hasUsesLeft %} <span class="badge badge-danger">Hết lượt</span>{% endif %}{% else %}<span class="text-muted"> / ∞</span>{% endif %}</td>
-                            <td>{% if c.active %}<span class="badge badge-success">Bật</span>{% else %}<span class="badge badge-secondary">Tắt</span>{% endif %}</td>
-                            <td>{{ c.expiresAt ? c.expiresAt|date('d/m/Y H:i') : 'Vô hạn' }}</td>
-                            <td class="text-nowrap">
-                                <a href="{{ path('admin_coupon_edit', {'id': c.id}) }}" class="btn btn-sm btn-warning">Sửa</a>
-                                <form method="post" action="{{ path('admin_coupon_delete', {'id': c.id}) }}" class="d-inline" onsubmit="return confirm('Xóa mã này?')">
+<section class="ad-card">
+    <div class="ad-table-wrap">
+        <table class="ad-table">
+            <thead><tr><th>Mã</th><th>Ưu đãi</th><th class="num">Đơn tối thiểu</th><th>Lượt dùng</th><th>Hết hạn</th><th>Trạng thái</th><th class="actions"></th></tr></thead>
+            <tbody>
+                {% for c in items %}
+                    {% set expired = c.expiresAt and c.expiresAt < date() %}
+                    {% set pct = c.maxUses ? min(100, (c.usageCount / c.maxUses * 100)|round) : 0 %}
+                    <tr data-href="{{ path('admin_coupon_edit', {'id': c.id}) }}">
+                        <td><span class="ad-mono ad-strong" style="background:var(--ad-cream);border:1px dashed var(--ad-cream-3);padding:4px 10px;border-radius:8px">{{ c.code }}</span></td>
+                        <td class="ad-strong" style="color:var(--ad-red)">{{ c.label }}</td>
+                        <td class="num">{{ c.minOrder|vnd }}</td>
+                        <td style="min-width:150px">
+                            <div class="small"><b>{{ c.usageCount }}</b><span class="ad-muted"> / {{ c.maxUses ?: '∞' }}</span></div>
+                            {% if c.maxUses %}<div class="ad-status-row p-0 border-0"><span class="bar"><span class="bar-{{ pct >= 100 ? 'danger' : 'success' }}" style="width:{{ pct }}%"></span></span></div>{% endif %}
+                        </td>
+                        <td class="{{ expired ? 'text-danger' : 'ad-muted' }}">{{ c.expiresAt ? c.expiresAt|date('d/m/Y H:i') : 'Không giới hạn' }}</td>
+                        <td>
+                            {% if not c.active %}<span class="ad-pill ad-pill--muted">Đã tắt</span>
+                            {% elseif expired %}<span class="ad-pill ad-pill--danger">Hết hạn</span>
+                            {% elseif not c.hasUsesLeft %}<span class="ad-pill ad-pill--danger">Hết lượt</span>
+                            {% else %}<span class="ad-pill ad-pill--success">Đang chạy</span>{% endif %}
+                        </td>
+                        <td class="actions">
+                            <div class="ad-row-actions">
+                                <a href="{{ path('admin_coupon_edit', {'id': c.id}) }}" class="ad-icon-btn" title="Sửa" aria-label="Sửa {{ c.code }}"><i class="bi bi-pencil"></i></a>
+                                <form method="post" action="{{ path('admin_coupon_delete', {'id': c.id}) }}" data-confirm="Xóa mã {{ c.code }}? Khách sẽ không dùng được mã này nữa." data-confirm-ok="Xóa mã">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_coupon_' ~ c.id) }}">
-                                    <button class="btn btn-sm btn-danger">Xóa</button>
+                                    <button class="ad-icon-btn ad-icon-btn--danger" title="Xóa" aria-label="Xóa {{ c.code }}"><i class="bi bi-trash3"></i></button>
                                 </form>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr><td colspan="6" class="text-center text-muted">Chưa có mã giảm giá.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="7"><div class="ad-empty"><i class="bi bi-ticket-perforated"></i><b>Chưa có mã giảm giá</b><a href="{{ path('admin_coupon_new') }}">Tạo mã đầu tiên</a></div></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</div>
+</section>
 {% endblock %}

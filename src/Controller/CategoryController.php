@@ -30,12 +30,16 @@ class CategoryController extends AbstractController
         if($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $file = $form->get("photo")->getData();
-            $fileName = $fileUploader->upload($file);
-            $data->setPhoto($fileName);
+            if (!$file) {
+                $this->addFlash('error', 'Vui lòng chọn ảnh đại diện cho danh mục.');
+                return $this->render('category/index.html.twig', ['category_form' => $form->createView()]);
+            }
+            $data->setPhoto($fileUploader->upload($file));
 
             $em->persist($data);
             $em->flush();
-            return new RedirectResponse($this->urlGenerator->generate('app_category'));
+            $this->addFlash('success', 'Đã thêm danh mục "' . $data->getName() . '".');
+            return new RedirectResponse($this->urlGenerator->generate('app_ds_category'));
         }
 
         return $this->render('category/index.html.twig', [
@@ -69,6 +73,7 @@ class CategoryController extends AbstractController
             }
             $cg->setName($data->getName());
             $em->flush();
+            $this->addFlash('success', 'Đã lưu danh mục "' . $cg->getName() . '".');
             return new RedirectResponse($this->urlGenerator->generate('app_ds_category'));
         }
         return $this->render('category/index.html.twig', [

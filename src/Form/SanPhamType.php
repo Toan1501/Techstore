@@ -47,7 +47,7 @@ class SanPhamType extends AbstractType
                 'label' => 'Thông số kỹ thuật (mỗi dòng "Tên: Giá trị")',
                 'attr' => ['rows' => 6, 'placeholder' => "CPU: Intel Core i5\nRAM: 16GB\nỔ cứng: 512GB SSD"],
             ])
-            ->add('photo', FileType::class, ['label' => 'Ảnh chính (png, jpeg)', 'data_class' => null, 'required' => false])
+            ->add('photo', FileType::class, ['label' => 'Ảnh chính (png, jpeg)', 'data_class' => null, 'required' => false, 'mapped' => false])
             ->add('galleryImages', FileType::class, [
                 'label' => 'Ảnh gallery (không bắt buộc, chọn nhiều)',
                 'mapped' => false,

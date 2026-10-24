@@ -2,19 +2,43 @@
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {% block title %}{{ is_new ? 'Thêm banner' : 'Sửa banner' }}{% endblock %}
+{% block crumbs %}<div class="ad-crumb"><a href="{{ path('admin_banner_list') }}">Banner trang chủ</a><i class="bi bi-chevron-right"></i><span>{{ is_new ? 'Thêm mới' : (banner.title ?: 'Banner #' ~ banner.id) }}</span></div>{% endblock %}
+{% block subtitle %}Banner chạy ở slide lớn đầu trang chủ. Kích thước khuyên dùng 1500×500px (tỉ lệ 3:1).{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4" style="max-width:680px">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">{{ is_new ? 'Thêm banner' : 'Sửa banner' }}</h6></div>
-        <div class="card-body">
-            {% if banner.image %}<img src="{{ asset(banner.image) }}" height="90" class="mb-3 rounded" alt="">{% endif %}
-            {{ form_start(form) }}
-            {{ form_widget(form) }}
-            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu</button>
-            <a href="{{ path('admin_banner_list') }}" class="btn btn-secondary mt-2">Hủy</a>
-            {{ form_end(form) }}
+{{ form_start(form) }}
+<div class="ad-form-grid">
+    <section class="ad-card">
+        <div class="ad-card__body">
+            <h2 class="ad-section-title"><i class="bi bi-images"></i> Nội dung banner</h2>
+            {{ form_row(form.title, {'attr': {'placeholder': 'VD: Siêu sale công nghệ'}}) }}
+            {{ form_row(form.link, {'attr': {'placeholder': 'https://... hoặc /khuyen-mai'}}) }}
+            <div class="row g-3">
+                <div class="col-md-6">{{ form_row(form.position) }}</div>
+                <div class="col-md-6 d-flex align-items-end">{{ form_row(form.active, {'label_attr': {'class': 'checkbox-switch'}}) }}</div>
+            </div>
         </div>
-    </div>
+    </section>
+    <aside class="ad-form-side">
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-image"></i> Ảnh banner</h2>
+                {% if banner.image %}<img class="ad-current-img ad-current-img--wide" src="{{ asset(banner.image) }}" alt="">{% endif %}
+                <div class="ad-drop">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <span data-drop-label="Kéo thả hoặc bấm để chọn ảnh">Kéo thả hoặc bấm để chọn ảnh</span>
+                    {{ form_widget(form.imageFile) }}
+                    <div class="ad-drop__preview" style="grid-template-columns:1fr"></div>
+                </div>
+                {{ form_errors(form.imageFile) }}
+            </div>
+        </section>
+    </aside>
 </div>
+{{ form_rest(form) }}
+<div class="ad-savebar">
+    <a href="{{ path('admin_banner_list') }}" class="btn ad-btn ad-btn--ghost">Hủy</a>
+    <button type="submit" class="btn ad-btn ad-btn--red"><i class="bi bi-check2"></i> Lưu banner</button>
+</div>
+{{ form_end(form) }}
 {% endblock %}

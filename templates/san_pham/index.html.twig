@@ -1,19 +1,88 @@
 {% extends 'adbase.html.twig' %}
 {% form_theme sp_form 'bootstrap_5_layout.html.twig' %}
 
-{% block title %}Thêm / Sửa sản phẩm{% endblock %}
+{% set isEdit = product is defined and product and product.id %}
+{% block title %}{{ isEdit ? 'Sửa sản phẩm' : 'Thêm sản phẩm' }}{% endblock %}
+{% block crumbs %}<div class="ad-crumb"><a href="{{ path('app_ds_san_pham') }}">Sản phẩm</a><i class="bi bi-chevron-right"></i><span>{{ isEdit ? product.name : 'Thêm mới' }}</span></div>{% endblock %}
+{% block subtitle %}{{ isEdit ? 'Cập nhật thông tin, giá bán, tồn kho và hình ảnh.' : 'Điền thông tin cơ bản, giá và ảnh để đăng bán sản phẩm.' }}{% endblock %}
+{% block actions %}
+    {% if isEdit %}<a href="{{ path('app_product', {'slug': product.slug, 'id': product.id}) }}" target="_blank" rel="noopener" class="btn ad-btn ad-btn--ghost"><i class="bi bi-eye"></i> Xem trên cửa hàng</a>{% endif %}
+{% endblock %}
 
 {% block body %}
-<div class="container-fluid mt-4">
-    <div class="card shadow mb-4" style="max-width:760px">
-        <div class="card-header py-3"><h6 class="m-0 font-weight-bold text-primary">Thông tin sản phẩm</h6></div>
-        <div class="card-body">
-            {{ form_start(sp_form) }}
-            {{ form_widget(sp_form) }}
-            <button type="submit" class="btn btn-success mt-2"><i class="fas fa-save"></i> Lưu sản phẩm</button>
-            <a href="{{ path('app_ds_san_pham') }}" class="btn btn-secondary mt-2">Hủy</a>
-            {{ form_end(sp_form) }}
-        </div>
+{{ form_start(sp_form, {'attr': {'novalidate': 'novalidate'}}) }}
+<div class="ad-form-grid">
+    <div>
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-info-circle"></i> Thông tin cơ bản</h2>
+                {{ form_row(sp_form.name, {'attr': {'placeholder': 'VD: Laptop Asus TUF Gaming A15 Ryzen 7 RTX 4050'}}) }}
+                <div class="row g-3">
+                    <div class="col-md-6">{{ form_row(sp_form.cate) }}</div>
+                    <div class="col-md-6">{{ form_row(sp_form.brand, {'attr': {'placeholder': 'Asus, MSI, Logitech...'}}) }}</div>
+                    <div class="col-md-6">{{ form_row(sp_form.sku, {'attr': {'placeholder': 'LAP-ASUS-A15', 'class': 'ad-mono'}}) }}</div>
+                    <div class="col-md-6">{{ form_row(sp_form.warranty, {'attr': {'placeholder': '24 tháng'}}) }}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-tag"></i> Giá bán &amp; tồn kho</h2>
+                <div class="row g-3">
+                    <div class="col-md-4">{{ form_row(sp_form.price, {'attr': {'data-money': '', 'inputmode': 'numeric'}}) }}</div>
+                    <div class="col-md-4">{{ form_row(sp_form.priceOld, {'label': 'Giá gốc (nếu đang giảm)', 'attr': {'data-money': '', 'inputmode': 'numeric'}}) }}</div>
+                    <div class="col-md-4">{{ form_row(sp_form.stock) }}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-card-text"></i> Mô tả &amp; thông số</h2>
+                {{ form_row(sp_form.description, {'attr': {'rows': 4}}) }}
+                {{ form_row(sp_form.specifications, {'attr': {'rows': 7, 'class': 'ad-mono', 'placeholder': "CPU: Intel Core i5-12500H\nRAM: 16GB DDR4\nStorage: 512GB SSD"}, 'help': 'Mỗi dòng một thông số theo dạng “Tên: Giá trị”. 4 dòng đầu hiện trên thẻ sản phẩm.'}) }}
+            </div>
+        </section>
     </div>
+
+    <aside class="ad-form-side">
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-image"></i> Ảnh chính</h2>
+                {% if isEdit and product.photo %}<img class="ad-current-img" src="{{ asset('uploads/sanpham/' ~ product.photo) }}" alt="Ảnh hiện tại">{% endif %}
+                <div class="ad-drop">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                    <span data-drop-label="{{ isEdit ? 'Chọn ảnh khác để thay' : 'Kéo thả hoặc bấm để chọn ảnh' }}">{{ isEdit ? 'Chọn ảnh khác để thay' : 'Kéo thả hoặc bấm để chọn ảnh' }}</span>
+                    {{ form_widget(sp_form.photo) }}
+                    <div class="ad-drop__preview"></div>
+                </div>
+                <div class="form-text mt-2">Ảnh vuông nền trắng, tối thiểu 800×800px cho đẹp nhất.</div>
+                {{ form_errors(sp_form.photo) }}
+            </div>
+        </section>
+        <section class="ad-card">
+            <div class="ad-card__body">
+                <h2 class="ad-section-title"><i class="bi bi-images"></i> Thư viện ảnh</h2>
+                {% if isEdit and product.images|length %}
+                    <div class="ad-gallery">{% for img in product.images %}<img src="{{ asset('uploads/sanpham/' ~ img.filename) }}" alt="">{% endfor %}</div>
+                {% endif %}
+                <div class="ad-drop">
+                    <i class="bi bi-plus-square-dotted"></i>
+                    <span data-drop-label="Thêm ảnh góc khác (chọn nhiều)">Thêm ảnh góc khác (chọn nhiều)</span>
+                    {{ form_widget(sp_form.galleryImages) }}
+                    <div class="ad-drop__preview"></div>
+                </div>
+                {{ form_errors(sp_form.galleryImages) }}
+            </div>
+        </section>
+    </aside>
 </div>
+{{ form_rest(sp_form) }}
+
+<div class="ad-savebar">
+    <a href="{{ path('app_ds_san_pham') }}" class="btn ad-btn ad-btn--ghost">Hủy</a>
+    <button type="submit" class="btn ad-btn ad-btn--red"><i class="bi bi-check2"></i> {{ isEdit ? 'Lưu thay đổi' : 'Đăng sản phẩm' }}</button>
+</div>
+{{ form_end(sp_form) }}
 {% endblock %}
