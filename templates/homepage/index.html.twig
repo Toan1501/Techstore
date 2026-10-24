@@ -47,11 +47,17 @@
                 <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
             </div>
         </div>
-        <div class="col-lg-3 d-none d-lg-flex flex-column gap-3">
-            <img src="{{ asset('images/offer-4.png') }}" class="w-100 rounded-4 shadow-sm" style="flex:1 1 0;min-height:0;object-fit:cover" alt="Ưu đãi" loading="lazy">
-            <img src="{{ asset('images/offer-5.png') }}" class="w-100 rounded-4 shadow-sm" style="flex:1 1 0;min-height:0;object-fit:cover" alt="Ưu đãi" loading="lazy">
+        <div class="col-lg-3 d-none d-lg-flex flex-column">
+            <a href="{{ path('shop_promotions') }}" class="gv-sidepromo" aria-label="Flash Sale mỗi ngày — giảm đến 25%">
+                <img src="{{ asset('images/banner-vuong.webp') }}" alt="Flash Sale mỗi ngày — giảm đến 25%" width="800" height="800">
+            </a>
         </div>
     </div>
+
+    {# Mobile: the side column is hidden, so surface the square promo under the hero #}
+    <a href="{{ path('shop_promotions') }}" class="gv-mobilepromo d-lg-none mb-3" aria-label="Flash Sale mỗi ngày — giảm đến 25%">
+        <img src="{{ asset('images/banner-vuong.webp') }}" alt="Flash Sale mỗi ngày — giảm đến 25%" width="800" height="800" loading="lazy">
+    </a>
 
     {# ===== Benefits strip ===== #}
     <div class="gv-benefits">

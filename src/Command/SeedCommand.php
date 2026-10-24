@@ -23,6 +23,35 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 #[AsCommand(name: 'app:seed', description: 'Wipe and seed the database with demo data.')]
 class SeedCommand extends Command
 {
+    /**
+     * AI-generated product shots (ChatGPT, white catalog background) for the 50
+     * extra products, matched by SKU to a gaming or office/plain variant.
+     */
+    private const AI_PHOTOS = [
+        // Laptop
+        'LAP-LEN-IPG3' => 'ai-laptop-1.webp', 'LAP-ASUS-A15' => 'ai-laptop-1.webp', 'LAP-ACER-A7' => 'ai-laptop-1.webp', 'LAP-GB-G5KF' => 'ai-laptop-1.webp',
+        'LAP-DELL-IN15' => 'ai-laptop-2.webp', 'LAP-HP-PAV15' => 'ai-laptop-2.webp', 'LAP-APL-MBA2' => 'ai-laptop-2.webp',
+        'LAP-MSI-MOD14' => 'ai-laptop-2.webp', 'LAP-LEN-E14' => 'ai-laptop-2.webp', 'LAP-ASUS-VB15' => 'ai-laptop-2.webp',
+        // Graphics card
+        'VGA-MSI-4060TI' => 'ai-vga-1.webp', 'VGA-GB-4080S' => 'ai-vga-1.webp', 'VGA-SAP-7800' => 'ai-vga-1.webp',
+        'VGA-ZTC-4090' => 'ai-vga-1.webp', 'VGA-CLF-3070' => 'ai-vga-1.webp',
+        'VGA-ASUS-4060' => 'ai-vga-2.webp', 'VGA-ASR-6600' => 'ai-vga-2.webp', 'VGA-PNY-3050' => 'ai-vga-2.webp', 'VGA-GB-1660S' => 'ai-vga-2.webp',
+        // Monitor
+        'MON-LG-27GP' => 'ai-monitor-1.webp', 'MON-SS-G5' => 'ai-monitor-1.webp', 'MON-AS-VG259' => 'ai-monitor-1.webp',
+        'MON-LG-34WP' => 'ai-monitor-1.webp', 'MON-GB-M27Q' => 'ai-monitor-1.webp',
+        'MON-DELL-S24' => 'ai-monitor-2.webp', 'MON-AOC-24G2' => 'ai-monitor-2.webp', 'MON-VS-VX27' => 'ai-monitor-2.webp',
+        // Mouse
+        'MOU-LOG-GPX2' => 'ai-mouse-1.webp', 'MOU-RZ-DAV3' => 'ai-mouse-1.webp', 'MOU-COR-M65' => 'ai-mouse-1.webp',
+        'MOU-SS-AEROX3' => 'ai-mouse-1.webp', 'MOU-RZ-BSK3' => 'ai-mouse-1.webp', 'MOU-PUL-X2V2' => 'ai-mouse-1.webp',
+        'MOU-LOG-MX3S' => 'ai-mouse-2.webp', 'MOU-MS-BT' => 'ai-mouse-2.webp',
+        // RAM
+        'RAM-TG-DEL16' => 'ai-ram-1.webp', 'RAM-GSK-Z5' => 'ai-ram-1.webp', 'RAM-COR-VEN32' => 'ai-ram-1.webp', 'RAM-GSK-S5' => 'ai-ram-1.webp',
+        'RAM-KIN-BE16' => 'ai-ram-2.webp', 'RAM-COR-LPX8' => 'ai-ram-2.webp', 'RAM-CRU-16' => 'ai-ram-2.webp', 'RAM-KIN-LT8' => 'ai-ram-2.webp',
+        // Desktop PC
+        'PC-GVN-DRAG' => 'ai-pc-1.webp', 'PC-GAM-R5' => 'ai-pc-1.webp', 'PC-GFX-I7' => 'ai-pc-1.webp', 'PC-ITX-I5' => 'ai-pc-1.webp', 'PC-GVN-I9' => 'ai-pc-1.webp',
+        'PC-OFF-R3' => 'ai-pc-2.webp', 'PC-STU-I5' => 'ai-pc-2.webp',
+    ];
+
     public function __construct(
         private EntityManagerInterface $em,
         private UserPasswordHasherInterface $hasher,
@@ -94,7 +123,7 @@ class SeedCommand extends Command
                 ->setPrice($p['price'])
                 ->setPriceOld($priceOld)
                 ->setStock($p['stock'])
-                ->setPhoto($p['photo'])
+                ->setPhoto(self::AI_PHOTOS[$p['sku']] ?? $p['photo'])
                 ->setBrand($p['brand'])
                 ->setSku($p['sku'])
                 ->setWarranty($p['warranty'])
@@ -157,12 +186,18 @@ class SeedCommand extends Command
         }
 
         // 8) Homepage banners
-        $bannerImgs = ['images/carousel-1.webp', 'images/carousel-2.webp', 'images/carousel-4.webp'];
-        foreach ($bannerImgs as $pos => $img) {
+        // Toàn Store's own banner leads the carousel; the older stock slides follow.
+        $banners = [
+            ['Siêu sale công nghệ', 'images/banner-ngang.webp', '/khuyen-mai'],
+            ['Banner 2', 'images/carousel-1.webp', ''],
+            ['Banner 3', 'images/carousel-2.webp', ''],
+            ['Banner 4', 'images/carousel-4.webp', ''],
+        ];
+        foreach ($banners as $pos => [$title, $img, $link]) {
             $this->em->persist((new Banner())
-                ->setTitle('Banner ' . ($pos + 1))
+                ->setTitle($title)
                 ->setImage($img)
-                ->setLink('')
+                ->setLink($link)
                 ->setPosition($pos)
                 ->setActive(true));
         }

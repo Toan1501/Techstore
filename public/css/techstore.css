@@ -664,3 +664,13 @@ a:focus-visible, button:focus-visible, .btn:focus-visible,
 .gv-lookup-form { max-width: 640px; }
 .gv-catbar__hot { color: var(--ts-accent) !important; }
 .gv-catbar__hot i { animation: ts-pulse 1.4s ease-in-out infinite; display: inline-block; }
+
+/* Brand promo banners (AI-generated, ChatGPT) */
+.gv-sidepromo { display: block; flex: 1 1 auto; min-height: 0; border-radius: var(--ts-radius); overflow: hidden; box-shadow: var(--ts-shadow-sm); }
+.gv-sidepromo img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; transition: transform .5s var(--ts-ease); }
+.gv-sidepromo:hover img { transform: scale(1.04); }
+.gv-mobilepromo { display: block; border-radius: var(--ts-radius); overflow: hidden; box-shadow: var(--ts-shadow-sm); }
+.gv-mobilepromo img { width: 100%; height: auto; display: block; aspect-ratio: 1 / 1; object-fit: cover; }
+.gv-sidebanner { border-radius: var(--ts-radius); overflow: hidden; box-shadow: var(--ts-shadow-sm); transition: transform var(--ts-dur) var(--ts-ease), box-shadow var(--ts-dur); }
+.gv-sidebanner img { width: 100%; height: auto; display: block; }
+.gv-sidebanner:hover { transform: translateY(-4px); box-shadow: var(--ts-shadow-lg); }
