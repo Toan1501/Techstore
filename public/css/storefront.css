@@ -273,7 +273,7 @@ body.is-home .gv-catmenu__backdrop { display: none; }
 
 /* ---------- Horizontal rail ---------- */
 .rail { position: relative; }
-.rail__track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 4 * 12px) / 5); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; padding: 2px 2px 6px; margin: -2px -2px -6px; overscroll-behavior-x: contain; }
+.rail__track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 4 * 12px) / 5); gap: 12px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; padding: 8px 4px 12px; margin: -8px -4px -12px; overscroll-behavior-x: contain; overscroll-behavior-y: auto; touch-action: pan-x pan-y; -webkit-overflow-scrolling: touch; }
 .rail__track::-webkit-scrollbar { display: none; }
 .rail__item { scroll-snap-align: start; min-width: 0; display: flex; }
 .rail__item > .pc { width: 100%; }
@@ -616,3 +616,10 @@ body.has-pd-sticky .gv-header { transform: translateY(-100%); }
 @media (prefers-reduced-motion: reduce) {
     .pc, .promo, .hp-cat__img, .gv-mm__fly, .gv-catmenu__panel, .pd-sticky, .gv-header { transition: none !important; }
 }
+
+/* Rails scroll horizontally only: cards inside must never make the track taller than it is,
+   otherwise mobile browsers treat it as a vertical scroller and swallow page scrolling. */
+.rail__track .pc.reveal, .js .rail__track .pc.reveal { transform: none; }
+.rail__track .pc:hover { transform: none; }
+@media (hover: none) { .pc:hover { transform: none; box-shadow: none; } }
+.pdg__thumbs, .lst-sort, .hp-sec__chips, .pd-tabs__nav, .hp-cats { overflow-y: hidden; overscroll-behavior-y: auto; }
