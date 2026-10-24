@@ -1,6 +1,6 @@
 /* ==========================================================================
    Techstore — Modern storefront design system (red/black).
-   Rebuilt with UI/UX Pro Max direction: Space Grotesk + DM Sans,
+   Rebuilt with UI/UX Pro Max direction: Roboto (headings) + DM Sans,
    layered depth, refined tokens. Loaded last (overrides Bootstrap).
    ========================================================================== */
 
@@ -22,7 +22,7 @@
     --ts-border-strong: #dde1e6;
 
     /* Typography */
-    --font-head: 'Space Grotesk', system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-head: 'Roboto', system-ui, -apple-system, "Segoe UI", sans-serif;
     --font-body: 'DM Sans', system-ui, -apple-system, "Segoe UI", sans-serif;
 
     /* Radius */

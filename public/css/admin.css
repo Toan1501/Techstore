@@ -27,7 +27,7 @@
     --ad-side-w: 260px;
     --ad-side-w-collapsed: 76px;
     --ad-top-h: 66px;
-    --font-head: 'Space Grotesk', system-ui, sans-serif;
+    --font-head: 'Roboto', system-ui, sans-serif;
     --font-body: 'DM Sans', system-ui, sans-serif;
     --ts-primary: var(--ad-red);
     --ts-ink: var(--ad-ink);
