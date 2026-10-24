@@ -25,3 +25,11 @@ services:
     App\Service\FileUploader:
         arguments:
             $targetDirectory: '%sanpham_photo%'
+when@prod:
+    services:
+        # DB-backed sessions reuse Doctrine's PDO connection. lock_mode 0 (no lock) so the
+        # handler never opens a transaction that would clash with Doctrine's flush().
+        Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+            arguments:
+                - !service { class: PDO, factory: ['@doctrine.dbal.default_connection', 'getNativeConnection'] }
+                - { lock_mode: 0 }

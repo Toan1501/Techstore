@@ -1,0 +1,11 @@
+# Never upload local secrets or build artefacts; Vercel runs composer install itself.
+/.env.local
+/.env.*.local
+/.env.local.php
+/vendor
+/var
+/node_modules
+/tests
+/.git
+/.claude
+/phpunit.xml

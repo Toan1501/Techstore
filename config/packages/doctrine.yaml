@@ -25,6 +25,10 @@ when@test:
 
 when@prod:
     doctrine:
+        dbal:
+            # Hosted MySQL (TiDB Cloud) requires TLS. On Vercel: /etc/pki/tls/certs/ca-bundle.crt
+            options:
+                !php/const Pdo\Mysql::ATTR_SSL_CA: '%env(MYSQL_SSL_CA)%'
         orm:
             auto_generate_proxy_classes: false
             proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
