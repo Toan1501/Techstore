@@ -1,0 +1,17 @@
+{#
+  TOÀN STORE logo — vector mark + wordmark.
+  tone: 'light' (on the red header: white tile, red glyph) | 'dark' (on white: red tile, white glyph)
+  compact: hide the tagline
+#}
+{% set tone = tone|default('light') %}
+<span class="ts-logo ts-logo--{{ tone }}{{ compact|default(false) ? ' ts-logo--compact' : '' }}">
+    <svg class="ts-logo__mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+        <rect class="ts-logo__tile" width="48" height="48" rx="13"/>
+        <path class="ts-logo__glyph" d="M13 12H37L35.5 18H26L21.5 36H15L19.5 18H11.5Z"/>
+        <path class="ts-logo__dot" d="M29.5 30H35.5L34 36H28Z"/>
+    </svg>
+    <span class="ts-logo__type">
+        <span class="ts-logo__name"><b>TOÀN</b><i></i>STORE</span>
+        <span class="ts-logo__tag">Computer &amp; Gear</span>
+    </span>
+</span>

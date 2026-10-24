@@ -6,11 +6,18 @@
 {% block og_image %}{{ absolute_url(asset('uploads/sanpham/' ~ data.getPhoto())) }}{% endblock %}
 
 {% block body %}
-<div class="container-fluid px-3 px-xl-5 py-3">
+{% set photos = data.getAllPhotos() %}
+{% set specs = data.getSpecList() %}
+{% set inWish = data.id in (app.session.get('wishlist')|default([])) %}
+{% set inCompare = data.id in (app.session.get('compare')|default([])) %}
+{% set catLabel = data.getCate() ? data.getCate().name|cat_label : null %}
+
+<div class="gv-container py-3">
     <nav aria-label="breadcrumb">
-        <ol class="breadcrumb small">
-            <li class="breadcrumb-item"><a href="{{ path('homepage') }}">Trang chủ</a></li>
-            {% if data.getCate() %}<li class="breadcrumb-item"><a href="{{ path('app_productofcate', {'id': data.getCate().id}) }}">{{ data.getCate().name }}</a></li>{% endif %}
+        <ol class="breadcrumb gv-crumb">
+            <li class="breadcrumb-item"><a href="{{ path('homepage') }}"><i class="bi bi-house-door"></i> Trang chủ</a></li>
+            {% if data.getCate() %}<li class="breadcrumb-item"><a href="{{ path('app_productofcate', {'id': data.getCate().id}) }}">{{ catLabel }}</a></li>{% endif %}
+            {% if data.brand and data.getCate() %}<li class="breadcrumb-item"><a href="{{ path('app_productofcate', {'id': data.getCate().id, 'brand': [data.brand]}) }}">{{ data.brand }}</a></li>{% endif %}
             <li class="breadcrumb-item active line-clamp-1" aria-current="page">{{ data.getName() }}</li>
         </ol>
     </nav>
@@ -18,7 +25,7 @@
     {% set ld = {
         '@context': 'https://schema.org', '@type': 'Product',
         'name': data.getName(),
-        'image': absolute_url(asset('uploads/sanpham/' ~ data.getPhoto())),
+        'image': photos|map(p => absolute_url(asset('uploads/sanpham/' ~ p))),
         'description': data.getDescription() ?: data.getName(),
         'sku': data.sku ?: '', 'brand': {'@type': 'Brand', 'name': data.brand ?: 'TOÀN STORE'},
         'offers': {'@type': 'Offer', 'priceCurrency': 'VND', 'price': data.getPrice(),
@@ -26,266 +33,282 @@
             'url': app.request.uri}
     } %}
     {% if rating.count > 0 %}{% set ld = ld|merge({'aggregateRating': {'@type': 'AggregateRating', 'ratingValue': rating.average, 'reviewCount': rating.count}}) %}{% endif %}
-    <script type="application/ld+json">{{ ld|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG'))|raw }}</script>
+    <script type="application/ld+json">{{ ld|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG') b-or constant('JSON_UNESCAPED_SLASHES'))|raw }}</script>
     {% set crumbs = [{'@type': 'ListItem', 'position': 1, 'name': 'Trang chủ', 'item': url('homepage')}] %}
-    {% if data.getCate() %}{% set crumbs = crumbs|merge([{'@type': 'ListItem', 'position': 2, 'name': data.getCate().name, 'item': url('app_productofcate', {'id': data.getCate().id})}]) %}{% endif %}
+    {% if data.getCate() %}{% set crumbs = crumbs|merge([{'@type': 'ListItem', 'position': 2, 'name': catLabel, 'item': url('app_productofcate', {'id': data.getCate().id})}]) %}{% endif %}
     {% set crumbs = crumbs|merge([{'@type': 'ListItem', 'position': crumbs|length + 1, 'name': data.getName(), 'item': url('app_product', {'slug': data.slug, 'id': data.id})}]) %}
     <script type="application/ld+json">{{ {'@context': 'https://schema.org', '@type': 'BreadcrumbList', 'itemListElement': crumbs}|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_HEX_TAG'))|raw }}</script>
 
-    {% set inWish = data.id in (app.session.get('wishlist')|default([])) %}
-    <div class="gv-section">
-        <div class="row g-4">
-            {# Gallery #}
-            <div class="col-md-5">
-                <div class="gv-gallery__main">
-                    {% if data.hasDiscount() %}<span class="gv-gallery__badge">-{{ data.getDiscountPercent() }}%</span>{% endif %}
-                    <img id="mainImg" src="{{ asset('uploads/sanpham/' ~ data.getPhoto()) }}" alt="{{ data.getName() }}">
-                    <span class="gv-gallery__zoom"><i class="bi bi-zoom-in"></i></span>
+    <div class="pd">
+        {# ===== Gallery ===== #}
+        <section class="pd__gallery" aria-label="Hình ảnh sản phẩm">
+            <div class="pdg" data-gallery>
+                <div class="pdg__main">
+                    {% if data.hasDiscount() %}<span class="pdg__badge">-{{ data.getDiscountPercent() }}%</span>{% endif %}
+                    <img id="mainImg" src="{{ asset('uploads/sanpham/' ~ photos[0]) }}" alt="{{ data.getName() }}" width="800" height="800">
+                    {% if photos|length > 1 %}
+                        <button type="button" class="pdg__nav pdg__nav--prev" data-gallery-prev aria-label="Ảnh trước"><i class="bi bi-chevron-left"></i></button>
+                        <button type="button" class="pdg__nav pdg__nav--next" data-gallery-next aria-label="Ảnh sau"><i class="bi bi-chevron-right"></i></button>
+                        <span class="pdg__count"><span data-gallery-index>1</span>/{{ photos|length }}</span>
+                    {% endif %}
+                    <span class="pdg__zoom"><i class="bi bi-arrows-fullscreen"></i></span>
                 </div>
-                {% set photos = data.getAllPhotos() %}
                 {% if photos|length > 1 %}
-                <div class="gv-gallery__thumbs">
-                    {% for p in photos %}
-                        <img src="{{ asset('uploads/sanpham/' ~ p) }}" alt="thumbnail" class="thumb-img {{ loop.first ? 'active' : '' }}" data-full="{{ asset('uploads/sanpham/' ~ p) }}">
-                    {% endfor %}
-                </div>
+                    <div class="pdg__thumbs">
+                        {% for p in photos %}
+                            <button type="button" class="pdg__thumb{{ loop.first ? ' is-on' : '' }}" data-full="{{ asset('uploads/sanpham/' ~ p) }}" aria-label="Ảnh {{ loop.index }}">
+                                <img src="{{ asset('uploads/sanpham/' ~ p) }}" alt="" loading="lazy">
+                            </button>
+                        {% endfor %}
+                    </div>
                 {% endif %}
             </div>
 
-            {# Info + buy #}
-            <div class="col-md-7">
-                <h1 class="gv-pd-title">{{ data.getName() }}</h1>
-                <div class="d-flex align-items-center gap-3 mb-3 small flex-wrap">
-                    <span>{% include 'partials/_rating_stars.html.twig' with {avg: rating.average ?? 0, count: rating.count} %}</span>
-                    {% if data.brand %}<span class="text-muted">Thương hiệu: <strong>{{ data.brand }}</strong></span>{% endif %}
-                    {% if data.sku %}<span class="text-muted">SKU: {{ data.sku }}</span>{% endif %}
-                </div>
-
-                <div class="gv-pd-price">
-                    <div class="d-flex align-items-baseline gap-2 flex-wrap">
-                        <span class="gv-pd-price__now">{{ data.getPrice()|vnd }}</span>
-                        {% if data.hasDiscount() %}
-                            <span class="gv-pd-price__old">{{ data.getPriceOld()|vnd }}</span>
-                            <span class="gv-pd-price__off">-{{ data.getDiscountPercent() }}%</span>
-                        {% endif %}
-                    </div>
-                    {% if data.hasDiscount() %}<div class="gv-pd-save"><i class="bi bi-piggy-bank"></i> Tiết kiệm {{ (data.getPriceOld() - data.getPrice())|vnd }}</div>{% endif %}
-                </div>
-
-                <div class="gv-pd-chips">
-                    <span><i class="bi bi-patch-check-fill"></i> Chính hãng</span>
-                    <span><i class="bi bi-shield-check"></i> BH {{ data.warranty ?: '12 tháng' }}</span>
-                    <span><i class="bi bi-truck"></i> Giao nhanh</span>
-                    <span><i class="bi bi-arrow-repeat"></i> Đổi trả 7 ngày</span>
-                </div>
-
-                <div class="mb-3">
-                    {% if data.isInStock() %}
-                        <span class="badge bg-success">Còn hàng ({{ data.stock }})</span>
-                    {% else %}
-                        <span class="badge bg-secondary">Tạm hết hàng</span>
-                    {% endif %}
-                </div>
-
-                <div class="gv-pd-promo">
-                    <div class="gv-pd-promo__head"><i class="bi bi-gift-fill"></i> Ưu đãi thêm</div>
+            {% if specs is not empty %}
+                <div class="pd-keyspecs">
+                    <div class="pd-keyspecs__head"><h2>Thông số nổi bật</h2><a href="#tab-specs" data-tab-link="specs">Xem tất cả <i class="bi bi-chevron-right"></i></a></div>
                     <ul>
-                        <li><i class="bi bi-check2-circle"></i> Tặng phiếu mua hàng 200.000₫ cho đơn từ 10 triệu.</li>
-                        <li><i class="bi bi-check2-circle"></i> Hỗ trợ trả góp 0% qua thẻ tín dụng.</li>
-                        <li><i class="bi bi-check2-circle"></i> Giao hàng miễn phí cho đơn từ 5 triệu.</li>
+                        {% for s in specs|slice(0, 6) %}
+                            <li><i class="bi bi-{{ s[0]|spec_icon }}"></i><span><small>{{ s[0] }}</small><b>{{ s[1] }}</b></span></li>
+                        {% endfor %}
                     </ul>
                 </div>
+            {% endif %}
+        </section>
 
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <div class="input-group gv-qty" style="width:140px">
-                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=Math.max(1,parseInt(q.value||1)-1); q.dispatchEvent(new Event('change'))" aria-label="Giảm">−</button>
-                        <input type="number" id="qty" value="1" min="1" class="form-control text-center" aria-label="Số lượng">
-                        <button type="button" class="btn btn-outline-secondary" onclick="var q=document.getElementById('qty'); q.value=parseInt(q.value||1)+1; q.dispatchEvent(new Event('change'))" aria-label="Tăng">+</button>
-                    </div>
+        {# ===== Buy box ===== #}
+        <section class="pd__info" aria-label="Thông tin mua hàng">
+            <h1 class="pd-title">{{ data.getName() }}</h1>
+            <div class="pd-meta">
+                <a href="#tab-reviews" data-tab-link="reviews" class="pd-meta__rating">
+                    {% include 'partials/_rating_stars.html.twig' with {avg: rating.average ?? 0, count: rating.count} %}
+                </a>
+                {% if data.brand %}<span>Thương hiệu: <b>{{ data.brand }}</b></span>{% endif %}
+                {% if data.sku %}<span>Mã SP: <b>{{ data.sku }}</b></span>{% endif %}
+                <span class="{{ data.isInStock() ? 'text-success' : 'text-muted' }}"><i class="bi bi-{{ data.isInStock() ? 'check-circle-fill' : 'x-circle' }}"></i> {{ data.isInStock() ? 'Còn hàng' : 'Tạm hết hàng' }}</span>
+            </div>
 
-                    <form method="post" class="buynow-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
-                        <input type="hidden" name="qty" class="qty-mirror" value="1">
-                        <input type="hidden" name="buynow" value="1">
-                        <button class="btn btn-danger btn-lg-cta px-4" type="submit" {{ data.isInStock() ? '' : 'disabled' }}>MUA NGAY</button>
-                    </form>
+            <div class="pd-price">
+                <div class="pd-price__now">{{ data.getPrice()|vnd }}</div>
+                {% if data.hasDiscount() %}
+                    <div class="pd-price__old"><s>{{ data.getPriceOld()|vnd }}</s><span>-{{ data.getDiscountPercent() }}%</span></div>
+                    <div class="pd-price__save"><i class="bi bi-piggy-bank"></i> Tiết kiệm {{ (data.getPriceOld() - data.getPrice())|vnd }}</div>
+                {% endif %}
+            </div>
 
-                    <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
-                        <input type="hidden" name="qty" class="qty-mirror" value="1">
-                        <button class="btn btn-outline-danger btn-lg-cta" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><i class="bi bi-cart-plus"></i> Thêm vào giỏ</button>
-                    </form>
+            <div class="pd-gift">
+                <div class="pd-gift__head"><i class="bi bi-gift-fill"></i> Quà tặng &amp; ưu đãi</div>
+                <ol>
+                    {% if data.price >= 10000000 %}<li>Trả góp <b>0% lãi suất</b> qua thẻ tín dụng, duyệt trong 15 phút.</li>{% endif %}
+                    <li>Giảm thêm <b>100.000₫</b> cho đơn từ 2 triệu khi nhập mã <b>GIAM100K</b>.</li>
+                    <li>Miễn phí giao hàng toàn quốc cho đơn từ 5 triệu — nội thành nhận trong 2 giờ.</li>
+                    <li>Tặng gói vệ sinh &amp; kiểm tra máy miễn phí trong 12 tháng.</li>
+                </ol>
+            </div>
 
-                    <form method="post" class="wishlist-form" action="{{ path('app_wishlist_toggle', {'id': data.getId()}) }}">
-                        <button type="submit" class="gv-wish-btn gv-wish-pd {{ inWish ? 'active' : '' }}" aria-label="Yêu thích" title="Thêm vào yêu thích"><i class="bi {{ inWish ? 'bi-heart-fill' : 'bi-heart' }}"></i></button>
-                    </form>
+            <div class="pd-buy">
+                <div class="pd-qty" aria-label="Số lượng">
+                    <button type="button" data-qty="-1" aria-label="Giảm">−</button>
+                    <input type="number" id="qty" value="1" min="1" max="{{ max(1, data.stock) }}" aria-label="Số lượng">
+                    <button type="button" data-qty="1" aria-label="Tăng">+</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    {# Description + Specs #}
-    <div class="row g-3">
-        <div class="col-lg-8">
-            <div class="gv-section">
-                {% if data.getDescription() %}
-                    <div class="gv-section__head"><h2>Mô tả sản phẩm</h2></div>
-                    <p>{{ data.getDescription() }}</p>
-                {% endif %}
-                {% if data.getSpecList() is not empty %}
-                    <div class="gv-section__head mt-3"><h2>Thông số kỹ thuật</h2></div>
-                    <div class="table-responsive">
-                    <table class="table table-sm table-bordered mb-0">
-                        <tbody>
-                            {% for spec in data.getSpecList() %}
-                                <tr><th class="w-50 bg-light">{{ spec.0 }}</th><td>{{ spec.1 }}</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    </div>
-                {% endif %}
-            </div>
-
-            {# Reviews #}
-            <div class="gv-section">
-                <div class="gv-section__head"><h2>Đánh giá sản phẩm</h2></div>
-                {% if app.user %}
-                    <form method="post" action="{{ path('app_review_add', {'id': data.getId()}) }}" class="border rounded p-3 mb-3">
-                        <input type="hidden" name="_token" value="{{ csrf_token('review_' ~ data.getId()) }}">
-                        <div class="mb-2" style="max-width:220px">
-                            <label for="rating" class="form-label mb-1">Chấm điểm</label>
-                            <select name="rating" id="rating" class="form-select" required>
-                                <option value="5">★★★★★ (5)</option>
-                                <option value="4">★★★★ (4)</option>
-                                <option value="3">★★★ (3)</option>
-                                <option value="2">★★ (2)</option>
-                                <option value="1">★ (1)</option>
-                            </select>
-                        </div>
-                        <div class="mb-2">
-                            <label for="comment" class="form-label mb-1">Nhận xét</label>
-                            <textarea name="comment" id="comment" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-danger">Gửi đánh giá</button>
-                    </form>
-                {% else %}
-                    <p class="text-muted"><a href="{{ path('app_login') }}">Đăng nhập</a> để viết đánh giá.</p>
-                {% endif %}
-
-                {% for review in reviews %}
-                    <div class="border-bottom py-3">
-                        <div class="text-warning">
-                            {% for i in 1..5 %}<i class="bi {{ i <= review.rating ? 'bi-star-fill' : 'bi-star' }}"></i>{% endfor %}
-                            <strong class="text-dark ms-2">{{ review.user ? review.user.firstName : 'Khách' }}</strong>
-                            <small class="text-muted ms-2">{{ review.createdAt|date('d/m/Y') }}</small>
-                        </div>
-                        {% if review.comment %}<p class="mb-0 mt-1">{{ review.comment }}</p>{% endif %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">Chưa có đánh giá nào cho sản phẩm này.</p>
-                {% endfor %}
-            </div>
-
-            <div class="gv-section">
-                <div class="gv-section__head"><h2>Hỏi đáp về sản phẩm</h2></div>
-                <form method="post" action="{{ path('app_question_add', {'id': data.getId()}) }}" class="border rounded p-3 mb-3">
-                    <input type="hidden" name="_token" value="{{ csrf_token('question_' ~ data.getId()) }}">
-                    {% if not app.user %}
-                    <div class="mb-2"><input type="text" name="author_name" class="form-control" placeholder="Tên của bạn" required></div>
-                    {% endif %}
-                    <div class="mb-2"><textarea name="content" class="form-control" rows="2" placeholder="Đặt câu hỏi về sản phẩm..." required></textarea></div>
-                    <button type="submit" class="btn btn-outline-danger btn-sm">Gửi câu hỏi</button>
+                <form method="post" class="buynow-form pd-buy__now" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
+                    <input type="hidden" name="qty" class="qty-mirror" value="1">
+                    <input type="hidden" name="buynow" value="1">
+                    <button class="btn btn-danger" type="submit" {{ data.isInStock() ? '' : 'disabled' }}>
+                        <b>MUA NGAY</b><small>Giao tận nơi hoặc nhận tại cửa hàng</small>
+                    </button>
                 </form>
-                {% for q in questions %}
-                    <div class="border-bottom py-3">
-                        <div><i class="bi bi-question-circle text-danger"></i> <strong>{{ q.authorName }}</strong> <small class="text-muted">{{ q.createdAt|date('d/m/Y') }}</small></div>
-                        <p class="mb-1">{{ q.content }}</p>
-                        {% if q.isAnswered %}
-                            <div class="ms-3 ps-2 border-start"><i class="bi bi-reply text-success"></i> <strong>TOÀN STORE:</strong> {{ q.answer }}</div>
-                        {% else %}
-                            <span class="badge bg-secondary">Chờ trả lời</span>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <p class="text-muted">Chưa có câu hỏi nào.</p>
-                {% endfor %}
+                <form method="post" class="add-to-cart-form pd-buy__cart" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
+                    <input type="hidden" name="qty" class="qty-mirror" value="1">
+                    <button class="btn btn-outline-danger" type="submit" {{ data.isInStock() ? '' : 'disabled' }} aria-label="Thêm vào giỏ" title="Thêm vào giỏ"><i class="bi bi-cart-plus"></i></button>
+                </form>
             </div>
-        </div>
+            <div class="pd-buy2">
+                <a href="{{ path('page_installment') }}" class="btn btn-outline-secondary"><b>TRẢ GÓP 0%</b><small>Duyệt nhanh qua thẻ tín dụng</small></a>
+                <a href="tel:{{ store_settings().hotline|replace({' ': ''}) }}" class="btn btn-outline-secondary"><b>TƯ VẤN NGAY</b><small>{{ store_settings().hotline }} (8:00–21:00)</small></a>
+            </div>
+            <div class="pd-mini">
+                <form method="post" class="wishlist-form" action="{{ path('app_wishlist_toggle', {'id': data.getId()}) }}">
+                    <button type="submit" class="pd-mini__btn gv-wish-btn {{ inWish ? 'active' : '' }}"><i class="bi {{ inWish ? 'bi-heart-fill' : 'bi-heart' }}"></i> Yêu thích</button>
+                </form>
+                <form method="post" class="compare-form" action="{{ path('app_compare_toggle', {'id': data.getId()}) }}">
+                    <button type="submit" class="pd-mini__btn gv-wish-btn {{ inCompare ? 'active' : '' }}"><i class="bi bi-arrow-left-right"></i> So sánh</button>
+                </form>
+                <button type="button" class="pd-mini__btn" data-share="{{ url('app_product', {'slug': data.slug, 'id': data.id}) }}"><i class="bi bi-share"></i> Chia sẻ</button>
+            </div>
+        </section>
 
-        {# Related #}
-        <div class="col-lg-4">
-            <a href="{{ path('shop_builder') }}" class="gv-sidebanner d-none d-lg-block mb-3" aria-label="Build PC Gaming — tư vấn cấu hình miễn phí">
+        {# ===== Service column ===== #}
+        <aside class="pd__aside" aria-label="Chính sách">
+            <div class="pd-policy">
+                <h2>Chính sách bán hàng</h2>
+                <ul>
+                    <li><i class="bi bi-patch-check"></i><span><b>Hàng chính hãng 100%</b>Đầy đủ hoá đơn VAT</span></li>
+                    <li><i class="bi bi-shield-check"></i><span><b>Bảo hành {{ data.warranty ?: '12 tháng' }}</b>Tại trung tâm bảo hành hãng</span></li>
+                    <li><i class="bi bi-arrow-repeat"></i><span><b>Đổi trả trong 7 ngày</b>Lỗi do nhà sản xuất</span></li>
+                    <li><i class="bi bi-truck"></i><span><b>Giao hàng toàn quốc</b>Miễn phí đơn từ 5 triệu</span></li>
+                    <li><i class="bi bi-tools"></i><span><b>Hỗ trợ kỹ thuật trọn đời</b>Cài đặt phần mềm miễn phí</span></li>
+                </ul>
+            </div>
+            <a href="{{ path('shop_builder') }}" class="gv-sidebanner d-none d-xl-block" aria-label="Build PC Gaming — tư vấn cấu hình miễn phí">
                 <img src="{{ asset('images/banner-doc.webp') }}" alt="Build PC Gaming — tư vấn cấu hình miễn phí" width="600" height="900" loading="lazy">
             </a>
-            {% if related is not empty %}
-            <div class="gv-section">
-                <div class="gv-section__head"><h2 style="font-size:1rem">Sản phẩm liên quan</h2></div>
-                {% for sp in related %}
-                    <a href="{{ path('app_product', {'slug': sp.slug, 'id': sp.id}) }}" class="d-flex gap-2 align-items-center py-2 border-bottom text-body">
-                        <img src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" alt="{{ sp.getName() }}" style="width:56px;height:56px;object-fit:contain;border:1px solid var(--ts-border);border-radius:6px">
-                        <div class="min-w-0">
-                            <div class="line-clamp-2 small">{{ sp.getName() }}</div>
-                            <div class="text-danger fw-bold small">{{ sp.getPrice()|vnd }}</div>
-                        </div>
-                    </a>
-                {% endfor %}
+        </aside>
+    </div>
+
+    {# ===== Tabs: description / specs / reviews / Q&A ===== #}
+    <div class="pd-tabs" id="pdTabs">
+        <nav class="pd-tabs__nav" role="tablist">
+            <button type="button" role="tab" class="is-on" data-tab="desc" aria-selected="true">Mô tả sản phẩm</button>
+            <button type="button" role="tab" data-tab="specs" aria-selected="false">Thông số kỹ thuật</button>
+            <button type="button" role="tab" data-tab="reviews" aria-selected="false">Đánh giá ({{ rating.count }})</button>
+            <button type="button" role="tab" data-tab="qa" aria-selected="false">Hỏi đáp ({{ questions|length }})</button>
+        </nav>
+
+        <div class="pd-tabs__panel is-on" id="tab-desc" role="tabpanel" data-panel="desc">
+            <div class="pd-desc">
+                <h2>{{ data.getName() }}</h2>
+                <p>{{ data.getDescription() ?: data.getName() ~ ' chính hãng tại TOÀN STORE.' }}</p>
+                {% if specs is not empty %}
+                    <p>Cấu hình nổi bật:</p>
+                    <ul>{% for s in specs|slice(0, 5) %}<li><b>{{ s[0] }}:</b> {{ s[1] }}</li>{% endfor %}</ul>
+                {% endif %}
+                <p>Sản phẩm được bảo hành {{ data.warranty ?: '12 tháng' }}, hỗ trợ trả góp và giao hàng toàn quốc. Liên hệ hotline {{ store_settings().hotline }} để được tư vấn cấu hình phù hợp.</p>
             </div>
+        </div>
+
+        <div class="pd-tabs__panel" id="tab-specs" role="tabpanel" data-panel="specs" hidden>
+            {% if specs is not empty %}
+                <table class="pd-spec-table">
+                    <tbody>
+                        {% if data.brand %}<tr><th>Thương hiệu</th><td>{{ data.brand }}</td></tr>{% endif %}
+                        {% if data.warranty %}<tr><th>Bảo hành</th><td>{{ data.warranty }}</td></tr>{% endif %}
+                        {% for s in specs %}<tr><th>{{ s[0] }}</th><td>{{ s[1] }}</td></tr>{% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted mb-0">Thông số đang được cập nhật.</p>
             {% endif %}
         </div>
-    </div>
-</div>
 
-{% if recently_viewed is not empty %}
-<div class="container-fluid px-3 px-xl-5 pb-3">
-    <div class="gv-section">
-        <div class="gv-section__head"><h2>Đã xem gần đây</h2></div>
-        <div class="row g-3">
-            {% for sp in recently_viewed %}
-                <div class="col-6 col-md-4 col-lg-2">{% include 'partials/_product_card.html.twig' with {sp: sp, ratings: {}} %}</div>
+        <div class="pd-tabs__panel" id="tab-reviews" role="tabpanel" data-panel="reviews" hidden>
+            <div class="pd-reviews">
+                <div class="pd-reviews__score">
+                    <b>{{ rating.count > 0 ? rating.average|number_format(1, ',') : '–' }}</b><span>/5</span>
+                    <div>{% include 'partials/_rating_stars.html.twig' with {avg: rating.average ?? 0, count: rating.count} %}</div>
+                </div>
+                <div class="pd-reviews__form">
+                    {% if app.user %}
+                        <form method="post" action="{{ path('app_review_add', {'id': data.getId()}) }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('review_' ~ data.getId()) }}">
+                            <div class="d-flex gap-2 flex-wrap mb-2">
+                                <select name="rating" class="form-select" style="max-width:200px" required aria-label="Chấm điểm">
+                                    <option value="5">★★★★★ Tuyệt vời</option>
+                                    <option value="4">★★★★ Tốt</option>
+                                    <option value="3">★★★ Bình thường</option>
+                                    <option value="2">★★ Chưa tốt</option>
+                                    <option value="1">★ Tệ</option>
+                                </select>
+                            </div>
+                            <textarea name="comment" class="form-control mb-2" rows="3" placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..." aria-label="Nhận xét"></textarea>
+                            <button type="submit" class="btn btn-danger">Gửi đánh giá</button>
+                        </form>
+                    {% else %}
+                        <p class="mb-0">Bạn đã dùng sản phẩm này? <a href="{{ path('app_login') }}" class="text-danger fw-semibold">Đăng nhập</a> để viết đánh giá.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% for review in reviews %}
+                <div class="pd-review">
+                    <span class="pd-review__avatar">{{ (review.user ? review.user.firstName : 'K')|first|upper }}</span>
+                    <div>
+                        <div><b>{{ review.user ? review.user.firstName : 'Khách' }}</b> <small class="text-muted">{{ review.createdAt|date('d/m/Y') }}</small></div>
+                        <div class="text-warning small">{% for i in 1..5 %}<i class="bi {{ i <= review.rating ? 'bi-star-fill' : 'bi-star' }}"></i>{% endfor %}</div>
+                        {% if review.comment %}<p class="mb-0 mt-1">{{ review.comment }}</p>{% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Chưa có đánh giá nào cho sản phẩm này.</p>
+            {% endfor %}
+        </div>
+
+        <div class="pd-tabs__panel" id="tab-qa" role="tabpanel" data-panel="qa" hidden>
+            <form method="post" action="{{ path('app_question_add', {'id': data.getId()}) }}" class="pd-ask">
+                <input type="hidden" name="_token" value="{{ csrf_token('question_' ~ data.getId()) }}">
+                {% if not app.user %}<input type="text" name="author_name" class="form-control" placeholder="Tên của bạn" required aria-label="Tên của bạn">{% endif %}
+                <textarea name="content" class="form-control" rows="2" placeholder="Đặt câu hỏi về sản phẩm, đội ngũ kỹ thuật sẽ trả lời sớm..." required aria-label="Câu hỏi"></textarea>
+                <button type="submit" class="btn btn-outline-danger">Gửi câu hỏi</button>
+            </form>
+            {% for q in questions %}
+                <div class="pd-review">
+                    <span class="pd-review__avatar pd-review__avatar--q"><i class="bi bi-question-lg"></i></span>
+                    <div>
+                        <div><b>{{ q.authorName }}</b> <small class="text-muted">{{ q.createdAt|date('d/m/Y') }}</small></div>
+                        <p class="mb-1">{{ q.content }}</p>
+                        {% if q.isAnswered %}
+                            <div class="pd-answer"><b><i class="bi bi-reply-fill"></i> TOÀN STORE:</b> {{ q.answer }}</div>
+                        {% else %}
+                            <span class="badge text-bg-light">Chờ trả lời</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">Chưa có câu hỏi nào.</p>
             {% endfor %}
         </div>
     </div>
-</div>
-{% endif %}
 
-{# spacer + sticky add-to-cart bar (mobile) #}
-<div class="d-lg-none" style="height:64px"></div>
-<div class="detail-sticky-bar d-lg-none">
-    <div class="d-flex align-items-center gap-2">
-        <div class="flex-grow-1 min-w-0">
-            <div class="line-clamp-1 small">{{ data.getName() }}</div>
-            <div class="fw-bold text-danger">{{ data.getPrice()|vnd }}</div>
+    {% if related is not empty %}
+        <section class="hp-sec" aria-labelledby="relTitle">
+            <div class="hp-sec__head">
+                <h2 id="relTitle"><i class="bi bi-grid"></i> Sản phẩm tương tự</h2>
+                {% if data.getCate() %}<a href="{{ path('app_productofcate', {'id': data.getCate().id}) }}" class="hp-sec__all">Xem tất cả <i class="bi bi-chevron-right"></i></a>{% endif %}
+            </div>
+            <div class="rail" data-rail>
+                <button class="rail__nav rail__nav--prev" type="button" aria-label="Trước" data-rail-prev><i class="bi bi-chevron-left"></i></button>
+                <div class="rail__track" data-rail-track>
+                    {% for sp in related %}<div class="rail__item">{% include 'partials/_product_card.html.twig' with {sp: sp, ratings: {}} %}</div>{% endfor %}
+                </div>
+                <button class="rail__nav rail__nav--next" type="button" aria-label="Sau" data-rail-next><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </section>
+    {% endif %}
+
+    {% if recently_viewed is not empty %}
+        <section class="hp-sec" aria-labelledby="rvTitle">
+            <div class="hp-sec__head"><h2 id="rvTitle"><i class="bi bi-clock-history"></i> Sản phẩm đã xem</h2></div>
+            <div class="rail" data-rail>
+                <button class="rail__nav rail__nav--prev" type="button" aria-label="Trước" data-rail-prev><i class="bi bi-chevron-left"></i></button>
+                <div class="rail__track" data-rail-track>
+                    {% for sp in recently_viewed %}<div class="rail__item">{% include 'partials/_product_card.html.twig' with {sp: sp, ratings: {}} %}</div>{% endfor %}
+                </div>
+                <button class="rail__nav rail__nav--next" type="button" aria-label="Sau" data-rail-next><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </section>
+    {% endif %}
+</div>
+
+{# Sticky buy bar: slides down from the top on desktop once the buy box scrolls away; bottom bar on mobile #}
+<div class="pd-sticky" id="pdSticky" aria-hidden="true">
+    <div class="gv-container pd-sticky__row">
+        <img src="{{ asset('uploads/sanpham/' ~ photos[0]) }}" alt="">
+        <div class="pd-sticky__name line-clamp-1">{{ data.getName() }}</div>
+        <div class="pd-sticky__price">
+            <b>{{ data.getPrice()|vnd }}</b>
+            {% if data.hasDiscount() %}<s>{{ data.getPriceOld()|vnd }}</s>{% endif %}
         </div>
         <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
-            <button class="btn btn-danger" type="submit" {{ data.isInStock() ? '' : 'disabled' }}><i class="bi bi-cart-plus"></i> Thêm</button>
+            <button class="btn btn-outline-danger" type="submit" {{ data.isInStock() ? '' : 'disabled' }} aria-label="Thêm vào giỏ"><i class="bi bi-cart-plus"></i></button>
+        </form>
+        <form method="post" action="{{ path('app_cart_add', {'product_id': data.getId()}) }}">
+            <input type="hidden" name="buynow" value="1">
+            <button class="btn btn-danger px-4" type="submit" {{ data.isInStock() ? '' : 'disabled' }}>Mua ngay</button>
         </form>
     </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
-<div class="ts-lightbox" id="lightbox"><img id="lightboxImg" src="" alt=""></div>
-<script>
-document.querySelectorAll('.thumb-img').forEach(function (t) {
-    t.addEventListener('click', function () {
-        var main = document.getElementById('mainImg');
-        if (main) main.src = this.dataset.full;
-        document.querySelectorAll('.thumb-img').forEach(function (x) { x.classList.remove('active'); });
-        this.classList.add('active');
-    });
-});
-// Lightbox zoom
-(function () {
-    var main = document.getElementById('mainImg');
-    var box = document.getElementById('lightbox');
-    var img = document.getElementById('lightboxImg');
-    if (main && box) {
-        main.addEventListener('click', function () { img.src = main.src; box.classList.add('open'); });
-        box.addEventListener('click', function () { box.classList.remove('open'); });
-    }
-})();
-// keep hidden qty inputs in sync with the quantity selector
-var qty = document.getElementById('qty');
-if (qty) qty.addEventListener('change', function () {
-    document.querySelectorAll('.qty-mirror').forEach(function (m) { m.value = qty.value; });
-});
-</script>
+<div class="ts-lightbox" id="lightbox" role="dialog" aria-label="Xem ảnh lớn"><img id="lightboxImg" src="" alt=""></div>
 {% endblock %}

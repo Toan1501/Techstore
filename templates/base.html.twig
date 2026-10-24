@@ -48,209 +48,170 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link href="{{ asset('css/techstore.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/storefront.css') }}" rel="stylesheet">
         {% block stylesheets %}{% endblock %}
     </head>
-    <body>
+    <body class="{% block body_class %}{% endblock %}">
     {% set _cart = app.session.get('cart') %}
     {% set st = store_settings() %}
 
     <div id="ts-progress"></div>
+    <a class="visually-hidden-focusable gv-skip" href="#main">Bỏ qua tới nội dung</a>
 
-    <header class="gv-header">
-        <div class="gv-topbar d-none d-md-block">
-            <div class="container-fluid px-3 px-xl-5">
-                <div class="gv-topbar__row">
-                    <div class="gv-topbar__links">
-                        <a href="{{ path('feature_product') }}">Sản phẩm</a>
-                        <a href="{{ path('app_news') }}">Tin tức</a>
-                        <a href="{{ path('app_compare') }}">So sánh</a>
-                        <a href="{{ path('app_wishlist') }}">Yêu thích</a>
-                        <a href="{{ path('app_contact') }}">Liên hệ</a>
-                    </div>
-                    {# Promo ticker (duplicated once for a seamless loop) #}
-                    {% set _tick = [
-                        ['truck', 'Miễn phí vận chuyển đơn từ 5 triệu'],
-                        ['lightning-charge-fill', 'Flash Sale mỗi ngày — giảm tới 25%'],
-                        ['credit-card', 'Trả góp 0% qua thẻ tín dụng'],
-                        ['shield-check', 'Bảo hành chính hãng · 1 đổi 1 trong 7 ngày'],
-                        ['headset', 'Tư vấn cấu hình miễn phí 08:00 – 21:00']
-                    ] %}
-                    <div class="gv-ticker d-none d-lg-block" aria-hidden="true">
-                        <div class="gv-ticker__track">
-                            {% for i in 0..1 %}{% for t in _tick %}<span><i class="bi bi-{{ t[0] }}"></i>{{ t[1] }}</span>{% endfor %}{% endfor %}
-                        </div>
-                    </div>
-                    <div class="text-nowrap"><i class="bi bi-headset me-1"></i> Hỗ trợ: <strong>{{ st.hotline }}</strong></div>
-                </div>
-            </div>
-        </div>
+    <header class="gv-header" id="siteHeader">
         <div class="gv-header__main">
-            <div class="container-fluid px-3 px-xl-5">
+            <div class="gv-container">
                 <div class="gv-header__row">
-                    <a href="{{ path('homepage') }}" class="gv-logo">
-                        <span class="gv-logo__icon"><i class="bi bi-pc-display"></i></span>
-                        <span class="gv-logo__text">
-                            <span class="gv-logo__name">TOÀN <b>STORE</b></span>
-                            <span class="gv-logo__tag d-none d-lg-block">Máy tính &amp; Linh kiện</span>
-                        </span>
-                    </a>
-
-                    <button class="gv-menu-btn btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#catOffcanvas" aria-label="Danh mục">
+                    <button class="gv-hbtn gv-hbtn--icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#catOffcanvas" aria-label="Mở danh mục">
                         <i class="bi bi-list"></i>
                     </button>
 
-                    <form class="gv-search flex-grow-1 d-none d-md-block" action="{{ path('search_products') }}" method="get" style="max-width:560px">
-                        <div class="input-group">
-                            <input type="hidden" id="keyword" name="keyword">
-                            <select id="search"></select>
-                            <button type="submit" class="btn"><i class="bi bi-search"></i></button>
+                    <a href="{{ path('homepage') }}" class="gv-header__logo" aria-label="TOÀN STORE — Trang chủ">
+                        {% include 'partials/_logo.html.twig' with {tone: 'light'} %}
+                    </a>
+
+                    <div class="gv-catmenu d-none d-lg-block">
+                        <button class="gv-hbtn gv-catmenu__btn" type="button" aria-expanded="false" aria-controls="catMenuPanel">
+                            <i class="bi bi-grid-3x3-gap-fill"></i><span>Danh mục</span>
+                        </button>
+                        <div class="gv-catmenu__panel" id="catMenuPanel">
+                            {% include 'partials/_mega_menu.html.twig' with {dropdown: true} %}
                         </div>
+                    </div>
+
+                    <form class="gv-search" action="{{ path('search_products') }}" method="get" role="search" data-suggest="{{ path('search_api') }}">
+                        <input type="search" name="keyword" class="gv-search__input" placeholder="Bạn cần tìm gì? Laptop, VGA, màn hình..." value="{{ app.request.query.get('keyword') }}" autocomplete="off" aria-label="Tìm kiếm sản phẩm" aria-autocomplete="list" aria-controls="searchSuggest">
+                        <button type="submit" class="gv-search__btn" aria-label="Tìm kiếm"><i class="bi bi-search"></i></button>
+                        <div class="gv-suggest" id="searchSuggest" role="listbox" hidden></div>
                     </form>
 
-                    <div class="gv-icons">
-                        <div class="gv-hotline gv-icon-btn d-none d-xl-flex">
-                            <i class="bi bi-headset"></i>
-                            <div><small>Hotline</small><strong>{{ st.hotline }}</strong></div>
-                        </div>
-
-                        <a href="{{ path('app_wishlist') }}" class="gv-icon-btn position-relative d-none d-md-flex" aria-label="Yêu thích">
-                            <i class="bi bi-heart"></i>
-                            <div class="d-none d-lg-block text-start"><small>Yêu</small><strong>thích</strong></div>
-                            <span id="wish-count" class="gv-cart-count">{{ app.session.get('wishlist')|default([])|length }}</span>
+                    <div class="gv-header__actions">
+                        <a href="tel:{{ st.hotline|replace({' ': ''}) }}" class="gv-hlink d-none d-xxl-flex">
+                            <i class="bi bi-headset"></i><span><small>Hotline</small><b>{{ st.hotline }}</b></span>
                         </a>
-
-                        <div class="dropdown">
-                            <button class="gv-icon-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i>
-                                <div class="d-none d-lg-block text-start">
-                                    <small>{{ app.user ? 'Xin chào' : 'Đăng nhập / Đăng ký' }}</small>
-                                    <strong class="line-clamp-1" style="max-width:120px">{{ app.user ? app.user.userIdentifier : 'Tài khoản' }}</strong>
-                                </div>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                {% if app.user %}
+                        <a href="{{ path('shop_stores') }}" class="gv-hlink d-none d-xl-flex">
+                            <i class="bi bi-geo-alt"></i><span><small>Hệ thống</small><b>Showroom</b></span>
+                        </a>
+                        <a href="{{ path('lookup_order') }}" class="gv-hlink d-none d-xl-flex">
+                            <i class="bi bi-truck"></i><span><small>Tra cứu</small><b>Đơn hàng</b></span>
+                        </a>
+                        <a href="{{ path('app_wishlist') }}" class="gv-hlink gv-hlink--icon d-none d-md-flex" aria-label="Yêu thích">
+                            <i class="bi bi-heart"></i>
+                            <span id="wish-count" class="gv-badge-count">{{ app.session.get('wishlist')|default([])|length }}</span>
+                        </a>
+                        <button class="gv-hbtn gv-hbtn--cart" type="button" data-bs-toggle="offcanvas" data-bs-target="#miniCart" aria-label="Giỏ hàng">
+                            <i class="bi bi-cart3"></i><span class="d-none d-sm-inline">Giỏ hàng</span>
+                            <span id="cart-count" class="gv-badge-count">{{ _cart ? _cart.getTotalItems() : 0 }}</span>
+                        </button>
+                        {% if app.user %}
+                            <div class="dropdown">
+                                <button class="gv-hbtn gv-hbtn--dark dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i><span class="d-none d-md-inline line-clamp-1" style="max-width:110px">{{ app.user.userIdentifier }}</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow">
                                     <li><a class="dropdown-item" href="{{ path('profile') }}"><i class="bi bi-person me-2"></i>Tài khoản của tôi</a></li>
                                     <li><a class="dropdown-item" href="{{ path('app_my_orders') }}"><i class="bi bi-bag me-2"></i>Đơn hàng của tôi</a></li>
+                                    <li><a class="dropdown-item" href="{{ path('app_wishlist') }}"><i class="bi bi-heart me-2"></i>Sản phẩm yêu thích</a></li>
                                     {% if is_granted('ROLE_ADMIN') %}<li><a class="dropdown-item" href="{{ path('app_admin') }}"><i class="bi bi-speedometer2 me-2"></i>Trang quản trị</a></li>{% endif %}
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ path('app_logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
-                                {% else %}
-                                    <li><a class="dropdown-item" href="{{ path('app_login') }}">Đăng nhập</a></li>
-                                    <li><a class="dropdown-item" href="{{ path('app_register') }}">Đăng ký</a></li>
-                                {% endif %}
-                            </ul>
-                        </div>
-
-                        <button class="gv-icon-btn position-relative" type="button" data-bs-toggle="offcanvas" data-bs-target="#miniCart" aria-label="Giỏ hàng">
-                            <i class="bi bi-cart3"></i>
-                            <div class="d-none d-lg-block text-start"><small>Giỏ</small><strong>hàng</strong></div>
-                            <span id="cart-count" class="gv-cart-count">{{ _cart ? _cart.getTotalItems() : 0 }}</span>
-                        </button>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="gv-hbtn gv-hbtn--dark"><i class="bi bi-person-circle"></i><span class="d-none d-md-inline">Đăng nhập</span></a>
+                        {% endif %}
                     </div>
                 </div>
-
-                <form class="gv-search d-md-none pb-2" action="{{ path('search_products') }}" method="get">
-                    <div class="input-group">
-                        <input type="text" name="keyword" class="form-control" placeholder="Bạn cần tìm gì?">
-                        <button type="submit" class="btn"><i class="bi bi-search"></i></button>
-                    </div>
-                </form>
             </div>
         </div>
 
-        <div class="gv-catbar d-none d-lg-block">
-            <div class="container-fluid px-xl-5">
-                <ul class="gv-catbar__list">
-                    <li class="gv-mega">
-                        <a href="{{ path('app_category') }}"><i class="bi bi-list"></i> Danh mục sản phẩm</a>
-                        <div class="gv-mega__panel">
-                            {% for c in all_categories() %}
-                                <a href="{{ path('app_productofcate', {'id': c.id}) }}"><i class="bi bi-chevron-right"></i> {{ c.name }}</a>
-                            {% endfor %}
-                        </div>
-                    </li>
-                    {% for c in all_categories()|slice(0, 7) %}
-                        <li><a href="{{ path('app_productofcate', {'id': c.id}) }}">{{ c.name }}</a></li>
-                    {% endfor %}
-                    <li><a href="{{ path('shop_builder') }}"><i class="bi bi-tools"></i> Xây dựng PC</a></li>
-                    <li><a href="{{ path('shop_promotions') }}" class="gv-catbar__hot"><i class="bi bi-fire"></i> Khuyến mãi</a></li>
-                    <li><a href="{{ path('shop_brands') }}">Thương hiệu</a></li>
-                    <li><a href="{{ path('app_news') }}">Tin tức</a></li>
+        <nav class="gv-subnav d-none d-lg-block" aria-label="Tiện ích">
+            <div class="gv-container">
+                <ul class="gv-subnav__list">
+                    <li><a href="{{ path('shop_promotions') }}" class="is-hot"><i class="bi bi-fire"></i>Khuyến mãi hot</a></li>
+                    <li><a href="{{ path('shop_builder') }}"><i class="bi bi-cpu"></i>Build PC theo yêu cầu</a></li>
+                    <li><a href="{{ path('page_installment') }}"><i class="bi bi-credit-card-2-front"></i>Trả góp 0%</a></li>
+                    <li><a href="{{ path('lookup_warranty') }}"><i class="bi bi-shield-check"></i>Tra cứu bảo hành</a></li>
+                    <li><a href="{{ path('app_news') }}"><i class="bi bi-newspaper"></i>Tin tức - Review</a></li>
+                    <li><a href="{{ path('shop_brands') }}"><i class="bi bi-award"></i>Thương hiệu</a></li>
+                    <li><a href="{{ path('shop_stores') }}"><i class="bi bi-shop"></i>Hệ thống showroom</a></li>
                 </ul>
             </div>
-        </div>
+        </nav>
     </header>
+    <div class="gv-catmenu__backdrop" hidden></div>
 
     {# ===== Categories offcanvas (mobile) ===== #}
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="catOffcanvas" aria-labelledby="catOffcanvasLabel">
-        <div class="offcanvas-header bg-danger text-white">
-            <h5 class="offcanvas-title" id="catOffcanvasLabel">Danh mục</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+    <div class="offcanvas offcanvas-start gv-offcanvas" tabindex="-1" id="catOffcanvas" aria-labelledby="catOffcanvasLabel">
+        <div class="offcanvas-header">
+            <span id="catOffcanvasLabel">{% include 'partials/_logo.html.twig' with {tone: 'dark', compact: true} %}</span>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
         </div>
         <div class="offcanvas-body p-0">
-            <div class="list-group list-group-flush">
-                <a href="{{ path('homepage') }}" class="list-group-item list-group-item-action">Trang chủ</a>
-                <a href="{{ path('feature_product') }}" class="list-group-item list-group-item-action">Tất cả sản phẩm</a>
-                <div class="list-group-item bg-light fw-semibold text-uppercase small text-muted">Danh mục</div>
-                {% for c in all_categories() %}
-                    <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="list-group-item list-group-item-action">{{ c.name }}</a>
-                {% else %}
-                    <span class="list-group-item text-muted">Chưa có danh mục</span>
-                {% endfor %}
-                <div class="list-group-item bg-light fw-semibold text-uppercase small text-muted">Tiện ích</div>
-                <a href="{{ path('shop_builder') }}" class="list-group-item list-group-item-action"><i class="bi bi-tools me-2"></i>Xây dựng cấu hình PC</a>
-                <a href="{{ path('shop_promotions') }}" class="list-group-item list-group-item-action"><i class="bi bi-tag me-2"></i>Khuyến mãi</a>
-                <a href="{{ path('shop_brands') }}" class="list-group-item list-group-item-action"><i class="bi bi-award me-2"></i>Thương hiệu</a>
-                <a href="{{ path('lookup_order') }}" class="list-group-item list-group-item-action"><i class="bi bi-search me-2"></i>Tra cứu đơn hàng</a>
-                <a href="{{ path('app_wishlist') }}" class="list-group-item list-group-item-action"><i class="bi bi-heart me-2"></i>Yêu thích</a>
-                <a href="{{ path('app_compare') }}" class="list-group-item list-group-item-action"><i class="bi bi-arrow-left-right me-2"></i>So sánh</a>
-                {% if app.user %}<a href="{{ path('app_my_orders') }}" class="list-group-item list-group-item-action"><i class="bi bi-bag me-2"></i>Đơn hàng của tôi</a>{% endif %}
-                <a href="{{ path('app_news') }}" class="list-group-item list-group-item-action"><i class="bi bi-newspaper me-2"></i>Tin tức</a>
-                <a href="{{ path('app_contact') }}" class="list-group-item list-group-item-action"><i class="bi bi-headset me-2"></i>Liên hệ</a>
-            </div>
+            <div class="gv-oc-title">Danh mục sản phẩm</div>
+            {% for item in mega_menu() %}
+                <a href="{{ path('app_productofcate', {'id': item.category.id}) }}" class="gv-oc-link"><i class="bi bi-{{ item.icon }}"></i>{{ item.label }}<i class="bi bi-chevron-right ms-auto"></i></a>
+            {% else %}
+                <span class="gv-oc-link text-muted">Chưa có danh mục</span>
+            {% endfor %}
+            <div class="gv-oc-title">Tiện ích</div>
+            <a href="{{ path('shop_promotions') }}" class="gv-oc-link"><i class="bi bi-fire"></i>Khuyến mãi hot</a>
+            <a href="{{ path('shop_builder') }}" class="gv-oc-link"><i class="bi bi-cpu"></i>Build PC theo yêu cầu</a>
+            <a href="{{ path('shop_brands') }}" class="gv-oc-link"><i class="bi bi-award"></i>Thương hiệu</a>
+            <a href="{{ path('lookup_order') }}" class="gv-oc-link"><i class="bi bi-truck"></i>Tra cứu đơn hàng</a>
+            <a href="{{ path('lookup_warranty') }}" class="gv-oc-link"><i class="bi bi-shield-check"></i>Tra cứu bảo hành</a>
+            <a href="{{ path('app_compare') }}" class="gv-oc-link"><i class="bi bi-arrow-left-right"></i>So sánh sản phẩm</a>
+            <a href="{{ path('app_wishlist') }}" class="gv-oc-link"><i class="bi bi-heart"></i>Yêu thích</a>
+            {% if app.user %}<a href="{{ path('app_my_orders') }}" class="gv-oc-link"><i class="bi bi-bag"></i>Đơn hàng của tôi</a>{% endif %}
+            <a href="{{ path('app_news') }}" class="gv-oc-link"><i class="bi bi-newspaper"></i>Tin tức - Review</a>
+            <a href="{{ path('shop_stores') }}" class="gv-oc-link"><i class="bi bi-shop"></i>Hệ thống showroom</a>
+            <a href="{{ path('app_contact') }}" class="gv-oc-link"><i class="bi bi-headset"></i>Liên hệ</a>
         </div>
     </div>
 
     {# ===== Mini-cart offcanvas ===== #}
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="miniCart" aria-labelledby="miniCartLabel">
-        <div class="offcanvas-header bg-danger text-white">
-            <h5 class="offcanvas-title" id="miniCartLabel">Giỏ hàng</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+    <div class="offcanvas offcanvas-end gv-offcanvas" tabindex="-1" id="miniCart" aria-labelledby="miniCartLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="miniCartLabel"><i class="bi bi-cart3 me-2 text-danger"></i>Giỏ hàng</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
         </div>
         <div class="offcanvas-body d-flex flex-column">
             {% if _cart and _cart.getTotalItems() > 0 %}
                 <div class="flex-grow-1 overflow-auto">
                     {% for item in _cart.getItems() %}
-                        <div class="d-flex align-items-center gap-2 py-2 border-bottom">
-                            <img src="{{ asset('uploads/sanpham/' ~ item.product.photo) }}" alt="{{ item.product.name }}" style="width:48px;height:48px;flex:0 0 48px;object-fit:contain;border:1px solid var(--ts-border);border-radius:6px">
+                        <div class="gv-mini-line">
+                            <img src="{{ asset('uploads/sanpham/' ~ item.product.photo) }}" alt="{{ item.product.name }}">
                             <div class="flex-grow-1 min-w-0">
-                                <div class="line-clamp-1 small">{{ item.product.name }}</div>
-                                <div class="text-muted small">{{ item.quantity }} &times; {{ item.product.price|vnd }}</div>
+                                <div class="line-clamp-2 small fw-medium">{{ item.product.name }}</div>
+                                <div class="small"><span class="text-muted">{{ item.quantity }} ×</span> <b class="text-danger">{{ item.product.price|vnd }}</b></div>
                             </div>
                             <form action="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" method="POST">
                                 <input type="hidden" name="_token" value="{{ csrf_token('cart_remove_' ~ item.product.id) }}" />
-                                <button type="submit" class="btn btn-link text-muted p-0" aria-label="Xóa"><i class="bi bi-x-lg"></i></button>
+                                <button type="submit" class="btn btn-link text-muted p-0" aria-label="Xóa"><i class="bi bi-trash3"></i></button>
                             </form>
                         </div>
                     {% endfor %}
                 </div>
-                <div class="d-flex justify-content-between fw-bold my-3">
-                    <span>Tổng cộng</span><span class="text-danger">{{ _cart.getAmount()|vnd }}</span>
+                <div class="d-flex justify-content-between fw-bold my-3 fs-5">
+                    <span>Tạm tính</span><span class="text-danger">{{ _cart.getAmount()|vnd }}</span>
                 </div>
-                <a href="{{ path('app_cart') }}" class="btn btn-outline-danger mb-2">Xem giỏ hàng</a>
-                <a href="{{ path('app_order') }}" class="btn btn-danger">Thanh toán</a>
+                <a href="{{ path('app_order') }}" class="btn btn-danger btn-lg-cta mb-2">Thanh toán ngay</a>
+                <a href="{{ path('app_cart') }}" class="btn btn-outline-secondary">Xem giỏ hàng</a>
             {% else %}
                 <div class="text-center text-muted my-auto">
-                    <i class="bi bi-cart-x" style="font-size:2.2rem"></i>
-                    <p class="mt-2 mb-0">Giỏ hàng của bạn đang trống.</p>
+                    <i class="bi bi-cart-x" style="font-size:2.6rem"></i>
+                    <p class="mt-2 mb-3">Giỏ hàng của bạn đang trống.</p>
+                    <a href="{{ path('feature_product') }}" class="btn btn-danger btn-sm px-4">Mua sắm ngay</a>
                 </div>
             {% endif %}
         </div>
     </div>
 
     {# Flash messages #}
-    <div class="container-fluid px-3 px-xl-5 mt-3">
-        {% for type, messages in app.flashes %}
+    {% set _flashes = app.flashes %}
+    {% if _flashes is not empty %}
+    <div class="gv-container mt-3">
+        {% for type, messages in _flashes %}
             {% for message in messages %}
                 <div class="alert alert-{{ type == 'error' ? 'danger' : (type == 'success' ? 'success' : type) }} alert-dismissible fade show" role="alert">
                     {{ message }}
@@ -259,54 +220,75 @@
             {% endfor %}
         {% endfor %}
     </div>
+    {% endif %}
 
-    <main>{% block body %}{% endblock %}</main>
+    <main id="main">{% block body %}{% endblock %}</main>
+
+    {# Trust strip above the footer #}
+    <section class="gv-trust" aria-label="Cam kết của Toàn Store">
+        <div class="gv-container">
+            <div class="gv-trust__grid">
+                <div class="gv-trust__item"><i class="bi bi-patch-check"></i><div><b>100% chính hãng</b><span>Hoá đơn VAT đầy đủ</span></div></div>
+                <div class="gv-trust__item"><i class="bi bi-truck"></i><div><b>Giao nhanh 2 giờ</b><span>Miễn phí đơn từ 5 triệu</span></div></div>
+                <div class="gv-trust__item"><i class="bi bi-arrow-repeat"></i><div><b>Đổi trả 7 ngày</b><span>Lỗi là đổi mới</span></div></div>
+                <div class="gv-trust__item"><i class="bi bi-credit-card-2-front"></i><div><b>Trả góp 0%</b><span>Duyệt nhanh qua thẻ</span></div></div>
+            </div>
+        </div>
+    </section>
 
     <footer class="gv-footer">
-        <div class="container-fluid px-3 px-xl-5">
-            <div class="row g-4">
-                <div class="col-6 col-lg-3">
-                    <h6>VỀ TOÀN STORE</h6>
-                    <a href="{{ path('page_about') }}">Giới thiệu</a>
-                    <a href="{{ path('shop_stores') }}">Hệ thống cửa hàng</a>
-                    <a href="{{ path('app_contact') }}">Liên hệ</a>
-                    <a href="{{ path('page_careers') }}">Tuyển dụng</a>
-                    <a href="{{ path('app_news') }}">Tin công nghệ</a>
+        <div class="gv-container">
+            <div class="gv-footer__top">
+                <div class="gv-footer__brand">
+                    {% include 'partials/_logo.html.twig' with {tone: 'dark'} %}
+                    <p>Hệ thống bán lẻ máy tính, laptop, PC gaming và linh kiện chính hãng — tư vấn tận tâm, bảo hành minh bạch.</p>
+                    <div class="gv-footer__contact">
+                        <a href="tel:{{ st.hotline|replace({' ': ''}) }}"><i class="bi bi-telephone"></i> {{ st.hotline }}</a>
+                        <a href="mailto:{{ st.email }}"><i class="bi bi-envelope"></i> {{ st.email }}</a>
+                        <span><i class="bi bi-geo-alt"></i> {{ st.address }}</span>
+                    </div>
                 </div>
-                <div class="col-6 col-lg-3">
-                    <h6>CHÍNH SÁCH</h6>
+                <div class="gv-footer__col">
+                    <h6>Về Toàn Store</h6>
+                    <a href="{{ path('page_about') }}">Giới thiệu</a>
+                    <a href="{{ path('shop_stores') }}">Hệ thống showroom</a>
+                    <a href="{{ path('page_careers') }}">Tuyển dụng</a>
+                    <a href="{{ path('app_news') }}">Tin tức - Review</a>
+                    <a href="{{ path('app_contact') }}">Liên hệ</a>
+                </div>
+                <div class="gv-footer__col">
+                    <h6>Chính sách</h6>
                     <a href="{{ path('page_warranty') }}">Chính sách bảo hành</a>
                     <a href="{{ path('page_return') }}">Chính sách đổi trả</a>
                     <a href="{{ path('page_shipping') }}">Chính sách giao hàng</a>
                     <a href="{{ path('page_privacy') }}">Bảo mật thông tin</a>
+                    <a href="{{ path('page_terms') }}">Điều khoản sử dụng</a>
                 </div>
-                <div class="col-6 col-lg-3">
-                    <h6>HỖ TRỢ</h6>
+                <div class="gv-footer__col">
+                    <h6>Hỗ trợ khách hàng</h6>
                     <a href="{{ path('page_buyguide') }}">Hướng dẫn mua hàng</a>
                     <a href="{{ path('page_payguide') }}">Hướng dẫn thanh toán</a>
                     <a href="{{ path('page_installment') }}">Hướng dẫn trả góp</a>
-                    <a href="{{ path('page_faq') }}">Câu hỏi thường gặp</a>
                     <a href="{{ path('lookup_order') }}">Tra cứu đơn hàng</a>
                     <a href="{{ path('lookup_warranty') }}">Tra cứu bảo hành</a>
-                    <a href="{{ path('shop_builder') }}">Xây dựng cấu hình PC</a>
+                    <a href="{{ path('page_faq') }}">Câu hỏi thường gặp</a>
                 </div>
-                <div class="col-6 col-lg-3">
-                    <h6>KẾT NỐI</h6>
-                    <p class="small mb-1"><i class="bi bi-geo-alt text-danger"></i> {{ st.address }}</p>
-                    <p class="small mb-1"><i class="bi bi-headset text-danger"></i> Hotline: <strong>{{ st.hotline }}</strong></p>
-                    <p class="small mb-2"><i class="bi bi-envelope text-danger"></i> {{ st.email }}</p>
-                    <div class="d-flex gap-3 fs-4 mb-2">
+                <div class="gv-footer__col">
+                    <h6>Kết nối với chúng tôi</h6>
+                    <div class="gv-footer__social">
                         <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
                         <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
                         <a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
                         <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
                     </div>
-                    <div class="gv-footer__pay">
-                        <span>VISA</span><span>Mastercard</span><span>MoMo</span><span>COD</span>
-                    </div>
+                    <h6 class="mt-3">Thanh toán</h6>
+                    <div class="gv-footer__pay"><span>VISA</span><span>Mastercard</span><span>MoMo</span><span>JCB</span><span>COD</span></div>
                 </div>
             </div>
-            <div class="gv-footer__bottom text-center">© {{ "now"|date("Y") }} TOÀN STORE — Cửa hàng máy tính &amp; linh kiện chính hãng.</div>
+            <div class="gv-footer__bottom">
+                <span>© {{ "now"|date("Y") }} TOÀN STORE. Bảo lưu mọi quyền.</span>
+                <span>Giá và khuyến mãi có thể thay đổi theo thời điểm.</span>
+            </div>
         </div>
     </footer>
 
@@ -315,29 +297,7 @@
     {# Floating hotline button with pulse ring #}
     <a href="tel:{{ st.hotline|replace({' ': ''}) }}" id="ts-hotline" aria-label="Gọi hotline {{ st.hotline }}" title="Hotline {{ st.hotline }}"><i class="bi bi-telephone-fill"></i></a>
 
-    <!-- jQuery (Select2) -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <!-- Bootstrap 5 bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    <!-- Select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script>
-        $('#search').select2({
-            width: '100%',
-            placeholder: 'Bạn cần tìm gì?',
-            minimumInputLength: 2,
-            ajax: {
-                url: "{{ path('search_api') }}",
-                dataType: 'json',
-                data: function (params) { $('#keyword').val(params.term); return { keyword: params.term }; },
-                processResults: function (data) {
-                    return { results: $.map(data, function (obj) { return { id: obj.id, text: obj.name }; }) };
-                }
-            }
-        });
-        $('#search').on('select2:select', function (e) { window.location.href = "/feature/" + e.params.data.id; });
-    </script>
 
     {# Floating compare bar #}
     {% set _compare = app.session.get('compare')|default([]) %}
@@ -420,6 +380,7 @@
     });
     </script>
     <script src="{{ asset('js/ui.js') }}"></script>
+    <script src="{{ asset('js/storefront.js') }}"></script>
     {% block javascripts %}{% endblock %}
     </body>
 </html>

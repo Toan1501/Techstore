@@ -77,7 +77,8 @@ class SanPhamRepository extends ServiceEntityRepository
             $qb->andWhere('sp.stock > 0');
         }
         if (!empty($filters['brand'])) {
-            $qb->andWhere('sp.brand = :brand')->setParameter('brand', $filters['brand']);
+            // One brand or a list (multi-select filter).
+            $qb->andWhere('sp.brand IN (:brands)')->setParameter('brands', array_values((array) $filters['brand']));
         }
         if (!empty($filters['min_rating'])) {
             $qb->andWhere('(SELECT AVG(rv.rating) FROM App\Entity\Review rv WHERE rv.product = sp) >= :minRating')
@@ -144,6 +145,79 @@ class SanPhamRepository extends ServiceEntityRepository
         }
 
         return $out;
+    }
+
+    /**
+     * Brand => product count, optionally limited to one category.
+     *
+     * @return array<string,int>
+     */
+    public function brandCountsFor($category = null): array
+    {
+        $qb = $this->createQueryBuilder('sp')
+            ->select('sp.brand AS brand', 'COUNT(sp.id) AS n')
+            ->andWhere('sp.brand IS NOT NULL')->andWhere("sp.brand != ''")
+            ->groupBy('sp.brand')->orderBy('n', 'DESC')->addOrderBy('sp.brand', 'ASC');
+        if ($category) {
+            $qb->andWhere('sp.cate = :cat')->setParameter('cat', $category);
+        }
+
+        $out = [];
+        foreach ($qb->getQuery()->getScalarResult() as $r) {
+            $out[$r['brand']] = (int) $r['n'];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Category id => [brand => count] for every category in one query (mega menu).
+     *
+     * @return array<int, array<string,int>>
+     */
+    public function brandCountsByCategory(): array
+    {
+        $rows = $this->createQueryBuilder('sp')
+            ->select('IDENTITY(sp.cate) AS cat', 'sp.brand AS brand', 'COUNT(sp.id) AS n')
+            ->andWhere('sp.brand IS NOT NULL')->andWhere("sp.brand != ''")
+            ->groupBy('cat', 'sp.brand')->orderBy('n', 'DESC')->addOrderBy('sp.brand', 'ASC')
+            ->getQuery()->getScalarResult();
+
+        $out = [];
+        foreach ($rows as $r) {
+            $out[(int) $r['cat']][$r['brand']] = (int) $r['n'];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Load the gallery images of many products in one query (avoids one query per card).
+     * Doctrine fills the still-uninitialized collections of the already-managed entities.
+     */
+    public function preloadImages(iterable $products): void
+    {
+        $ids = [];
+        foreach ($products as $p) {
+            if ($p instanceof SanPham && $p->getId()) {
+                $ids[] = $p->getId();
+            }
+        }
+        if (!$ids) {
+            return;
+        }
+        $this->createQueryBuilder('sp')
+            ->select('sp', 'img')
+            ->leftJoin('sp.images', 'img')
+            ->andWhere('sp.id IN (:ids)')->setParameter('ids', array_values(array_unique($ids)))
+            ->getQuery()->getResult();
+    }
+
+    /** @return SanPham[] Biggest discounts first (flash sale). */
+    public function findTopDeals(int $limit = 12): array
+    {
+        return $this->queryFiltered(['discount_only' => true, 'sort' => 'discount'])
+            ->setMaxResults($limit)->getResult();
     }
 
     /** @return array{min: float, max: float} Lowest and highest product price. */

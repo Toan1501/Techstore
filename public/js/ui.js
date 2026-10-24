@@ -118,7 +118,7 @@
   /* ---------- Lazy image fade-in ---------- */
   function markLoaded(img) {
     img.classList.add('is-loaded');
-    var wrap = img.closest && img.closest('.gv-card__imgwrap');
+    var wrap = img.closest && img.closest('.gv-card__imgwrap, .pc__media');
     if (wrap) wrap.classList.add('loaded'); // stops the skeleton shimmer
   }
   var lazyImgs = document.querySelectorAll('img[loading="lazy"]');
@@ -131,7 +131,7 @@
   /* ---------- Scroll reveal (only for below-the-fold elements) ---------- */
   if (!reduce && 'IntersectionObserver' in window) {
     var vh = window.innerHeight || docEl.clientHeight;
-    var targets = document.querySelectorAll('.gv-card, .gv-section, .gv-benefit, .gv-cat-tile, .gv-brand, .gv-flashsale, .reveal-me');
+    var targets = document.querySelectorAll('.gv-card, .pc, .gv-section, .gv-benefit, .gv-cat-tile, .gv-brand, .gv-flashsale, .reveal-me');
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) {
@@ -203,13 +203,13 @@
     if (btn && !btn.classList.contains('is-added') && !btn.disabled) {
       var orig = btn.innerHTML;
       btn.classList.add('is-added');
-      btn.innerHTML = '<i class="bi bi-check2"></i> Đã thêm';
+      btn.innerHTML = btn.classList.contains('pc__cart') ? '<i class="bi bi-check2"></i>' : '<i class="bi bi-check2"></i> Đã thêm';
       setTimeout(function () { btn.classList.remove('is-added'); btn.innerHTML = orig; }, 1500);
     }
     if (reduce) return;
     var cartBtn = document.querySelector('[data-bs-target="#miniCart"]');
-    var card = form.closest('.gv-card');
-    var img = (card && card.querySelector('.gv-card__imgwrap img')) || document.getElementById('mainImg');
+    var card = form.closest('.gv-card, .pc');
+    var img = (card && card.querySelector('.gv-card__imgwrap img, .pc__media img')) || document.getElementById('mainImg');
     if (!cartBtn || !img) return;
     var r = img.getBoundingClientRect(), c = cartBtn.getBoundingClientRect();
     if (!r.width || !c.width) return;

@@ -1,0 +1,53 @@
+{#
+  Category mega menu (GearVN-style): category list on the left, hovering a row
+  opens a flyout with brands, price ranges and quick filters for that category.
+  Used as the homepage rail and as the header "Danh mục" dropdown.
+#}
+<nav class="gv-mm{{ dropdown|default(false) ? ' gv-mm--dropdown' : '' }}" aria-label="Danh mục sản phẩm">
+    <ul class="gv-mm__list">
+        {% for item in mega_menu() %}
+            {% set cid = item.category.id %}
+            <li class="gv-mm__item">
+                <a href="{{ path('app_productofcate', {'id': cid}) }}" class="gv-mm__link">
+                    <i class="bi bi-{{ item.icon }}"></i>
+                    <span>{{ item.label }}</span>
+                    <i class="bi bi-chevron-right gv-mm__chev"></i>
+                </a>
+                <div class="gv-mm__fly">
+                    <div class="gv-mm__col">
+                        <h6>Thương hiệu</h6>
+                        {% for brand, n in item.brands %}
+                            <a href="{{ path('app_productofcate', {'id': cid, 'brand': [brand]}) }}">{{ brand }}</a>
+                        {% else %}
+                            <span class="text-muted small">Đang cập nhật</span>
+                        {% endfor %}
+                    </div>
+                    <div class="gv-mm__col">
+                        <h6>Mức giá</h6>
+                        {% for r in item.ranges %}
+                            <a href="{{ path('app_productofcate', {'id': cid, 'min_price': r.min, 'max_price': r.max}) }}">{{ r.label }}</a>
+                        {% endfor %}
+                    </div>
+                    <div class="gv-mm__col">
+                        <h6>Gợi ý</h6>
+                        <a href="{{ path('app_productofcate', {'id': cid, 'sort': 'discount'}) }}"><i class="bi bi-lightning-charge-fill text-danger"></i> Đang giảm giá</a>
+                        <a href="{{ path('app_productofcate', {'id': cid, 'sort': 'newest'}) }}"><i class="bi bi-stars"></i> Hàng mới về</a>
+                        <a href="{{ path('app_productofcate', {'id': cid, 'sort': 'price_asc'}) }}"><i class="bi bi-sort-numeric-down"></i> Giá tốt nhất</a>
+                        <a href="{{ path('app_productofcate', {'id': cid, 'in_stock': 1}) }}"><i class="bi bi-box-seam"></i> Có sẵn giao ngay</a>
+                        <a href="{{ path('shop_builder') }}"><i class="bi bi-tools"></i> Xây dựng cấu hình PC</a>
+                    </div>
+                    <a href="{{ path('app_productofcate', {'id': cid}) }}" class="gv-mm__promo">
+                        <img src="{{ asset('uploads/sanpham/' ~ item.category.photo) }}" alt="{{ item.label }}" loading="lazy">
+                        <span>Xem tất cả {{ item.label }} <i class="bi bi-arrow-right"></i></span>
+                    </a>
+                </div>
+            </li>
+        {% endfor %}
+        <li class="gv-mm__item">
+            <a href="{{ path('shop_promotions') }}" class="gv-mm__link"><i class="bi bi-percent"></i><span>Khuyến mãi hot</span></a>
+        </li>
+        <li class="gv-mm__item">
+            <a href="{{ path('shop_brands') }}" class="gv-mm__link"><i class="bi bi-award"></i><span>Thương hiệu</span></a>
+        </li>
+    </ul>
+</nav>

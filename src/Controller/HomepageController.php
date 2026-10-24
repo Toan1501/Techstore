@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Catalog\CatalogMeta;
+use App\Catalog\ListingFilters;
 use App\Entity\Category;
 use App\Entity\SanPham;
 use App\Repository\CategoryRepository;
@@ -27,6 +29,7 @@ class HomepageController extends AbstractController
     /** Build a productId => {average, count} map for a set of products (single query). */
     private function ratingsFor(iterable $products): array
     {
+        $this->sanPhamRepository->preloadImages($products);
         $ids = [];
         foreach ($products as $p) {
             $ids[] = $p->getId();
@@ -38,18 +41,20 @@ class HomepageController extends AbstractController
     #[Route('/feature', name: 'feature_product')]
     public function viewdetail(PaginatorInterface $paginator, Request $request): Response
     {
-        $sort = $request->query->get('sort', 'newest');
+        $filters = ListingFilters::fromRequest($request);
         $pagination = $paginator->paginate(
-            $this->sanPhamRepository->queryFiltered(['sort' => $sort]),
+            $this->sanPhamRepository->queryFiltered($filters),
             $request->query->getInt('page', 1),
-            12
+            20
         );
 
         return $this->render('homepage/sanpham.html.twig', [
             'data' => $pagination,
             'ratings' => $this->ratingsFor($pagination),
             'heading' => 'Tất cả sản phẩm',
-            'sort' => $sort,
+            'sort' => $filters['sort'],
+            'filters' => $filters,
+            'facets' => ListingFilters::facets($this->sanPhamRepository),
         ]);
     }
 
@@ -85,82 +90,72 @@ class HomepageController extends AbstractController
             'data' => $product,
             'reviews' => $this->reviewRepository->findByProduct($product),
             'rating' => $this->reviewRepository->getRatingSummary($product),
-            'related' => $this->sanPhamRepository->findRelated($product, 4),
+            'related' => $this->sanPhamRepository->findRelated($product, 10),
             'recently_viewed' => $recentlyViewed,
             'questions' => $questionRepo->findByProduct($product),
         ]);
     }
 
     #[Route('/', name: 'homepage')]
-    public function cate(PaginatorInterface $paginator, Request $request, \App\Repository\BannerRepository $bannerRepository): Response
+    public function cate(\App\Repository\BannerRepository $bannerRepository, \App\Repository\NewsRepository $newsRepository): Response
     {
-        $sort = $request->query->get('sort', 'newest');
-        if (!in_array($sort, SanPhamRepository::SORTS, true)) {
-            $sort = 'newest';
-        }
+        $deals = $this->sanPhamRepository->findTopDeals(12);
+        $categories = CatalogMeta::sort($this->categoryRepository->findAllOrdered());
 
-        $categoryId = $request->query->getInt('category') ?: null;
-        $filters = [
-            'sort' => $sort,
-            'category' => $categoryId,
-            'min_price' => $request->query->get('min_price'),
-            'max_price' => $request->query->get('max_price'),
-            'in_stock' => $request->query->getBoolean('in_stock'),
-            'brand' => $request->query->get('brand') ?: null,
-            'min_rating' => $request->query->get('min_rating') ?: null,
-        ];
-
-        $pagination = $paginator->paginate(
-            $this->sanPhamRepository->queryFiltered($filters),
-            $request->query->getInt('page', 1),
-            8
-        );
-
-        $deals = $this->sanPhamRepository->findDeals(6);
-        $categories = $this->categoryRepository->findAllOrdered();
-
-        // Per-category product sections (a few products each) for the homepage.
+        // One carousel per category: newest products + its top brands as quick-filter chips.
         $sections = [];
-        $sectionProducts = [];
+        $shown = $deals;
         foreach ($categories as $c) {
-            $prods = $this->sanPhamRepository->findBy(['cate' => $c], ['id' => 'DESC'], 6);
+            $prods = $this->sanPhamRepository->findBy(['cate' => $c], ['id' => 'DESC'], 10);
             if ($prods) {
-                $sections[] = ['category' => $c, 'products' => $prods];
-                $sectionProducts = array_merge($sectionProducts, $prods);
+                $sections[] = [
+                    'category' => $c,
+                    'label' => CatalogMeta::label($c->getName()),
+                    'icon' => CatalogMeta::icon($c->getName()),
+                    'brands' => array_slice(array_keys($this->sanPhamRepository->brandCountsFor($c)), 0, 5),
+                    'products' => $prods,
+                ];
+                $shown = array_merge($shown, $prods);
             }
         }
 
+        // "Gợi ý hôm nay": a daily-rotating pick across the whole catalogue.
+        $all = $this->sanPhamRepository->findAll();
+        mt_srand((int) date('Ymd'));
+        shuffle($all);
+        mt_srand();
+        $picks = array_slice($all, 0, 10);
+        $shown = array_merge($shown, $picks);
+
         return $this->render('homepage/index.html.twig', [
             'category' => $categories,
-            'data' => $pagination,
-            'sort' => $sort,
-            'ratings' => $this->ratingsFor($pagination),
             'deals' => $deals,
-            'deals_ratings' => $this->ratingsFor($deals),
             'sections' => $sections,
-            'section_ratings' => $this->ratingsFor($sectionProducts),
+            'picks' => $picks,
+            'ratings' => $this->ratingsFor($shown),
             'banners' => $bannerRepository->findActiveOrdered(),
-            'price_bounds' => $this->sanPhamRepository->priceBounds(),
-            'brands' => $this->sanPhamRepository->distinctBrands(),
-            'filters' => $filters,
+            'news' => array_slice($newsRepository->findAllOrdered(), 0, 4),
         ]);
     }
 
     #[Route('/category/{id}', name: 'app_productofcate', requirements: ['id' => '\d+'])]
     public function viewCategoryProducts(Category $category, PaginatorInterface $paginator, Request $request): Response
     {
-        $sort = $request->query->get('sort', 'newest');
+        $filters = ListingFilters::fromRequest($request);
         $pagination = $paginator->paginate(
-            $this->sanPhamRepository->queryFiltered(['category' => $category, 'sort' => $sort]),
+            $this->sanPhamRepository->queryFiltered(['category' => $category] + $filters),
             $request->query->getInt('page', 1),
-            12
+            20
         );
 
         return $this->render('homepage/sanpham.html.twig', [
             'data' => $pagination,
             'ratings' => $this->ratingsFor($pagination),
-            'heading' => $category->getName(),
-            'sort' => $sort,
+            'heading' => CatalogMeta::label($category->getName()),
+            'category' => $category,
+            'sort' => $filters['sort'],
+            'filters' => $filters,
+            'facets' => ListingFilters::facets($this->sanPhamRepository, $category),
         ]);
     }
 
@@ -216,18 +211,22 @@ class HomepageController extends AbstractController
     #[Route('/search', name: 'search_products')]
     public function search(Request $request, PaginatorInterface $paginator): Response
     {
-        $keyword = $request->query->get('keyword');
+        $keyword = trim((string) $request->query->get('keyword'));
+        $filters = ListingFilters::fromRequest($request);
         $pagination = $paginator->paginate(
-            $this->sanPhamRepository->queryByKeyword($keyword),
+            $this->sanPhamRepository->queryFiltered(($keyword !== '' ? ['q' => $keyword] : []) + $filters),
             $request->query->getInt('page', 1),
-            12
+            20
         );
 
         return $this->render('homepage/sanpham.html.twig', [
             'data' => $pagination,
             'ratings' => $this->ratingsFor($pagination),
-            'heading' => 'Kết quả cho "' . $keyword . '"',
+            'heading' => $keyword !== '' ? 'Kết quả cho "' . $keyword . '"' : 'Tìm kiếm',
             'keyword' => $keyword,
+            'sort' => $filters['sort'],
+            'filters' => $filters,
+            'facets' => ListingFilters::facets($this->sanPhamRepository),
         ]);
     }
 
@@ -244,6 +243,8 @@ class HomepageController extends AbstractController
                 'name' => $product->getName(),
                 'photo' => $product->getPhoto(),
                 'price' => $product->getPrice(),
+                'priceOld' => $product->hasDiscount() ? $product->getPriceOld() : null,
+                'url' => $this->generateUrl('app_product', ['slug' => $product->getSlug(), 'id' => $product->getId()]),
             ];
         }
 

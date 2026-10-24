@@ -189,9 +189,6 @@ class SeedCommand extends Command
         // Toàn Store's own banner leads the carousel; the older stock slides follow.
         $banners = [
             ['Siêu sale công nghệ', 'images/banner-ngang.webp', '/khuyen-mai'],
-            ['Banner 2', 'images/carousel-1.webp', ''],
-            ['Banner 3', 'images/carousel-2.webp', ''],
-            ['Banner 4', 'images/carousel-4.webp', ''],
         ];
         foreach ($banners as $pos => [$title, $img, $link]) {
             $this->em->persist((new Banner())

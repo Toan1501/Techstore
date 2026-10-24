@@ -97,15 +97,17 @@ class ShopPagesController extends AbstractController
         if ($brand === null) {
             throw $this->createNotFoundException('Thương hiệu không tồn tại.');
         }
-        $sort = $request->query->get('sort', 'newest');
+        $filters = \App\Catalog\ListingFilters::fromRequest($request);
         $data = $paginator->paginate(
-            $this->products->queryFiltered(['brand' => $brand, 'sort' => $sort]),
+            $this->products->queryFiltered(['brand' => $brand] + $filters),
             $request->query->getInt('page', 1),
-            12
+            20
         );
 
         return $this->render('homepage/sanpham.html.twig', [
-            'data' => $data, 'ratings' => $this->ratingsFor($data), 'sort' => $sort,
+            'data' => $data, 'ratings' => $this->ratingsFor($data), 'sort' => $filters['sort'],
+            'filters' => $filters,
+            'facets' => ['brands' => [], 'ranges' => \App\Catalog\CatalogMeta::priceRanges(null)],
             'heading' => 'Sản phẩm ' . $brand,
             'intro' => 'Toàn bộ sản phẩm ' . $brand . ' chính hãng đang bán tại Toàn Store, bảo hành theo chính sách của hãng.',
         ]);
@@ -150,19 +152,22 @@ class ShopPagesController extends AbstractController
     {
         $cfg = self::LANDING[$slug];
         $cat = $this->categories->findOneBy(['name' => $cfg['category']]);
-        $sort = $request->query->get('sort', 'newest');
-        $filters = ['q' => $cfg['q'], 'sort' => $sort];
-        if ($cat) { $filters['category'] = $cat; }
-        $data = $paginator->paginate($this->products->queryFiltered($filters), $request->query->getInt('page', 1), 12);
+        $filters = \App\Catalog\ListingFilters::fromRequest($request);
+        $query = ['q' => $cfg['q']] + $filters;
+        if ($cat) { $query['category'] = $cat; }
+        $data = $paginator->paginate($this->products->queryFiltered($query), $request->query->getInt('page', 1), 20);
 
         return $this->render('homepage/sanpham.html.twig', [
-            'data' => $data, 'ratings' => $this->ratingsFor($data), 'sort' => $sort,
+            'data' => $data, 'ratings' => $this->ratingsFor($data), 'sort' => $filters['sort'],
+            'filters' => $filters,
+            'facets' => \App\Catalog\ListingFilters::facets($this->products, $cat),
             'heading' => $cfg['title'], 'intro' => $cfg['intro'], 'meta_description' => $cfg['meta'],
         ]);
     }
 
     private function ratingsFor(iterable $products): array
     {
+        $this->products->preloadImages($products);
         $ids = [];
         foreach ($products as $p) { $ids[] = $p->getId(); }
 

@@ -1,42 +1,66 @@
+{#
+  Product card (GearVN-style): badge, image (+ hover alt image), name,
+  spec box with icons, old price + % off, current price, rating, quick actions.
+  Params: sp, ratings (map), flash (bool, stock bar)
+#}
 {% set r = (ratings|default({}))[sp.id] ?? null %}
 {% set inWish = sp.id in (app.session.get('wishlist')|default([])) %}
 {% set inCompare = sp.id in (app.session.get('compare')|default([])) %}
-<div class="gv-card">
-    {% if sp.hasDiscount() %}<span class="gv-card__discount">-{{ sp.getDiscountPercent() }}%</span>{% endif %}
-    <div class="gv-card__wish d-flex flex-column gap-1">
+{% set url = path('app_product', {'slug': sp.slug, 'id': sp.id}) %}
+{% set photos = sp.getAllPhotos() %}
+{% set chips = sp|spec_chips(4) %}
+<article class="pc{{ not sp.isInStock() ? ' pc--soldout' : '' }}">
+    <div class="pc__badges">
+        {% if flash|default(false) %}<span class="pc__badge pc__badge--flash"><i class="bi bi-lightning-charge-fill"></i>Flash sale</span>
+        {% elseif sp.hasDiscount() %}<span class="pc__badge">Giảm {{ sp.getDiscountPercent() }}%</span>{% endif %}
+        {% if sp.price >= 10000000 %}<span class="pc__badge pc__badge--soft">Trả góp 0%</span>{% endif %}
+    </div>
+    <div class="pc__tools">
         <form method="post" class="wishlist-form" action="{{ path('app_wishlist_toggle', {'id': sp.id}) }}">
-            <button type="submit" class="gv-wish-btn {{ inWish ? 'active' : '' }}" aria-label="Yêu thích"><i class="bi {{ inWish ? 'bi-heart-fill' : 'bi-heart' }}"></i></button>
+            <button type="submit" class="gv-wish-btn {{ inWish ? 'active' : '' }}" aria-label="Yêu thích" title="Yêu thích"><i class="bi {{ inWish ? 'bi-heart-fill' : 'bi-heart' }}"></i></button>
         </form>
         <form method="post" class="compare-form" action="{{ path('app_compare_toggle', {'id': sp.id}) }}">
             <button type="submit" class="gv-wish-btn {{ inCompare ? 'active' : '' }}" aria-label="So sánh" title="So sánh"><i class="bi bi-arrow-left-right"></i></button>
         </form>
     </div>
-    <a href="{{ path('app_product', {'slug': sp.slug, 'id': sp.id}) }}" class="gv-card__imgwrap">
-        {% if not sp.isInStock() %}<span class="gv-card__soldout"><span>Hết hàng</span></span>{% endif %}
-        <img src="{{ asset('uploads/sanpham/' ~ sp.getPhoto()) }}" alt="{{ sp.getName() }}" loading="lazy">
+
+    <a href="{{ url }}" class="pc__media{{ photos|length > 1 ? ' has-alt' : '' }}" tabindex="-1" aria-hidden="true">
+        <img src="{{ asset('uploads/sanpham/' ~ photos[0]) }}" alt="" loading="lazy" width="400" height="400">
+        {% if photos|length > 1 %}<img class="pc__alt" src="{{ asset('uploads/sanpham/' ~ photos[1]) }}" alt="" loading="lazy" width="400" height="400">{% endif %}
+        {% if not sp.isInStock() %}<span class="pc__soldout">Tạm hết hàng</span>{% endif %}
     </a>
-    <div class="gv-card__body">
-        <a class="gv-card__title line-clamp-2" href="{{ path('app_product', {'slug': sp.slug, 'id': sp.id}) }}" title="{{ sp.getName() }}">{{ sp.getName() }}</a>
-        <div class="gv-card__price">
-            <span class="gv-card__price-now">{{ sp.getPrice()|vnd }}</span>
-            {% if sp.hasDiscount() %}<span class="gv-card__price-old">{{ sp.getPriceOld()|vnd }}</span>{% endif %}
+
+    <div class="pc__body">
+        <h3 class="pc__name"><a href="{{ url }}" title="{{ sp.name }}">{{ sp.name }}</a></h3>
+
+        {% if chips is not empty %}
+            <ul class="pc__specs">
+                {% for c in chips %}<li><i class="bi bi-{{ c[0] }}"></i><span>{{ c[1] }}</span></li>{% endfor %}
+            </ul>
+        {% endif %}
+
+        <div class="pc__price">
+            {% if sp.hasDiscount() %}
+                <div class="pc__old"><s>{{ sp.priceOld|vnd }}</s><span>-{{ sp.getDiscountPercent() }}%</span></div>
+            {% endif %}
+            <div class="pc__now">{{ sp.price|vnd }}</div>
         </div>
-        <div class="gv-card__meta">
-            {% include 'partials/_rating_stars.html.twig' with {avg: r ? r.average : 0, count: r ? r.count : 0} %}
-            {% if sp.isInStock() %}<span class="text-success"><i class="bi bi-check-circle"></i> Còn hàng</span>{% else %}<span class="text-muted">Tạm hết</span>{% endif %}
+
+        <div class="pc__foot">
+            {% if r and r.count > 0 %}
+                <span class="pc__rating"><i class="bi bi-star-fill"></i>{{ r.average|number_format(1, ',') }} <em>({{ r.count }})</em></span>
+            {% else %}
+                <span class="pc__rating pc__rating--none"><i class="bi bi-star"></i>Chưa có đánh giá</span>
+            {% endif %}
+            <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': sp.id}) }}">
+                <button class="pc__cart" type="submit" {{ sp.isInStock() ? '' : 'disabled' }} aria-label="Thêm {{ sp.name }} vào giỏ" title="Thêm vào giỏ"><i class="bi bi-cart-plus"></i></button>
+            </form>
         </div>
+
         {% if flash|default(false) %}
-            {# Stock-level bar for flash-sale cards (relative to a 40-unit cap) #}
             {% set _w = sp.stock > 0 ? min(100, max(8, (sp.stock / 40) * 100)) : 0 %}
             <div class="gv-card__stockbar"><span style="--w: {{ _w|round }}%"></span></div>
             <div class="gv-card__stocktxt"><i class="bi bi-fire"></i> {{ sp.stock > 0 ? 'Còn ' ~ sp.stock ~ ' sản phẩm' : 'Đã bán hết' }}</div>
         {% endif %}
-        <div class="gv-card__actions">
-            <form method="post" class="add-to-cart-form" action="{{ path('app_cart_add', {'product_id': sp.getId()}) }}">
-                <button class="btn btn-danger btn-sm w-100" type="submit" {{ sp.isInStock() ? '' : 'disabled' }}>
-                    <i class="bi bi-cart-plus"></i> Thêm vào giỏ
-                </button>
-            </form>
-        </div>
     </div>
-</div>
+</article>

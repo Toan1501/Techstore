@@ -1,207 +1,206 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}TOÀN STORE — Máy tính, Laptop & Linh kiện chính hãng{% endblock %}
+{% block body_class %}is-home{% endblock %}
+
+{% macro carousel(products, ratings, flash) %}
+    <div class="rail" data-rail>
+        <button class="rail__nav rail__nav--prev" type="button" aria-label="Xem sản phẩm trước" data-rail-prev><i class="bi bi-chevron-left"></i></button>
+        <div class="rail__track" data-rail-track>
+            {% for sp in products %}
+                <div class="rail__item">{% include 'partials/_product_card.html.twig' with {sp: sp, ratings: ratings, flash: flash} %}</div>
+            {% endfor %}
+        </div>
+        <button class="rail__nav rail__nav--next" type="button" aria-label="Xem sản phẩm tiếp" data-rail-next><i class="bi bi-chevron-right"></i></button>
+    </div>
+{% endmacro %}
+
+{% macro promo(href, eyebrow, title, sub, img, tone, size) %}
+    <a href="{{ href }}" class="promo promo--{{ tone }}{{ size ? ' promo--' ~ size : '' }}">
+        <span class="promo__text">
+            <small>{{ eyebrow }}</small>
+            <b>{{ title|raw }}</b>
+            {% if sub %}<span>{{ sub }}</span>{% endif %}
+            <em>Mua ngay <i class="bi bi-arrow-right"></i></em>
+        </span>
+        <img src="{{ asset('uploads/sanpham/' ~ img) }}" alt="" loading="lazy">
+    </a>
+{% endmacro %}
+
+{% macro catlink(map, name) %}{{ map[name] is defined ? path('app_productofcate', {'id': map[name].id}) : path('feature_product') }}{% endmacro %}
 
 {% block body %}
-<div class="container-fluid px-3 px-xl-5 py-3">
+{% import _self as ui %}
+{% set catByName = {} %}
+{% for c in category %}{% set catByName = catByName|merge({(c.name): c}) %}{% endfor %}
+
+<div class="gv-container py-3">
     <h1 class="visually-hidden">Toàn Store — Máy tính, Laptop, PC Gaming &amp; Linh kiện chính hãng</h1>
 
-    {# ===== Category rail + hero + side banners ===== #}
-    {% set catIcons = {'Desktop PC':'pc-display','Graphics Card':'gpu-card','Laptop':'laptop','Monitor':'display','Mouse':'mouse2','RAM':'memory','Keyboard':'keyboard'} %}
-    <div class="row g-3 mb-3">
-        <div class="col-lg-2 d-none d-lg-block">
-            <nav class="gv-rail">
-                {% for c in category %}
-                    <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="gv-rail__item">
-                        <i class="bi bi-{{ catIcons[c.name]|default('tag') }}"></i>
-                        <span class="line-clamp-1">{{ c.name }}</span>
-                        <i class="bi bi-chevron-right gv-rail__chev"></i>
-                    </a>
-                {% endfor %}
-            </nav>
+    {# ===== Hero: category rail · carousel + 2 tiles · 3 side tiles ===== #}
+    <section class="hp-hero">
+        <div class="hp-hero__rail d-none d-lg-block">
+            {% include 'partials/_mega_menu.html.twig' %}
         </div>
-        <div class="col-lg-7">
-            {% set slides = banners is not empty ? banners : null %}
-            <div id="heroCarousel" class="carousel slide gv-hero rounded-4 overflow-hidden shadow-sm" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="false">
+
+        <div class="hp-hero__main">
+            <div id="heroCarousel" class="carousel slide hp-carousel" data-bs-ride="carousel" data-bs-interval="5500">
+                <div class="carousel-inner">
+                    {% for b in banners %}
+                        <div class="carousel-item{{ loop.first ? ' active' : '' }}">
+                            <a href="{{ b.link ?: path('shop_promotions') }}"><img src="{{ asset(b.image) }}" alt="{{ b.title }}" width="1500" height="500"></a>
+                        </div>
+                    {% endfor %}
+                    <div class="carousel-item{{ banners is empty ? ' active' : '' }}">
+                        <a href="{{ ui.catlink(catByName, 'Laptop') }}" class="hero-slide hero-slide--rose">
+                            <span class="hero-slide__text">
+                                <small>Laptop gaming RTX 40 Series</small>
+                                <b>Chiến game đỉnh<br>giảm đến <em>3 triệu</em></b>
+                                <span>Tặng balo &amp; chuột gaming · Trả góp 0%</span>
+                                <i class="hero-slide__cta">Khám phá ngay <i class="bi bi-arrow-right"></i></i>
+                            </span>
+                            <img src="{{ asset('uploads/sanpham/ai-laptop-1.webp') }}" alt="Laptop gaming">
+                        </a>
+                    </div>
+                    <div class="carousel-item">
+                        <a href="{{ path('shop_builder') }}" class="hero-slide hero-slide--steel">
+                            <span class="hero-slide__text">
+                                <small>Build PC theo yêu cầu</small>
+                                <b>Cấu hình chuẩn,<br><em>lắp ráp miễn phí</em></b>
+                                <span>Kỹ thuật viên tư vấn 1:1 · Bảo hành tận nơi</span>
+                                <i class="hero-slide__cta">Tự build ngay <i class="bi bi-arrow-right"></i></i>
+                            </span>
+                            <img src="{{ asset('uploads/sanpham/ai-pc-1.webp') }}" alt="PC gaming">
+                        </a>
+                    </div>
+                </div>
                 <div class="carousel-indicators">
-                    {% if slides %}
-                        {% for b in slides %}<button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{{ loop.first ? 'active' : '' }}"></button>{% endfor %}
-                    {% else %}
-                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
-                    {% endif %}
+                    {% set nSlides = banners|length + 2 %}
+                    {% for i in 0..(nSlides - 1) %}
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ i }}" class="{{ i == 0 ? 'active' : '' }}" aria-label="Slide {{ i + 1 }}"{{ i == 0 ? ' aria-current="true"' : '' }}></button>
+                    {% endfor %}
                 </div>
-                <div class="carousel-inner" style="aspect-ratio: 3/1; background:#fff">
-                    {% if slides %}
-                        {% for b in slides %}
-                            <div class="carousel-item {{ loop.first ? 'active' : '' }} h-100">
-                                {% if b.link %}<a href="{{ b.link }}">{% endif %}
-                                <img src="{{ asset(b.image) }}" class="w-100 h-100" style="object-fit:cover" alt="{{ b.title }}">
-                                {% if b.link %}</a>{% endif %}
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="carousel-item active h-100"><img src="{{ asset('images/carousel-1.webp') }}" class="w-100 h-100" style="object-fit:cover" alt="Khuyến mãi"></div>
-                    {% endif %}
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev" aria-label="Trước"><span class="carousel-control-prev-icon"></span></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next" aria-label="Sau"><span class="carousel-control-next-icon"></span></button>
+            </div>
+            <div class="hp-hero__duo">
+                {{ ui.promo(ui.catlink(catByName, 'Graphics Card'), 'Card đồ họa', 'RTX 40 Series<br>giá cực tốt', 'Bảo hành 36 tháng', 'ai-vga-1.webp', 'sky') }}
+                {{ ui.promo(ui.catlink(catByName, 'Monitor'), 'Màn hình', 'Gaming 2K 165Hz<br>từ 3,69 triệu', '', 'ai-monitor-1.webp', 'amber') }}
             </div>
         </div>
-        <div class="col-lg-3 d-none d-lg-flex flex-column">
-            <a href="{{ path('shop_promotions') }}" class="gv-sidepromo" aria-label="Flash Sale mỗi ngày — giảm đến 25%">
-                <img src="{{ asset('images/banner-vuong.webp') }}" alt="Flash Sale mỗi ngày — giảm đến 25%" width="800" height="800">
-            </a>
+
+        <div class="hp-hero__side d-none d-lg-flex">
+            {{ ui.promo(path('shop_promotions'), 'Flash sale mỗi ngày', 'Giảm đến<br><strong>25%</strong>', '', 'ai-laptop-2.webp', 'red') }}
+            {{ ui.promo(ui.catlink(catByName, 'Mouse'), 'Gaming gear', 'Chuột gaming<br>từ 390K', '', 'ai-mouse-1.webp', 'lilac') }}
+            {{ ui.promo(ui.catlink(catByName, 'RAM'), 'Nâng cấp RAM', 'DDR5 RGB<br>hiệu năng vượt trội', '', 'ai-ram-1.webp', 'mint') }}
         </div>
-    </div>
+    </section>
 
-    {# Mobile: the side column is hidden, so surface the square promo under the hero #}
-    <a href="{{ path('shop_promotions') }}" class="gv-mobilepromo d-lg-none mb-3" aria-label="Flash Sale mỗi ngày — giảm đến 25%">
-        <img src="{{ asset('images/banner-vuong.webp') }}" alt="Flash Sale mỗi ngày — giảm đến 25%" width="800" height="800" loading="lazy">
-    </a>
-
-    {# ===== Benefits strip ===== #}
-    <div class="gv-benefits">
-        <div class="gv-benefit"><i class="bi bi-truck"></i><div><strong>Miễn phí vận chuyển</strong><small>Đơn từ 5 triệu</small></div></div>
-        <div class="gv-benefit"><i class="bi bi-shield-check"></i><div><strong>Bảo hành chính hãng</strong><small>1 đổi 1 trong 7 ngày</small></div></div>
-        <div class="gv-benefit"><i class="bi bi-credit-card"></i><div><strong>Trả góp 0%</strong><small>Qua thẻ tín dụng</small></div></div>
-        <div class="gv-benefit"><i class="bi bi-headset"></i><div><strong>Hỗ trợ 24/7</strong><small>Hotline {{ store_settings().hotline }}</small></div></div>
-    </div>
-
-    {# ===== Category quick tiles ===== #}
-    <div class="gv-cats mb-4">
+    {# ===== Category shortcuts ===== #}
+    <nav class="hp-cats" aria-label="Danh mục nổi bật">
         {% for c in category %}
-            <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="gv-cat-tile">
-                <img src="{{ asset('uploads/sanpham/' ~ c.getPhoto()) }}" alt="{{ c.name }}" loading="lazy">
-                <span>{{ c.name }}</span>
+            <a href="{{ path('app_productofcate', {'id': c.id}) }}" class="hp-cat">
+                <span class="hp-cat__img"><img src="{{ asset('uploads/sanpham/' ~ c.photo) }}" alt="" loading="lazy"></span>
+                <span>{{ c.name|cat_label }}</span>
             </a>
         {% endfor %}
-    </div>
+        <a href="{{ path('shop_builder') }}" class="hp-cat hp-cat--icon"><span class="hp-cat__img"><i class="bi bi-cpu"></i></span><span>Build PC</span></a>
+        <a href="{{ path('shop_promotions') }}" class="hp-cat hp-cat--icon"><span class="hp-cat__img"><i class="bi bi-percent"></i></span><span>Khuyến mãi</span></a>
+        <a href="{{ path('shop_brands') }}" class="hp-cat hp-cat--icon"><span class="hp-cat__img"><i class="bi bi-award"></i></span><span>Thương hiệu</span></a>
+        <a href="{{ path('page_installment') }}" class="hp-cat hp-cat--icon"><span class="hp-cat__img"><i class="bi bi-credit-card-2-front"></i></span><span>Trả góp 0%</span></a>
+    </nav>
 
     {# ===== Flash sale ===== #}
     {% if deals is not empty %}
-    <div class="gv-flashsale">
-        <div class="gv-flashsale__head">
-            <div class="gv-flashsale__title"><i class="bi bi-lightning-charge-fill"></i> FLASH SALE</div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="gv-countdown">
-                    <span class="text-white me-1 fw-normal">Kết thúc sau</span>
-                    <span id="cd-h">00</span>:<span id="cd-m">00</span>:<span id="cd-s">00</span>
-                </div>
-                <a href="{{ path('shop_promotions') }}" class="text-white fw-semibold text-nowrap d-none d-sm-inline">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+    <section class="hp-flash" aria-labelledby="flashTitle">
+        <div class="hp-flash__head">
+            <h2 id="flashTitle"><i class="bi bi-lightning-charge-fill"></i> Flash sale hôm nay</h2>
+            <div class="gv-countdown" aria-label="Thời gian còn lại">
+                <span class="me-1 fw-normal">Kết thúc sau</span>
+                <span id="cd-h">00</span>:<span id="cd-m">00</span>:<span id="cd-s">00</span>
             </div>
+            <a href="{{ path('shop_promotions') }}" class="hp-flash__all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
         </div>
-        <div class="row g-3">
-            {% for sp in deals %}
-                <div class="col-6 col-md-4 col-lg-2">
-                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: deals_ratings, flash: true} %}
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+        {{ ui.carousel(deals, ratings, true) }}
+    </section>
     {% endif %}
 
-    {# ===== All products + filters ===== #}
-    <div class="gv-section">
-        <div class="gv-section__head flex-wrap gap-2">
-            <h2>Sản phẩm nổi bật</h2>
-            <button class="btn btn-outline-danger btn-sm d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#filterBar"><i class="bi bi-funnel"></i> Bộ lọc</button>
-        </div>
-
-        <form method="get" id="filterBar" class="collapse d-lg-block bg-light border rounded-3 p-3 mb-3">
-            <div class="row g-2 align-items-end">
-                <div class="col-6 col-lg-2">
-                    <label class="form-label small mb-1" for="f-cat">Danh mục</label>
-                    <select name="category" id="f-cat" class="form-select form-select-sm">
-                        <option value="">Tất cả</option>
-                        {% for c in category %}<option value="{{ c.id }}" {{ filters.category == c.id ? 'selected' : '' }}>{{ c.name }}</option>{% endfor %}
-                    </select>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <label class="form-label small mb-1" for="f-brand">Thương hiệu</label>
-                    <select name="brand" id="f-brand" class="form-select form-select-sm">
-                        <option value="">Tất cả</option>
-                        {% for b in brands %}<option value="{{ b }}" {{ filters.brand == b ? 'selected' : '' }}>{{ b }}</option>{% endfor %}
-                    </select>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <label class="form-label small mb-1" for="f-rating">Đánh giá</label>
-                    <select name="min_rating" id="f-rating" class="form-select form-select-sm">
-                        <option value="">Tất cả</option>
-                        <option value="4" {{ filters.min_rating == '4' ? 'selected' : '' }}>Từ 4 sao</option>
-                        <option value="3" {{ filters.min_rating == '3' ? 'selected' : '' }}>Từ 3 sao</option>
-                    </select>
-                </div>
-                <div class="col-6 col-lg-2">
-                    <label class="form-label small mb-1" for="f-min">Giá từ</label>
-                    <input type="number" min="0" name="min_price" id="f-min" value="{{ filters.min_price }}" class="form-control form-control-sm" placeholder="{{ price_bounds.min|round }}">
-                </div>
-                <div class="col-6 col-lg-2">
-                    <label class="form-label small mb-1" for="f-max">Đến</label>
-                    <input type="number" min="0" name="max_price" id="f-max" value="{{ filters.max_price }}" class="form-control form-control-sm" placeholder="{{ price_bounds.max|round }}">
-                </div>
-                <div class="col-6 col-lg-2">
-                    <label class="form-label small mb-1" for="f-sort">Sắp xếp</label>
-                    <select name="sort" id="f-sort" class="form-select form-select-sm">
-                        <option value="newest" {{ sort == 'newest' ? 'selected' : '' }}>Mới nhất</option>
-                        <option value="price_asc" {{ sort == 'price_asc' ? 'selected' : '' }}>Giá tăng dần</option>
-                        <option value="price_desc" {{ sort == 'price_desc' ? 'selected' : '' }}>Giá giảm dần</option>
-                        <option value="name" {{ sort == 'name' ? 'selected' : '' }}>Tên A–Z</option>
-                    </select>
-                </div>
-                <div class="col-6 col-lg-2 pb-1">
-                    <div class="form-check">
-                        <input type="checkbox" value="1" name="in_stock" id="f-stock" class="form-check-input" {{ filters.in_stock ? 'checked' : '' }}>
-                        <label class="form-check-label small" for="f-stock">Còn hàng</label>
-                    </div>
-                </div>
-                <div class="col-6 col-lg-1 d-grid">
-                    <button type="submit" class="btn btn-danger btn-sm">Lọc</button>
-                </div>
-            </div>
-            <div class="mt-2"><a href="{{ path('homepage') }}" class="small text-muted"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a></div>
-        </form>
-
-        <div class="row g-3">
-            {% for sp in data %}
-                <div class="col-6 col-md-4 col-lg-3">
-                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: ratings} %}
-                </div>
-            {% else %}
-                <div class="col-12 text-center text-muted py-5"><i class="bi bi-inboxes" style="font-size:2rem"></i><p class="mt-2 mb-0">Không có sản phẩm.</p></div>
-            {% endfor %}
-        </div>
-
-        {% if data.haveToPaginate is defined and data.haveToPaginate %}
-            <div class="d-flex justify-content-center mt-4">{{ knp_pagination_render(data) }}</div>
-        {% endif %}
-    </div>
-
-    {# ===== Product sections by category ===== #}
+    {# ===== One carousel per category ===== #}
     {% for section in sections %}
-    <div class="gv-section">
-        <div class="gv-section__head">
-            <h2>{{ section.category.name }}</h2>
-            <a href="{{ path('app_productofcate', {'id': section.category.id}) }}">Xem tất cả <i class="bi bi-chevron-right"></i></a>
-        </div>
-        <div class="row g-3">
-            {% for sp in section.products %}
-                <div class="col-6 col-md-4 col-lg-2">
-                    {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: section_ratings} %}
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+        <section class="hp-sec" aria-labelledby="sec-{{ section.category.id }}">
+            <div class="hp-sec__head">
+                <h2 id="sec-{{ section.category.id }}"><i class="bi bi-{{ section.icon }}"></i> {{ section.label }} bán chạy</h2>
+                {% if section.brands is not empty %}
+                    <div class="hp-sec__chips">
+                        {% for b in section.brands %}
+                            <a href="{{ path('app_productofcate', {'id': section.category.id, 'brand': [b]}) }}">{{ b }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <a href="{{ path('app_productofcate', {'id': section.category.id}) }}" class="hp-sec__all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+            </div>
+            {{ ui.carousel(section.products, ratings, false) }}
+        </section>
+
+        {% if loop.index == 2 %}
+            <div class="hp-strip">
+                {{ ui.promo(path('shop_builder'), 'Dịch vụ Build PC', 'Tự chọn linh kiện — <strong>báo giá tức thì</strong>', 'Kiểm tra tương thích tự động, lắp ráp & test miễn phí', 'ai-pc-2.webp', 'steel', 'wide') }}
+                {{ ui.promo(path('page_installment'), 'Mua trước trả sau', 'Trả góp <strong>0%</strong> lãi suất', 'Duyệt hồ sơ trong 15 phút qua thẻ tín dụng', 'ai-laptop-2.webp', 'rose', 'wide') }}
+            </div>
+        {% endif %}
     {% endfor %}
 
-    {# ===== Brands ===== #}
-    <div class="gv-section">
-        <div class="gv-section__head"><h2>Thương hiệu</h2></div>
-        <div class="gv-brands">
-            {% for b in ['ASUS','MSI','ACER','LOGITECH','CORSAIR','GIGABYTE'] %}
-                <a href="{{ path('search_products', {'keyword': b}) }}" class="gv-brand">{{ b }}</a>
+    {# ===== Daily picks ===== #}
+    {% if picks is not empty %}
+    <section class="hp-sec" aria-labelledby="picksTitle">
+        <div class="hp-sec__head">
+            <h2 id="picksTitle"><i class="bi bi-stars"></i> Gợi ý hôm nay</h2>
+            <a href="{{ path('feature_product') }}" class="hp-sec__all">Tất cả sản phẩm <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="pgrid pgrid--5">
+            {% for sp in picks %}
+                {% include 'partials/_product_card.html.twig' with {sp: sp, ratings: ratings} %}
             {% endfor %}
         </div>
-    </div>
+        <div class="text-center mt-3">
+            <a href="{{ path('feature_product') }}" class="btn btn-outline-danger px-5">Xem thêm sản phẩm <i class="bi bi-chevron-down"></i></a>
+        </div>
+    </section>
+    {% endif %}
+
+    {# ===== News ===== #}
+    {% if news is not empty %}
+    <section class="hp-sec" aria-labelledby="newsTitle">
+        <div class="hp-sec__head">
+            <h2 id="newsTitle"><i class="bi bi-newspaper"></i> Tin tức công nghệ</h2>
+            <a href="{{ path('app_news') }}" class="hp-sec__all">Xem tất cả <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="hp-news">
+            {% for n in news %}
+                <a href="{{ path('app_news_detail', {'slug': n.slug}) }}" class="hp-news__item">
+                    <span class="hp-news__img"><img src="{{ asset(n.image) }}" alt="" loading="lazy"></span>
+                    <span class="hp-news__body">
+                        <b class="line-clamp-2">{{ n.title }}</b>
+                        <small><i class="bi bi-calendar3"></i> {{ n.createdAt|date('d/m/Y') }}</small>
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {# ===== Brands ===== #}
+    <section class="hp-sec" aria-labelledby="brandTitle">
+        <div class="hp-sec__head">
+            <h2 id="brandTitle"><i class="bi bi-award"></i> Thương hiệu chính hãng</h2>
+            <a href="{{ path('shop_brands') }}" class="hp-sec__all">Tất cả thương hiệu <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="hp-brands">
+            {% for b in ['ASUS', 'MSI', 'ACER', 'GIGABYTE', 'LENOVO', 'DELL', 'LOGITECH', 'CORSAIR', 'SAMSUNG', 'KINGSTON', 'RAZER', 'LG'] %}
+                <a href="{{ path('search_products', {'keyword': b}) }}" class="hp-brand">{{ b }}</a>
+            {% endfor %}
+        </div>
+    </section>
 </div>
 {% endblock %}
 
@@ -209,13 +208,13 @@
 <script>
 (function () {
     var end = new Date(); end.setHours(23, 59, 59, 999);
+    function pad(n) { return String(n).padStart(2, '0'); }
     function tick() {
         var diff = Math.max(0, Math.floor((end - new Date()) / 1000));
-        var h = String(Math.floor(diff / 3600)).padStart(2, '0');
-        var m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
-        var s = String(diff % 60).padStart(2, '0');
         var eh = document.getElementById('cd-h'); if (!eh) return;
-        eh.textContent = h; document.getElementById('cd-m').textContent = m; document.getElementById('cd-s').textContent = s;
+        eh.textContent = pad(Math.floor(diff / 3600));
+        document.getElementById('cd-m').textContent = pad(Math.floor((diff % 3600) / 60));
+        document.getElementById('cd-s').textContent = pad(diff % 60);
     }
     tick(); setInterval(tick, 1000);
 })();
