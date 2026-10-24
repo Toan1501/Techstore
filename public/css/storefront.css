@@ -569,7 +569,7 @@ body.has-pd-sticky .gv-header { transform: translateY(-100%); }
     .pd-sticky { top: auto; bottom: 0; transform: translateY(110%); box-shadow: 0 -6px 20px rgba(16, 24, 40, .14); }
     .pd-sticky__row img, .pd-sticky__price s { display: none; }
     body.has-pd-sticky .gv-header { transform: none; }
-    body.has-pd-sticky #ts-totop, body.has-pd-sticky #ts-hotline { bottom: 80px; }
+    body.has-pd-sticky #ts-totop { bottom: 80px; } body.has-pd-sticky #ts-hotline { bottom: 138px; }
     .pd-tabs__nav { top: 0; }
     .gv-trust__grid { grid-template-columns: 1fr 1fr; }
     .gv-trust__item:nth-child(3) { border-left: 0; }
@@ -636,4 +636,20 @@ body.has-pd-sticky .gv-header { transform: translateY(-100%); }
     .gv-header.is-scrolled .ts-logo__mark { width: 30px; height: 30px; flex-basis: 30px; }
     .gv-header.is-scrolled .gv-hbtn { height: 36px; }
     .gv-header.is-scrolled .gv-search { height: 38px; }
+}
+
+/* Floating actions stacked on the right: hotline above back-to-top (same centre line). */
+#ts-hotline { left: auto; right: 14px; bottom: 76px; }
+#ts-totop { right: 18px; bottom: 18px; }
+@media (max-width: 991.98px) {
+    #ts-hotline { right: 17px; bottom: 74px; width: 46px; height: 46px; font-size: 1.2rem; }
+    #ts-totop { right: 17px; width: 46px; height: 46px; }
+}
+/* the compare pill sits bottom-centre; keep it clear of the right-hand buttons */
+#compare-bar { max-width: calc(100vw - 150px); }
+
+/* iOS Safari zooms into any focused field with font-size < 16px and does not zoom back.
+   16px on touch-size screens prevents that (pinch-zoom stays available). */
+@media (max-width: 991.98px) {
+    input, select, textarea, .form-control, .form-select, .gv-search__input { font-size: 16px !important; }
 }

@@ -382,3 +382,8 @@ a:hover > .ts-logo .ts-logo__dot { transform: translate(1.5px, -1.5px); }
 
 /* Keep short values on one line inside tables */
 .ad-table td > .ad-strong, .ad-table td.ad-strong, .ad-table .ad-price, .ad-table .ad-pill, .ad-table td.num { white-space: nowrap; }
+
+/* iOS: no auto-zoom on focus (fields under 16px trigger it) */
+@media (max-width: 991.98px) {
+    input, select, textarea, .form-control, .form-select, .ad-search input { font-size: 16px !important; }
+}
