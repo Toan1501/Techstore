@@ -662,3 +662,6 @@ body.has-pd-sticky .gv-header { transform: translateY(-100%); }
 .pd-dist__bar { flex: 1 1 auto; height: 7px; border-radius: 999px; background: var(--sf-soft); overflow: hidden; }
 .pd-dist__bar span { display: block; height: 100%; border-radius: 999px; background: #f59e0b; }
 .pd-dist em { font-style: normal; width: 26px; text-align: right; }
+#miniCartBody.is-loading { opacity: .55; transition: opacity .15s; }
+/* Floating buttons stay above the page but below drawers/backdrops (offcanvas 1040–1045). */
+#ts-hotline, #ts-totop { z-index: 1035; }

@@ -175,35 +175,8 @@
             <h5 class="offcanvas-title" id="miniCartLabel"><i class="bi bi-cart3 me-2 text-danger"></i>Giỏ hàng</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
         </div>
-        <div class="offcanvas-body d-flex flex-column">
-            {% if _cart and _cart.getTotalItems() > 0 %}
-                <div class="flex-grow-1 overflow-auto">
-                    {% for item in _cart.getItems() %}
-                        <div class="gv-mini-line">
-                            <img src="{{ asset('uploads/sanpham/' ~ item.product.photo) }}" alt="{{ item.product.name }}">
-                            <div class="flex-grow-1 min-w-0">
-                                <div class="line-clamp-2 small fw-medium">{{ item.product.name }}</div>
-                                <div class="small"><span class="text-muted">{{ item.quantity }} ×</span> <b class="text-danger">{{ item.product.price|vnd }}</b></div>
-                            </div>
-                            <form action="{{ path('app_cart_remove', {'product_id': item.product.id}) }}" method="POST">
-                                <input type="hidden" name="_token" value="{{ csrf_token('cart_remove_' ~ item.product.id) }}" />
-                                <button type="submit" class="btn btn-link text-muted p-0" aria-label="Xóa"><i class="bi bi-trash3"></i></button>
-                            </form>
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="d-flex justify-content-between fw-bold my-3 fs-5">
-                    <span>Tạm tính</span><span class="text-danger">{{ _cart.getAmount()|vnd }}</span>
-                </div>
-                <a href="{{ path('app_order') }}" class="btn btn-danger btn-lg-cta mb-2">Thanh toán ngay</a>
-                <a href="{{ path('app_cart') }}" class="btn btn-outline-secondary">Xem giỏ hàng</a>
-            {% else %}
-                <div class="text-center text-muted my-auto">
-                    <i class="bi bi-cart-x" style="font-size:2.6rem"></i>
-                    <p class="mt-2 mb-3">Giỏ hàng của bạn đang trống.</p>
-                    <a href="{{ path('feature_product') }}" class="btn btn-danger btn-sm px-4">Mua sắm ngay</a>
-                </div>
-            {% endif %}
+        <div class="offcanvas-body d-flex flex-column" id="miniCartBody" data-src="{{ path('app_cart_mini') }}">
+            {% include 'partials/_mini_cart.html.twig' %}
         </div>
     </div>
 

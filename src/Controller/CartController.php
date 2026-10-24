@@ -28,6 +28,16 @@ class CartController extends AbstractController
         ]);
     }
 
+    /** Fresh mini-cart drawer contents (the drawer is otherwise rendered once with the page). */
+    #[Route('/cart/mini', name: 'app_cart_mini', methods: ['GET'])]
+    public function mini(): Response
+    {
+        $response = $this->render('partials/_mini_cart.html.twig');
+        $response->headers->set('Cache-Control', 'no-store, private');
+
+        return $response;
+    }
+
     #[Route('/cart/add/{product_id}', name: 'app_cart_add', methods: 'post')]
     public function add(int $product_id, Request $request, EntityManagerInterface $em): Response
     {

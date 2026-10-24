@@ -254,3 +254,24 @@
     btn.remove();
   });
 })();
+
+/* Mini-cart drawer: always show the live cart (items are added via AJAX without a reload). */
+(function () {
+  var drawer = document.getElementById('miniCart');
+  var body = document.getElementById('miniCartBody');
+  if (!drawer || !body) return;
+  var load = function () {
+    body.classList.add('is-loading');
+    return fetch(body.getAttribute('data-src'), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin', cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
+      .then(function (html) { body.innerHTML = html; })
+      .catch(function () {})
+      .then(function () { body.classList.remove('is-loading'); });
+  };
+  drawer.addEventListener('show.bs.offcanvas', load);
+  // If the drawer is already open when something is added, refresh it too.
+  document.addEventListener('submit', function (e) {
+    if (!e.target.closest || !e.target.closest('.add-to-cart-form')) return;
+    if (drawer.classList.contains('show')) setTimeout(load, 600);
+  });
+})();
