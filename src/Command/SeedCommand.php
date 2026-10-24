@@ -95,12 +95,12 @@ class SeedCommand extends Command
 
         // 3) Categories
         $catDefs = [
-            'laptop' => ['Laptop', 'laptop-1.webp'],
-            'pc' => ['Desktop PC', 'pc-1.png'],
-            'vga' => ['Graphics Card', 'gpu-1.webp'],
-            'monitor' => ['Monitor', 'monitor-1.webp'],
-            'mouse' => ['Mouse', 'mouse-1.webp'],
-            'ram' => ['RAM', 'ram-1.webp'],
+            'laptop' => ['Laptop', 'ai-laptop-1.webp'],
+            'pc' => ['Desktop PC', 'ai-pc-1.webp'],
+            'vga' => ['Graphics Card', 'ai-vga-1.webp'],
+            'monitor' => ['Monitor', 'ai-monitor-1.webp'],
+            'mouse' => ['Mouse', 'ai-mouse-1.webp'],
+            'ram' => ['RAM', 'ai-ram-1.webp'],
         ];
         $cats = [];
         foreach ($catDefs as $key => [$name, $photo]) {
