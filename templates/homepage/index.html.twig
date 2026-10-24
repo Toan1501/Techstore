@@ -59,7 +59,7 @@
                                 <span>Tặng balo &amp; chuột gaming · Trả góp 0%</span>
                                 <i class="hero-slide__cta">Khám phá ngay <i class="bi bi-arrow-right"></i></i>
                             </span>
-                            <img src="{{ asset('uploads/sanpham/ai-laptop-1.webp') }}" alt="Laptop gaming">
+                            <img src="{{ asset('uploads/sanpham/p-lap-asus-g15.webp') }}" alt="Laptop gaming">
                         </a>
                     </div>
                     <div class="carousel-item">
@@ -70,7 +70,7 @@
                                 <span>Kỹ thuật viên tư vấn 1:1 · Bảo hành tận nơi</span>
                                 <i class="hero-slide__cta">Tự build ngay <i class="bi bi-arrow-right"></i></i>
                             </span>
-                            <img src="{{ asset('uploads/sanpham/ai-pc-1.webp') }}" alt="PC gaming">
+                            <img src="{{ asset('uploads/sanpham/p-pc-gvn-i9.webp') }}" alt="PC gaming">
                         </a>
                     </div>
                 </div>
@@ -84,15 +84,15 @@
                 <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next" aria-label="Sau"><span class="carousel-control-next-icon"></span></button>
             </div>
             <div class="hp-hero__duo">
-                {{ ui.promo(ui.catlink(catByName, 'Graphics Card'), 'Card đồ họa', 'RTX 40 Series<br>giá cực tốt', 'Bảo hành 36 tháng', 'ai-vga-1.webp', 'sky') }}
-                {{ ui.promo(ui.catlink(catByName, 'Monitor'), 'Màn hình', 'Gaming 2K 165Hz<br>từ 3,69 triệu', '', 'ai-monitor-1.webp', 'amber') }}
+                {{ ui.promo(ui.catlink(catByName, 'Graphics Card'), 'Card đồ họa', 'RTX 40 Series<br>giá cực tốt', 'Bảo hành 36 tháng', 'p-vga-asus-3080.webp', 'sky') }}
+                {{ ui.promo(ui.catlink(catByName, 'Monitor'), 'Màn hình', 'Gaming 2K 165Hz<br>từ 3,69 triệu', '', 'p-mon-ss-g5.webp', 'amber') }}
             </div>
         </div>
 
         <div class="hp-hero__side d-none d-lg-flex">
-            {{ ui.promo(path('shop_promotions'), 'Flash sale mỗi ngày', 'Giảm đến<br><strong>25%</strong>', '', 'ai-laptop-2.webp', 'red') }}
-            {{ ui.promo(ui.catlink(catByName, 'Mouse'), 'Gaming gear', 'Chuột gaming<br>từ 390K', '', 'ai-mouse-1.webp', 'lilac') }}
-            {{ ui.promo(ui.catlink(catByName, 'RAM'), 'Nâng cấp RAM', 'DDR5 RGB<br>hiệu năng vượt trội', '', 'ai-ram-1.webp', 'mint') }}
+            {{ ui.promo(path('shop_promotions'), 'Flash sale mỗi ngày', 'Giảm đến<br><strong>25%</strong>', '', 'p-lap-hp-pav15.webp', 'red') }}
+            {{ ui.promo(ui.catlink(catByName, 'Mouse'), 'Gaming gear', 'Chuột gaming<br>từ 390K', '', 'p-mou-log-g502x.webp', 'lilac') }}
+            {{ ui.promo(ui.catlink(catByName, 'RAM'), 'Nâng cấp RAM', 'DDR5 RGB<br>hiệu năng vượt trội', '', 'p-ram-cor-dom32.webp', 'mint') }}
         </div>
     </section>
 
@@ -144,8 +144,8 @@
 
         {% if loop.index == 2 %}
             <div class="hp-strip">
-                {{ ui.promo(path('shop_builder'), 'Dịch vụ Build PC', 'Tự chọn linh kiện — <strong>báo giá tức thì</strong>', 'Kiểm tra tương thích tự động, lắp ráp & test miễn phí', 'ai-pc-2.webp', 'steel', 'wide') }}
-                {{ ui.promo(path('page_installment'), 'Mua trước trả sau', 'Trả góp <strong>0%</strong> lãi suất', 'Duyệt hồ sơ trong 15 phút qua thẻ tín dụng', 'ai-laptop-2.webp', 'rose', 'wide') }}
+                {{ ui.promo(path('shop_builder'), 'Dịch vụ Build PC', 'Tự chọn linh kiện — <strong>báo giá tức thì</strong>', 'Kiểm tra tương thích tự động, lắp ráp & test miễn phí', 'p-pc-gvn-phan.webp', 'steel', 'wide') }}
+                {{ ui.promo(path('page_installment'), 'Mua trước trả sau', 'Trả góp <strong>0%</strong> lãi suất', 'Duyệt hồ sơ trong 15 phút qua thẻ tín dụng', 'p-lap-apl-mba2.webp', 'rose', 'wide') }}
             </div>
         {% endif %}
     {% endfor %}

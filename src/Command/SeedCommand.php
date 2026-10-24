@@ -97,12 +97,12 @@ class SeedCommand extends Command
 
         // 3) Categories
         $catDefs = [
-            'laptop' => ['Laptop', 'ai-laptop-1.webp'],
-            'pc' => ['Desktop PC', 'ai-pc-1.webp'],
-            'vga' => ['Graphics Card', 'ai-vga-1.webp'],
-            'monitor' => ['Monitor', 'ai-monitor-1.webp'],
-            'mouse' => ['Mouse', 'ai-mouse-1.webp'],
-            'ram' => ['RAM', 'ai-ram-1.webp'],
+            'laptop' => ['Laptop', 'p-lap-msi-kat15.webp'],
+            'pc' => ['Desktop PC', 'p-pc-gvn-drag.webp'],
+            'vga' => ['Graphics Card', 'p-vga-msi-4070ti.webp'],
+            'monitor' => ['Monitor', 'p-mon-lg-27gp.webp'],
+            'mouse' => ['Mouse', 'p-mou-rz-bsk3.webp'],
+            'ram' => ['RAM', 'p-ram-gsk-z5.webp'],
         ];
         $cats = [];
         foreach ($catDefs as $key => [$name, $photo]) {
@@ -351,22 +351,22 @@ class SeedCommand extends Command
     private function newsData(): array
     {
         return [
-            ['slug' => 'rtx-40-series-giam-gia', 'days' => 0, 'title' => 'Loạt card RTX 40 Series giảm giá sốc cuối năm', 'image' => 'images/best1.webp',
+            ['slug' => 'rtx-40-series-giam-gia', 'days' => 0, 'title' => 'Loạt card RTX 40 Series giảm giá sốc cuối năm', 'image' => 'images/news/news-rtx-sale.webp',
              'excerpt' => 'Nhiều mẫu card đồ họa RTX 40 series được điều chỉnh giá tốt, cơ hội nâng cấp cấu hình gaming.',
              'content' => '<p>Bước vào mùa mua sắm cuối năm, hàng loạt card đồ họa NVIDIA RTX 40 Series được điều chỉnh mức giá hấp dẫn. Đây là thời điểm lý tưởng để game thủ nâng cấp dàn máy của mình.</p><p>Các mẫu RTX 4070, 4070 Ti mang lại hiệu năng ấn tượng ở độ phân giải 2K, trong khi RTX 4060 phù hợp cho anh em chơi game Full HD mượt mà với công nghệ DLSS 3.</p><p>Toàn Store cam kết hàng chính hãng, bảo hành 36 tháng và hỗ trợ trả góp 0%.</p>'],
-            ['slug' => 'huong-dan-build-pc-gaming', 'days' => 2, 'title' => 'Hướng dẫn build PC gaming 20 triệu đáng mua nhất', 'image' => 'images/pc-1.png',
+            ['slug' => 'huong-dan-build-pc-gaming', 'days' => 2, 'title' => 'Hướng dẫn build PC gaming 20 triệu đáng mua nhất', 'image' => 'images/news/news-build-pc.webp',
              'excerpt' => 'Gợi ý cấu hình PC gaming tầm giá 20 triệu cân mọi tựa game phổ biến hiện nay.',
              'content' => '<p>Với ngân sách 20 triệu đồng, bạn hoàn toàn có thể sở hữu một dàn PC gaming mạnh mẽ. Dưới đây là gợi ý cấu hình cân bằng giữa CPU và GPU.</p><ul><li>CPU: Intel Core i5-13400F</li><li>Card: RTX 4060 8GB</li><li>RAM: 16GB DDR4 3200MHz</li><li>SSD: 512GB NVMe</li><li>Nguồn: 650W 80+ Bronze</li></ul><p>Cấu hình này chiến tốt các tựa game AAA ở thiết lập cao.</p>'],
-            ['slug' => 'laptop-van-phong-dang-mua', 'days' => 5, 'title' => 'Top laptop văn phòng mỏng nhẹ đáng mua 2024', 'image' => 'images/carousel-3.jpg',
+            ['slug' => 'laptop-van-phong-dang-mua', 'days' => 5, 'title' => 'Top laptop văn phòng mỏng nhẹ đáng mua 2024', 'image' => 'images/news/news-laptop-van-phong.webp',
              'excerpt' => 'Những mẫu laptop mỏng nhẹ, pin trâu, hiệu năng ổn định cho dân văn phòng.',
              'content' => '<p>Nhu cầu làm việc di động ngày càng cao khiến các mẫu laptop mỏng nhẹ trở nên hot hơn bao giờ hết. Tiêu chí lựa chọn gồm trọng lượng dưới 1.5kg, pin trên 8 tiếng và màn hình chất lượng.</p><p>Các dòng máy trang bị chip thế hệ mới cho thời lượng pin ấn tượng, phù hợp cho công việc soạn thảo, họp online và giải trí nhẹ nhàng.</p>'],
-            ['slug' => 'ram-ddr5-co-dang-nang-cap', 'days' => 8, 'title' => 'RAM DDR5 đã đáng để nâng cấp chưa?', 'image' => 'images/adv1.webp',
+            ['slug' => 'ram-ddr5-co-dang-nang-cap', 'days' => 8, 'title' => 'RAM DDR5 đã đáng để nâng cấp chưa?', 'image' => 'images/news/news-ram-ddr5.webp',
              'excerpt' => 'So sánh DDR4 và DDR5 về hiệu năng, giá thành để quyết định có nên lên đời.',
              'content' => '<p>DDR5 mang lại băng thông cao hơn đáng kể so với DDR4, đặc biệt hữu ích với các tác vụ đa nhiệm nặng và render. Tuy nhiên với đa số game thủ, chênh lệch FPS thực tế chưa quá lớn.</p><p>Nếu bạn xây dựng cấu hình mới với nền tảng đời mới, DDR5 là lựa chọn đáng cân nhắc để bền vững lâu dài.</p>'],
-            ['slug' => 'man-hinh-gaming-165hz', 'days' => 12, 'title' => 'Vì sao nên chọn màn hình gaming 165Hz?', 'image' => 'images/banner1.webp',
+            ['slug' => 'man-hinh-gaming-165hz', 'days' => 12, 'title' => 'Vì sao nên chọn màn hình gaming 165Hz?', 'image' => 'images/news/news-man-hinh-gaming.webp',
              'excerpt' => 'Tần số quét cao mang lại trải nghiệm chơi game mượt mà, lợi thế trong các tựa FPS.',
              'content' => '<p>Tần số quét 165Hz giúp hình ảnh chuyển động mượt mà hơn hẳn so với màn hình 60Hz truyền thống. Điều này đặc biệt quan trọng với các tựa game bắn súng đòi hỏi phản xạ nhanh.</p><p>Kết hợp cùng công nghệ đồng bộ FreeSync/G-Sync, trải nghiệm chơi game sẽ không còn hiện tượng xé hình.</p>'],
-            ['slug' => 'meo-ve-sinh-may-tinh', 'days' => 16, 'title' => 'Mẹo vệ sinh máy tính đúng cách tại nhà', 'image' => 'images/banner2.webp',
+            ['slug' => 'meo-ve-sinh-may-tinh', 'days' => 16, 'title' => 'Mẹo vệ sinh máy tính đúng cách tại nhà', 'image' => 'images/news/news-ve-sinh-pc.webp',
              'excerpt' => 'Hướng dẫn vệ sinh bụi bẩn, tra keo tản nhiệt giúp máy mát và bền hơn.',
              'content' => '<p>Bụi bẩn tích tụ là nguyên nhân khiến máy tính nóng lên và giảm tuổi thọ linh kiện. Bạn nên vệ sinh định kỳ 3–6 tháng một lần.</p><p>Sử dụng bình khí nén để thổi bụi quạt và khe tản nhiệt, đồng thời tra lại keo tản nhiệt CPU sau 1–2 năm sử dụng.</p>'],
         ];
